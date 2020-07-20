@@ -1,0 +1,82 @@
+{% extends "gallery/base.html" %}
+
+{% block content %}
+
+
+<div class="mdl-cell" style="margin: auto">
+        {% csrf_token %}
+        <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="width: 100%">
+            <tbody>
+                {% if next %}
+                    <tr>
+                    {% if user.is_authenticated %}
+                        <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            Your account doesn't have access to this page.
+                            <br>
+                            To proceed, please login with an account that has access.
+                        </td>
+                    {% else %}
+                        <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            Please login to see this page.
+                        </td>
+                    {% endif %}
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input type="text" name="username" id="username" class="mdl-textfield__input">
+                            <label for="username" class="mdl-textfield__label">Username</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input type="password" name="password" id="password" class="mdl-textfield__input">
+                            <label for="password" class="mdl-textfield__label">Password</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="mdl-data-table__cell--non-numeric">
+                        <a href="{% url 'gallery:index' %}">Lost password?</a>
+                    </td>
+                    <td>
+                        <button id="login_button" value="login"
+                            v-on:click="login_button_onclick"
+                            class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- MDL Progress Bar with Indeterminate Progress -->
+        <div id="progress_bar" v-if="progress_bar_seen" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+
+        <input type="hidden" name="next" value="{{ next }}">
+    </form>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+Vue.config.delimiters = ['[[', ']]']
+var login_button_app = new Vue({
+    el: '#login_button',
+    methods: {
+        login_button_onclick: function () {
+            console.log('start')
+            progress_bar_app.progress_bar_seen = true
+            console.log('done')
+        }
+    }
+})
+var progress_bar_app = new Vue({
+    el: '#progress_bar',
+    data: {
+        progress_bar_seen: false
+    }
+})
+</script>
+{% endblock %}
