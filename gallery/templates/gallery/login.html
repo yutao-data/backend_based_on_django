@@ -1,10 +1,8 @@
 {% extends "gallery/base.html" %}
 
 {% block content %}
-
-
-<div class="mdl-cell" style="margin: auto">
-        {% csrf_token %}
+    <div id="login_table" class="mdl-cell" style="margin: auto">
+    {% csrf_token %}
         <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="width: 100%">
             <tbody>
                 {% if next %}
@@ -22,10 +20,15 @@
                     {% endif %}
                     </tr>
                 {% endif %}
+                <tr v-bind:hidden="error_message_hidden">
+                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                        [[ error_message_text ]]
+                    </td>
+                </tr>
                 <tr>
                     <td colspan="2" class="mdl-data-table__cell--non-numeric">
                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <input type="text" name="username" id="username" class="mdl-textfield__input">
+                            <input v-model="username" type="text" name="username" class="mdl-textfield__input">
                             <label for="username" class="mdl-textfield__label">Username</label>
                         </div>
                     </td>
@@ -33,7 +36,7 @@
                 <tr>
                     <td colspan="2" class="mdl-data-table__cell--non-numeric">
                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <input type="password" name="password" id="password" class="mdl-textfield__input">
+                            <input v-model="password" type="password" name="password" class="mdl-textfield__input">
                             <label for="password" class="mdl-textfield__label">Password</label>
                         </div>
                     </td>
@@ -43,40 +46,78 @@
                         <a href="{% url 'gallery:index' %}">Lost password?</a>
                     </td>
                     <td>
-                        <button id="login_button" value="login"
+                        <button
                             v-on:click="login_button_onclick"
                             class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+                            Login
+                        </button>
                     </td>
                 </tr>
             </tbody>
+            <!-- MDL Progress Bar with Indeterminate Progress -->
+            <div v-bind:hidden="progress_bar_hidden" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+
         </table>
-
-        <!-- MDL Progress Bar with Indeterminate Progress -->
-        <div id="progress_bar" v-if="progress_bar_seen" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
-
         <input type="hidden" name="next" value="{{ next }}">
-    </form>
+    </div>
+
+    <!-- MDL 风格的消息提示框 -->
+    <div id="snackbar" class="mdl-js-snackbar mdl-snackbar">
+        <div class="mdl-snackbar__text"></div>
+    <button class="mdl-snackbar__action" type="button"></button>
+
 </div>
 {% endblock %}
 
 {% block script %}
 <script>
-Vue.config.delimiters = ['[[', ']]']
-var login_button_app = new Vue({
-    el: '#login_button',
+var tmp;
+var login_app = new Vue({
+    delimiters: ['[[', ']]'],
+    el: "#login_table",
+    data: {
+        progress_bar_hidden: true,
+        error_message_hidden: true,
+        username: '',
+        password: '',
+        error_message_text: '',
+    },
     methods: {
         login_button_onclick: function () {
-            console.log('start')
-            progress_bar_app.progress_bar_seen = true
-            console.log('done')
+            // 检查用户名密码是否为空
+            if (!this.username || !this.password) {
+                this.error_message_text = 'Please input Username and Password!'
+                this.error_message_hidden = false
+                return
+            }
+            // 关闭错误消息
+            this.error_message_hidden = true
+            // 显示进度条
+            this.progress_bar_hidden = false
+            // 发送登陆API请求
+            axios.post("{% url 'gallery:api_login' %}", {
+                username: this.username,
+                password: this.password,
+            })
+            .then(function(response) {
+                console.log(response)
+            })
+            .catch(function (error) {
+                tmp = error
+                if (error.response) {
+                    showSnackbar(error.response.data['error_message'])
+                } else {
+                    showSnackbar(error)
+                }
+                login_app.progress_bar_hidden = true
+            })
+            // 结束，关闭进度条
+            setTimeout(function () {
+                login_app.progress_bar_hidden = true
+            }, 3000)
         }
     }
 })
-var progress_bar_app = new Vue({
-    el: '#progress_bar',
-    data: {
-        progress_bar_seen: false
-    }
-})
+
 </script>
 {% endblock %}

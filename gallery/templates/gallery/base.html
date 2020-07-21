@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <!-- 载入 jQuery -->
     <script src="{% static 'vue/vue.js' %}"></script>
+    <!-- 载入 axios -->
+    <script src="{% static 'axios/axios.js' %}"></script>
 
 </head>
 
@@ -62,8 +64,20 @@
                 {% endblock %}
 
             </div>
-            <footer class="mdl-mini-footer">
 
+            {% block snackbar %}
+                <script>
+                    var snackbarContainer = document.querySelector('#snackbar')
+                    var showSnackbar = function (text) {
+                        snackbarContainer.MaterialSnackbar.showSnackbar({
+                            message: text,
+                        })
+                    }
+                </script>
+            {% endblock %}
+
+            <!-- 页脚 -->
+            <footer class="mdl-mini-footer">
                 <!-- 页脚左侧 -->
                 <div class="mdl-mini-footer__left-section">
                     <div class="mdl-logo">{{ site_name }}</div>
