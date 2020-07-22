@@ -54,19 +54,11 @@
                     </td>
                 </tr>
             </tbody>
-            <!-- MDL Progress Bar with Indeterminate Progress -->
-            <div v-bind:hidden="progress_bar_hidden" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
 
         </table>
         <input type="hidden" name="next" value="{{ next }}">
     </div>
 
-    <!-- MDL 风格的消息提示框 -->
-    <div id="snackbar" class="mdl-js-snackbar mdl-snackbar">
-        <div class="mdl-snackbar__text"></div>
-    <button class="mdl-snackbar__action" type="button"></button>
-
-</div>
 {% endblock %}
 
 {% block script %}
@@ -93,7 +85,7 @@ var login_app = new Vue({
             // 关闭错误消息
             this.error_message_hidden = true
             // 显示进度条
-            this.progress_bar_hidden = false
+            progress_bar_app.hidden = false
             // 发送登陆API请求
             axios.post("{% url 'gallery:api_login' %}", {
                 username: this.username,
@@ -103,18 +95,16 @@ var login_app = new Vue({
                 console.log(response)
             })
             .catch(function (error) {
+                console.log(error)
                 tmp = error
                 if (error.response) {
                     showSnackbar(error.response.data['error_message'])
                 } else {
                     showSnackbar(error)
                 }
-                login_app.progress_bar_hidden = true
+                // 关闭进度条
+                progress_bar_app.hidden = true
             })
-            // 结束，关闭进度条
-            setTimeout(function () {
-                login_app.progress_bar_hidden = true
-            }, 3000)
         }
     }
 })

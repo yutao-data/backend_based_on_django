@@ -23,6 +23,10 @@ class LoginView(View):
     def get(request):
         return render(request, 'gallery/login.html', BASIC_TEXT)
 
+
+# 登出视图
+class LogoutView(View):
+
     @staticmethod
-    def post(request):
-        pass
+    def get(request):
+        return render(request, 'gallery/logout.html', BASIC_TEXT)
