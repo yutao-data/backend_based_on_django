@@ -1,0 +1,139 @@
+{% extends "gallery/base.html" %}
+
+
+{% block content %}
+
+    <div id="signup_table" class="mdl-cell" style="width: max-content; margin: auto;">
+        <table v-if="signup_form_seen" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+            <tbody>
+                <tr>
+                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <strong>Sign Up</strong>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input v-model="username" type="text" name="username" class="mdl-textfield__input">
+                            <label for="username" class="mdl-textfield__label">Username</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input v-model="password" type="password" name="password" class="mdl-textfield__input">
+                            <label for="password" class="mdl-textfield__label">Password</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input v-model="re_password" type="password" name="re_password" class="mdl-textfield__input">
+                            <label for="re_password" class="mdl-textfield__label">Type Your Password Again</label>
+                        </div>
+                    </td>
+                </tr>
+                <tr v-bind:hidden="password_not_match_hidden">
+                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                        Your Password Don't Match!
+                    </td>
+                </tr>
+                <tr>
+                    <td class="mdl-data-table__cell--non-numeric">
+                        <a href="{% url 'gallery:index' %}">Lost password?</a>
+                    </td>
+                    <td>
+                        <button
+                            v-on:click="signup_button_onclick"
+                            class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+                            Submit
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p v-if="finished_message_seen">
+            Request submitted successfully.
+        </p>
+    </div>
+{% endblock %}
+
+{% block script %}
+<script>
+var signup_app = new Vue({
+    delimiters: ['[[', ']]'],
+    el: '#signup_table',
+    data: {
+        password_not_match_hidden: true,
+        username: '',
+        password: '',
+        re_password: '',
+        signup_form_seen: true,
+        finished_message_seen: false,
+    },
+    methods: {
+        signup_button_onclick: function () {
+
+            // 检查密码匹配
+            if (!this.check_password_match()) {
+                return
+            }
+            // 显示进度条
+            progress_bar_app.hidden = false
+            // 提交注册申请
+            axios.post('{% url "gallery:api_signup" %}', {
+                'username': this.username,
+                'password': this.password,
+            })
+            .then(function (response) {
+                // 隐藏表单，显示信息
+                signup_app.signup_form_seen = false
+                signup_app.finished_message_seen = true
+                progress_bar_app.hidden = true
+                // 显示对话框
+                showDialog('Success', 'Signup application submitted. ' +
+                'Please wait for administrators to confirm. ' +
+                'Thank you')
+
+            })
+            .catch(function (error) {
+                if (error.response) {
+                    showDialog(
+                        error.response.data['error_type'],
+                        error.response.data['error_message']
+                    )
+                } else {
+                    showDialog(
+                        'Error',
+                        error
+                    )
+                }
+                progress_bar_app.hidden = true
+            })
+        },
+        check_password_match: function () {
+            // 如果密码为空则不进行检查
+            if (!this.password || !this.re_password) {
+                return
+            }
+            // 如果密码相匹配则设置this.password_not_match_hidden为true隐藏提示
+            // 反之亦然
+            this.password_not_match_hidden= this.password === this.re_password
+            return this.password_not_match_hidden
+        },
+    },
+    watch: {
+        password:function () {
+            this.check_password_match()
+        },
+        re_password: function () {
+            this.check_password_match()
+        },
+    }
+})
+</script>
+{% endblock %}

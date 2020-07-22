@@ -38,4 +38,4 @@ if __name__ == '__main__':
     except Error as e:
         print(type(e))
         print(str(e))
-        print(e.status)
+        print(e.__class__.__name__)

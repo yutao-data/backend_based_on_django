@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{% static 'mdl/material.css' %}">
     <script src="{% static 'mdl/material.js' %}"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <!-- 载入 jQuery -->
+    <!-- 载入 Vue -->
     <script src="{% static 'vue/vue.js' %}"></script>
     <!-- 载入 axios -->
     <script src="{% static 'axios/axios.js' %}"></script>
@@ -33,7 +33,7 @@
                 <nav class="mdl-navigation mdl-typography--body-1-force-preferred-font">
                     <a class="mdl-navigation__link is-active" href="{% url 'gallery:index' %}">Home Page</a>
                     {% if request.user.is_authenticated %}
-                        <a class="mdl-navigation__link" href="contact.html">User: {{ request.user.username }}</a>
+                        <a class="mdl-navigation__link" href="contact.html">{{ request.user.username }}: Dashboard</a>
                         <a id="logout_div" v-on:click="logout_func" class="mdl-navigation__link" href="#">[[ text ]]</a>
                         <script>
                         // 登出功能
@@ -47,6 +47,7 @@
                                 logout_func: function () {
                                     // 显示进度条
                                     progress_bar_app.hidden = false
+                                    this.text = 'Waiting...'
                                     axios.post("{% url 'gallery:api_logout' %}", {})
                                     .then(function(response) {
                                         console.log(response)
@@ -60,8 +61,8 @@
                                         } else {
                                             showSnackbar(error)
                                         }
-                                        // 关闭进度条
                                         progress_bar_app.hidden = true
+                                        this.text = 'Logout'
                                     })
                                 }
                             }
@@ -69,21 +70,73 @@
                         </script>
                     {% else %}
                         <a class="mdl-navigation__link" href="{% url 'gallery:login' %}">Login</a>
-                        <a class="mdl-navigation__link" href="about.html">Sign up</a>
+                        <a class="mdl-navigation__link" href="{% url 'gallery:signup' %}">Sign up</a>
                     {% endif %}
                 </nav>
                 {% endblock %}
             </div>
 
-            <!-- MDL 风格的消息提示框 -->
+            <!-- MDL 风格的消息提示框 snackbar -->
             <div id="snackbar" class="mdl-js-snackbar mdl-snackbar">
                 <div class="mdl-snackbar__text"></div>
                 <button class="mdl-snackbar__action" type="button"></button>
             </div>
+            <script>
+                var snackbarContainer = document.querySelector('#snackbar')
+                var showSnackbar = function (text) {
+                    snackbarContainer.MaterialSnackbar.showSnackbar({
+                        message: text,
+                    })
+                }
+            </script>
 
-            <!-- MDL Progress Bar with Indeterminate Progress -->
+            <!-- MDL 风格的对话框 dialog -->
+            <dialog id="dialog_div" class="mdl-dialog">
+                <p class="mdl-dialog__title">[[ heading ]]</p>
+                <div class="mdl-dialog__content">
+                    <p>
+                        [[ message ]]
+                    </p>
+                </div>
+                <div class="mdl-dialog__actions">
+                    <button v-on:click="dialog_close_onclick" type="button" class="mdl-button mdl-button--raised mdl-button--colored">
+                        Finish
+                    </button>
+                </div>
+            </dialog>
+            <script>
+                var dialog_app = new Vue({
+                    delimiters: ['[[', ']]'],
+                    el: '#dialog_div',
+                    data: {
+                        heading: '',
+                        message: '',
+                    },
+                    methods: {
+                        show_dialog: function () {
+                            this.$el.showModal()
+                        },
+                        dialog_close_onclick: function () {
+                            this.$el.close()
+                            if (this.finish_fallback) {
+                                this.finish_fallback()
+                            }
+                        },
+                    }
+                })
+                var showDialog = function (heading, message) {
+                    dialog_app.heading = heading
+                    dialog_app.message = message
+                    dialog_app.show_dialog()
+                }
+            </script>
+
+            <!-- MDL 风格位于顶部的加载进度条 -->
             <div id="progress_bar" v-bind:hidden="hidden" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
             <script>
+                // 调用方法：
+                // progress_bar_app.hidden = false // 显示进度条
+                // progress_bar_app.hidden = true  // 隐藏进度条
                 var progress_bar_app = new Vue({
                     delimiters: ['[[', ']]'],
                     el: '#progress_bar',
@@ -92,10 +145,7 @@
                     }
                 })
             </script>
-
         </header>
-
-
 
         <main class="mdl-layout__content">
             <div class="mdl-grid">
@@ -104,7 +154,7 @@
                 <!-- 样例 -->
                 <div class="mdl-cell mdl-card mdl-shadow--4dp portfolio-card">
                     <div class="mdl-card__media">
-                        <img class="article-image" src=" images/example-work01.jpg" border="0" alt="">
+                        <img class="article-image" src="images/example-work01.jpg" border="0" alt="">
                     </div>
                     <div class="mdl-card__title">
                         <h2 class="mdl-card__title-text">Blog template</h2>
@@ -119,33 +169,23 @@
                 {% endblock %}
 
             </div>
-
-            {% block snackbar %}
-                <script>
-                    var snackbarContainer = document.querySelector('#snackbar')
-                    var showSnackbar = function (text) {
-                        snackbarContainer.MaterialSnackbar.showSnackbar({
-                            message: text,
-                        })
-                    }
-                </script>
-            {% endblock %}
-
-            <!-- 页脚 -->
-            <footer class="mdl-mini-footer">
-                <!-- 页脚左侧 -->
-                <div class="mdl-mini-footer__left-section">
-                    <div class="mdl-logo">{{ site_name }}</div>
-                </div>
-                <!-- 页脚右侧 -->
-                <div class="mdl-mini-footer__right-section">
-                    <ul class="mdl-mini-footer__link-list">
-                        <li><a href="#">Help</a></li>
-                        <li><a href="#">Privacy & Terms</a></li>
-                    </ul>
-                </div>
-            </footer>
         </main>
+
+        <!-- 页脚 -->
+        <footer class="mdl-mini-footer">
+            <!-- 页脚左侧 -->
+            <div class="mdl-mini-footer__left-section">
+                <div class="mdl-logo">{{ site_name }}</div>
+            </div>
+            <!-- 页脚右侧 -->
+            <div class="mdl-mini-footer__right-section">
+                <ul class="mdl-mini-footer__link-list">
+                    <li><a href="#">Help</a></li>
+                    <li><a href="#">Privacy & Terms</a></li>
+                </ul>
+            </div>
+        </footer>
+
     </div>
 </body>
 

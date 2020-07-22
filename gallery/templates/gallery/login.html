@@ -1,9 +1,9 @@
 {% extends "gallery/base.html" %}
 
 {% block content %}
-    <div id="login_table" class="mdl-cell" style="margin: auto">
-    {% csrf_token %}
-        <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" style="width: 100%">
+    <!-- 添加单个Cell居中的Style -->
+    <div id="login_table" class="mdl-cell" style="width: max-content; margin: auto;">
+        <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
             <tbody>
                 {% if next %}
                     <tr>
@@ -20,9 +20,11 @@
                     {% endif %}
                     </tr>
                 {% endif %}
-                <tr v-bind:hidden="error_message_hidden">
+                <tr>
                     <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                        [[ error_message_text ]]
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <strong>Login</strong>
+                        </div>
                     </td>
                 </tr>
                 <tr>
@@ -41,6 +43,11 @@
                         </div>
                     </td>
                 </tr>
+                <tr v-bind:hidden="error_message_hidden">
+                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                        <strong  style="color: #ff5f85">[[ error_message_text ]]<strong>
+                    </td>
+                </tr>
                 <tr>
                     <td class="mdl-data-table__cell--non-numeric">
                         <a href="{% url 'gallery:index' %}">Lost password?</a>
@@ -56,14 +63,12 @@
             </tbody>
 
         </table>
-        <input type="hidden" name="next" value="{{ next }}">
     </div>
 
 {% endblock %}
 
 {% block script %}
 <script>
-var tmp;
 var login_app = new Vue({
     delimiters: ['[[', ']]'],
     el: "#login_table",
@@ -88,20 +93,20 @@ var login_app = new Vue({
             progress_bar_app.hidden = false
             // 发送登陆API请求
             axios.post("{% url 'gallery:api_login' %}", {
-                username: this.username,
-                password: this.password,
+                'username': this.username,
+                'password': this.password,
             })
             .then(function(response) {
-                console.log(response)
+                // 登陆成功，返回首页
+                window.location = '{% url "gallery:index" %}'
             })
             .catch(function (error) {
-                console.log(error)
-                tmp = error
                 if (error.response) {
-                    showSnackbar(error.response.data['error_message'])
+                    login_app.error_message_text = error.response.data['error_message']
                 } else {
-                    showSnackbar(error)
+                    login_app.error_message_text = error
                 }
+                login_app.error_message_hidden = false
                 // 关闭进度条
                 progress_bar_app.hidden = true
             })

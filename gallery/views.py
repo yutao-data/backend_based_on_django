@@ -24,9 +24,9 @@ class LoginView(View):
         return render(request, 'gallery/login.html', BASIC_TEXT)
 
 
-# 登出视图
-class LogoutView(View):
+# 注册视图
+class SignupView(View):
 
     @staticmethod
     def get(request):
-        return render(request, 'gallery/logout.html', BASIC_TEXT)
+        return render(request, 'gallery/signup.html', BASIC_TEXT)
