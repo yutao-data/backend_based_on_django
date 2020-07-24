@@ -48,7 +48,7 @@
                                     // 显示进度条
                                     progress_bar_app.hidden = false
                                     this.text = 'Waiting...'
-                                    axios.post("{% url 'gallery:api_logout' %}", {})
+                                    axios.post("{% url 'gallery:api:logout' %}", {})
                                     .then(function(response) {
                                         console.log(response)
                                         // 登出成功，刷新页面

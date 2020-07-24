@@ -44,4 +44,3 @@ class SignUpManagement(View):
             return HttpResponseRedirect(reverse('gallery:dashboard:index'))
         # 正常返回页面
         return render(request, 'gallery/dashboard/user_management.html', view_dict)
-

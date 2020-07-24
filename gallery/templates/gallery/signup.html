@@ -85,7 +85,7 @@ var signup_app = new Vue({
             // 显示进度条
             progress_bar_app.hidden = false
             // 提交注册申请
-            axios.post('{% url "gallery:api_signup" %}', {
+            axios.post('{% url "gallery:api:signup" %}', {
                 'username': this.username,
                 'password': this.password,
             })

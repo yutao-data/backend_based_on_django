@@ -7,7 +7,7 @@
                 <tr>
                     <th class="mdl-data-table__cell--non-numeric">Username</th>
                     <th class="mdl-data-table__cell--non-numeric">Accept</th>
-                    <th class="mdl-data-table__cell--non-numeric">Action</th>
+                    <th colspan="2" class="mdl-data-table__cell--non-numeric">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,14 +27,19 @@
                             <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
                                 <!-- checked 属性控制是否勾上 -->
                                 <input v-model="active" type="checkbox" class="mdl-checkbox__input"
-                                       {% if user.is_activited %}checked{% endif %}
                                 >
                             </label>
                         </td>
                         <!-- 按钮 -->
                         <td class="mdl-data-table__cell--non-numeric">
-                            <button v-on:click="confirm_onclick" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                            <button v-on:click="confirm_onclick" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
                                 [[ confirm_text ]]
+                            </button>
+                        </td>
+                        <!-- 删除用户按钮 -->
+                        <td class="mdl-data-table__cell--non-numeric">
+                            <button v-on:click="delete_onclick" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                                [[ delete_text ]]
                             </button>
                         </td>
                     </tr>
@@ -46,6 +51,7 @@
                             active: {% if user.is_active %}true{% else %}false{% endif %},
                             hidden: false,
                             confirm_text: 'Confirm',
+                            delete_text: 'Delete User',
                         },
                         methods: {
                             confirm_onclick: function () {
@@ -73,6 +79,30 @@
                                     // 动画交互效果
                                     progress_bar_app.hidden = true
                                     user_app_{{ user.pk }}.confirm_text = 'Confirm'
+                                })
+                            },
+                            delete_onclick: function () {
+                                // 动画效果
+                                progress_bar_app.hidden = false
+                                this.delete_text = 'Pending...'
+
+                                axios.post('{% url "gallery:api:delete_user" %}', {
+                                    pk: '{{ user.pk }}',
+                                })
+                                .then(function (response) {
+                                    showSnackbar('Deleted User ' + {{ user.pk }})
+                                    user_app_{{ user.pk }}.hidden = true
+                                })
+                                .catch(function (error) {
+                                    if (error.response) {
+                                        showSnackbar(error.response.data['error_message'])
+                                    } else {
+                                        showSnackbar(error)
+                                    }
+                                })
+                                .finally(function () {
+                                    progress_bar_app.hidden = true
+                                    user_app_{{ user.pk }}.delte_text = 'Delete User'
                                 })
                             }
                         },

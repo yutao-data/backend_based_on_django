@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, reverse
+from django.http import HttpResponseRedirect
 from django.views import View
-from django.contrib.auth.models import User
+from django.contrib.auth import logout
 import copy
 
 
@@ -31,3 +32,12 @@ class SignupView(View):
     @staticmethod
     def get(request):
         return render(request, 'gallery/signup.html', BASIC_TEXT)
+
+
+# 简单的HTTP登出视图
+class LogoutView(View):
+
+    @staticmethod
+    def get(request):
+        logout(request)
+        return HttpResponseRedirect(reverse('gallery:index'))

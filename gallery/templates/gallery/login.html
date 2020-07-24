@@ -92,7 +92,7 @@ var login_app = new Vue({
             // 显示进度条
             progress_bar_app.hidden = false
             // 发送登陆API请求
-            axios.post("{% url 'gallery:api_login' %}", {
+            axios.post("{% url 'gallery:api:login' %}", {
                 'username': this.username,
                 'password': this.password,
             })

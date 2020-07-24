@@ -100,8 +100,6 @@ class APISignUpManagementView(APIView):
             user_status = NullBooleanField()
         form = APISignUpManagementForm(data)
         if not form.is_valid():
-            print(form)
-            print(data)
             raise FormValidError
         cleaned_data = form.clean()
 
@@ -115,4 +113,20 @@ class APISignUpManagementView(APIView):
             # 需不需要删除账户？
             # user.delete()
             pass
+        return get_success_response()
+
+
+class APIDeleteUserView(APIView):
+    @staticmethod
+    def my_post(request, data):
+
+        class APIDeleteUserForm(Form):
+            pk = IntegerField()
+        form = APIDeleteUserForm(data)
+        if not form.is_valid():
+            raise FormValidError
+        cleaned_data = form.clean()
+
+        user = User.objects.get(pk=cleaned_data['pk'])
+        user.delete()
         return get_success_response()
