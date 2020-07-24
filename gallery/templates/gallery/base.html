@@ -33,7 +33,7 @@
                 <nav class="mdl-navigation mdl-typography--body-1-force-preferred-font">
                     <a class="mdl-navigation__link is-active" href="{% url 'gallery:index' %}">Home Page</a>
                     {% if request.user.is_authenticated %}
-                        <a class="mdl-navigation__link" href="contact.html">{{ request.user.username }}: Dashboard</a>
+                        <a class="mdl-navigation__link" href="{% url 'gallery:dashboard' %}">{{ request.user.username }}: Dashboard</a>
                         <a id="logout_div" v-on:click="logout_func" class="mdl-navigation__link" href="#">[[ text ]]</a>
                         <script>
                         // 登出功能
