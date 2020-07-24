@@ -50,7 +50,7 @@
                         data: {
                             active: {% if user.is_active %}true{% else %}false{% endif %},
                             hidden: false,
-                            confirm_text: 'Confirm',
+                            confirm_text: 'Save',
                             delete_text: 'Delete User',
                         },
                         methods: {
@@ -78,7 +78,7 @@
                                 .finally(function () {
                                     // 动画交互效果
                                     progress_bar_app.hidden = true
-                                    user_app_{{ user.pk }}.confirm_text = 'Confirm'
+                                    user_app_{{ user.pk }}.confirm_text = 'Save'
                                 })
                             },
                             delete_onclick: function () {
