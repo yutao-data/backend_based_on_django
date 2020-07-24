@@ -3,7 +3,7 @@ from django.views import View
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.forms import Form, CharField
+from django.forms import Form, CharField, IntegerField, NullBooleanField
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from .error import Error, JsonError, FormValidError, AuthenticateError
@@ -88,4 +88,31 @@ class APISignupView(APIView):
         # 设置用户可活动状态为False等待审核
         user.is_active = False
         user.save()
+        return get_success_response()
+
+
+class APISignUpManagementView(APIView):
+    @staticmethod
+    def my_post(request, data):
+
+        class APISignUpManagementForm(Form):
+            pk = IntegerField()
+            user_status = NullBooleanField()
+        form = APISignUpManagementForm(data)
+        if not form.is_valid():
+            print(form)
+            print(data)
+            raise FormValidError
+        cleaned_data = form.clean()
+
+        # 设置用户状态
+
+        user = User.objects.get(pk=cleaned_data['pk'])
+        user.is_active = cleaned_data['user_status']
+        if cleaned_data['user_status']:
+            user.save()
+        else:
+            # 需不需要删除账户？
+            # user.delete()
+            pass
         return get_success_response()

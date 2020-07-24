@@ -1,0 +1,85 @@
+{% extends "gallery/dashboard/base.html" %}
+
+{% block content %}
+    <div class="mdl-cell mdl-cell--12-col mdl-grid">
+        <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+            <thead>
+                <tr>
+                    <th class="mdl-data-table__cell--non-numeric">Username</th>
+                    <th class="mdl-data-table__cell--non-numeric">Accept</th>
+                    <th class="mdl-data-table__cell--non-numeric">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!--
+                此处
+                Django的模板系统生成用户列表和Vue脚本
+                一个用户对应一个Vue顶层app
+                更改用户信息的行为由Vue和axios配合完成
+                似乎没有更好的方法了
+                QAQ
+                -->
+                {% for user in user_list %}
+                    <!-- html元素id示例：user_div_39 -->
+                    <tr id="user_div_{{ user.pk }}" v-bind:hidden="hidden">
+                        <td class="mdl-data-table__cell--non-numeric">{{ user.username }}</td>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                                <!-- checked 属性控制是否勾上 -->
+                                <input v-model="active" type="checkbox" class="mdl-checkbox__input"
+                                       {% if user.is_activited %}checked{% endif %}
+                                >
+                            </label>
+                        </td>
+                        <!-- 按钮 -->
+                        <td class="mdl-data-table__cell--non-numeric">
+                            <button v-on:click="confirm_onclick" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                                [[ confirm_text ]]
+                            </button>
+                        </td>
+                    </tr>
+                    <script>
+                    var user_app_{{ user.pk }} = new Vue({
+                        delimiters: ['[[', ']]'],
+                        el: '#user_div_{{ user.pk }}',
+                        data: {
+                            active: {% if user.is_active %}true{% else %}false{% endif %},
+                            hidden: false,
+                            confirm_text: 'Confirm',
+                        },
+                        methods: {
+                            confirm_onclick: function () {
+                                // 动画交互效果
+                                progress_bar_app.hidden = false
+                                this.confirm_text = 'Pending...'
+
+                                axios.post('{% url "gallery:api:signup_management" %}', {
+                                    pk: '{{ user.pk }}',
+                                    user_status: this.active,
+                                })
+                                .then(function (response) {
+                                    showSnackbar('User {{ user.username }} set to ' + user_app_{{ user.pk }}.active)
+                                    // 隐藏成功的条目
+                                    // user_app_{{ user.pk }}.hidden = true
+                                })
+                                .catch(function (error) {
+                                    if (error.response) {
+                                        showSnackbar(error.response.data['error_message'])
+                                    } else {
+                                        showSnackbar(error)
+                                    }
+                                })
+                                .finally(function () {
+                                    // 动画交互效果
+                                    progress_bar_app.hidden = true
+                                    user_app_{{ user.pk }}.confirm_text = 'Confirm'
+                                })
+                            }
+                        },
+                    })
+                    </script>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
