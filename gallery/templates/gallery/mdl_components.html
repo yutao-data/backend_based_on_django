@@ -1,0 +1,82 @@
+<!-- MDL 风格的消息提示框 snackbar -->
+<div id="snackbar" class="mdl-js-snackbar mdl-snackbar">
+    <div class="mdl-snackbar__text"></div>
+    <button class="mdl-snackbar__action" type="button"></button>
+</div>
+<script>
+    var snackbarContainer = document.querySelector('#snackbar')
+    var showSnackbar = function (text) {
+        snackbarContainer.MaterialSnackbar.showSnackbar({
+            message: text,
+        })
+    }
+</script>
+
+<!-- MDL 风格的对话框 dialog -->
+<dialog id="dialog_div" class="mdl-dialog">
+    <p class="mdl-dialog__title">[[ heading ]]</p>
+    <div class="mdl-dialog__content">
+        <p>
+            [[ message ]]
+        </p>
+    </div>
+    <div class="mdl-dialog__actions">
+        <button v-on:click="dialog_close_onclick" type="button" class="mdl-button mdl-button--raised mdl-button--colored">
+            Finish
+        </button>
+    </div>
+</dialog>
+<script>
+    var dialog_app = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#dialog_div',
+        data: {
+            heading: '',
+            message: '',
+        },
+        methods: {
+            show_dialog: function () {
+                this.$el.showModal()
+            },
+            dialog_close_onclick: function () {
+                this.$el.close()
+                if (this.finish_fallback) {
+                    this.finish_fallback()
+                }
+            },
+        }
+    })
+    var showDialog = function (heading, message) {
+        dialog_app.heading = heading
+        dialog_app.message = message
+        dialog_app.show_dialog()
+    }
+    var errorDialog = function (error) {
+        if (error.response) {
+            showDialog(
+                error.response.data['error_type'],
+                error.response.data['error_message']
+            )
+        } else {
+            showDialog(
+                "Error",
+                error
+            )
+        }
+    }
+</script>
+
+<!-- MDL 风格位于顶部的加载进度条 -->
+<div id="progress_bar" v-bind:hidden="hidden" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+<script>
+    // 调用方法：
+    // progress_bar_app.hidden = false // 显示进度条
+    // progress_bar_app.hidden = true  // 隐藏进度条
+    var progress_bar_app = new Vue({
+        delimiters: ['[[', ']]'],
+        el: '#progress_bar',
+        data: {
+            hidden: true
+        }
+    })
+</script>

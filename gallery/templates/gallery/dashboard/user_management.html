@@ -55,13 +55,7 @@
                         showSnackbar('Action Success')
                     })
                     .catch(function (error) {
-                        console.log(error)
-                        if (error.response) {
-                            showDialog(error.response.data['error_type'],
-                                error.response.data['error_message'])
-                        } else {
-                            showDialog('Network Error', error)
-                        }
+                        errorDialog(error)
                     })
                     .finally(function () {
                         progress_bar_app.hidden = true

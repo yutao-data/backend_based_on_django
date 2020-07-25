@@ -101,12 +101,9 @@ var login_app = new Vue({
                 window.location = '{% url "gallery:index" %}'
             })
             .catch(function (error) {
-                if (error.response) {
-                    login_app.error_message_text = error.response.data['error_message']
-                } else {
-                    login_app.error_message_text = error
-                }
-                login_app.error_message_hidden = false
+                errorDialog(error)
+            })
+            .finally(function () {
                 // 关闭进度条
                 progress_bar_app.hidden = true
             })
