@@ -12,6 +12,12 @@ class Error(Exception):
         return self.message
 
 
+# 未定义API表单
+class APIFormNotDefine(Error):
+    def __init__(self, message='API form not define', status=500):
+        super().__init__(message, status)
+
+
 # Json 解码错误就抛出这个异常
 class JsonError(Error):
     def __init__(self, message='Json decode error', status=400):
