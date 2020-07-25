@@ -43,10 +43,10 @@
     <div class="demo-separator mdl-cell--1-col"></div>
 
         <!-- 用户注册审批卡片 -->
-        {% if not_active_user_list %}
-            <div class="demo-options mdl-card mdl-color--deep-purple-500 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--3-col-tablet mdl-cell--12-col-desktop">
-                <div class="mdl-card__supporting-text mdl-color-text--blue-grey-50">
-                    <h3>SignUp Management</h3>
+        <div class="demo-options mdl-card mdl-color--deep-purple-500 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--3-col-tablet mdl-cell--12-col-desktop">
+            <div class="mdl-card__supporting-text mdl-color-text--blue-grey-50">
+                <h3>User Management</h3>
+                {% if not_active_user_list %}
                     <p>Here are some users waiting for Signup, please check.</p>
                     <ul class="mdl-list">
                         <!-- 循环打印出用户名 -->
@@ -59,13 +59,16 @@
                             </li>
                         {% endfor %}
                     </ul>
-                </div>
-                <div class="mdl-card__actions mdl-card--border">
-                    <a href="{% url 'gallery:dashboard:signup_management' %}" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--blue-grey-50">Go to checkout</a>
-                    <div class="mdl-layout-spacer"></div>
-                </div>
+                {% else %}
+                    <br>
+                    <p>Nothing here</p>
+                {% endif %}
             </div>
-        {% endif %}
+            <div class="mdl-card__actions mdl-card--border">
+                <a href="{% url 'gallery:dashboard:user_management' %}" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--blue-grey-50">Go to checkout</a>
+                <div class="mdl-layout-spacer"></div>
+            </div>
+        </div>
 
     </div>
 {% endblock %}

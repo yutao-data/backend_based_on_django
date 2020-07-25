@@ -112,7 +112,7 @@ class APISignupView(APIView):
         return get_success_response()
 
 
-class APISignUpManagementView(APIView):
+class APIUserManagementView(APIView):
     class MyForm(Form):
         pk = IntegerField()
         user_status = NullBooleanField()
@@ -127,7 +127,7 @@ class APISignUpManagementView(APIView):
 
 
 # 获取等待注册审核的用户信息
-class APISignUpManagementUserListView(APIView):
+class APIUserManagementUserListView(APIView):
     need_form = False
 
     @staticmethod
@@ -143,7 +143,6 @@ class APISignUpManagementUserListView(APIView):
                 'user_status': user.is_active,
             })
         return JsonResponse({'user_list': user_list})
-
 
 
 class APIDeleteUserView(APIView):

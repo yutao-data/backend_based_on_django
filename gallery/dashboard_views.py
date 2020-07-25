@@ -23,13 +23,13 @@ class DashboardView(View):
         return render(request, 'gallery/dashboard/index.html', view_dict)
 
 
-# 管理注册用户的视图
-class SignUpManagement(View):
+# 管理用户的视图
+class UserManagement(View):
 
     @staticmethod
     def get(request):
         view_dict = {
-            'title': 'SignUp Management',
+            'title': 'User Management',
             'user_list': [],
         }
         # 遍历所有用户

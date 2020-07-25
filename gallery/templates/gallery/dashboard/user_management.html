@@ -46,7 +46,7 @@
                 save_onclick: function (user) {
                     // 交互效果
                     progress_bar_app.show = true
-                    axios.post('{% url "gallery:api:signup_management" %}', {
+                    axios.post('{% url "gallery:api:user_management" %}', {
                         pk: user.pk,
                         user_status: user.user_status,
                     })
@@ -63,7 +63,7 @@
                 }
             },
             created: function () {
-                axios.post('{% url "gallery:api:signup_management_user_list" %}', {})
+                axios.post('{% url "gallery:api:user_management_user_list" %}', {})
                 .then(function (response) {
                     console.log(response)
                     user_management_app.user_list = response.data['user_list']
