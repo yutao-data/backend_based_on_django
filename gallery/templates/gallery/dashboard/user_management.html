@@ -2,114 +2,79 @@
 
 {% block content %}
     <div class="mdl-cell mdl-cell--12-col mdl-grid">
-        <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+        <table id="user_management_div" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
             <thead>
                 <tr>
+                    <th class="mdl-data-table__cell--non-numeric">ID</th>
                     <th class="mdl-data-table__cell--non-numeric">Username</th>
                     <th class="mdl-data-table__cell--non-numeric">Accept</th>
                     <th colspan="2" class="mdl-data-table__cell--non-numeric">Action</th>
                 </tr>
             </thead>
             <tbody>
-                <!--
-                此处
-                Django的模板系统生成用户列表和Vue脚本
-                一个用户对应一个Vue顶层app
-                更改用户信息的行为由Vue和axios配合完成
-                似乎没有更好的方法了
-                QAQ
-                -->
-                {% for user in user_list %}
-                    <!-- html元素id示例：user_div_39 -->
-                    <tr id="user_div_{{ user.pk }}" v-bind:hidden="hidden">
-                        <td class="mdl-data-table__cell--non-numeric">{{ user.username }}</td>
-                        <td class="mdl-data-table__cell--non-numeric">
-                            <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                                <!-- checked 属性控制是否勾上 -->
-                                <input v-model="active" type="checkbox" class="mdl-checkbox__input"
-                                >
-                            </label>
-                        </td>
-                        <!-- 按钮 -->
-                        <td class="mdl-data-table__cell--non-numeric">
-                            <button v-on:click="confirm_onclick" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
-                                [[ confirm_text ]]
-                            </button>
-                        </td>
-                        <!-- 删除用户按钮 -->
-                        <td class="mdl-data-table__cell--non-numeric">
-                            <button v-on:click="delete_onclick" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
-                                [[ delete_text ]]
-                            </button>
-                        </td>
-                    </tr>
-                    <script>
-                    var user_app_{{ user.pk }} = new Vue({
-                        delimiters: ['[[', ']]'],
-                        el: '#user_div_{{ user.pk }}',
-                        data: {
-                            active: {% if user.is_active %}true{% else %}false{% endif %},
-                            hidden: false,
-                            confirm_text: 'Save',
-                            delete_text: 'Delete User',
-                        },
-                        methods: {
-                            confirm_onclick: function () {
-                                // 动画交互效果
-                                progress_bar_app.hidden = false
-                                this.confirm_text = 'Pending...'
-
-                                axios.post('{% url "gallery:api:signup_management" %}', {
-                                    pk: '{{ user.pk }}',
-                                    user_status: this.active,
-                                })
-                                .then(function (response) {
-                                    showSnackbar('User {{ user.username }} set to ' + user_app_{{ user.pk }}.active)
-                                    // 隐藏成功的条目
-                                    // user_app_{{ user.pk }}.hidden = true
-                                })
-                                .catch(function (error) {
-                                    if (error.response) {
-                                        showSnackbar(error.response.data['error_message'])
-                                    } else {
-                                        showSnackbar(error)
-                                    }
-                                })
-                                .finally(function () {
-                                    // 动画交互效果
-                                    progress_bar_app.hidden = true
-                                    user_app_{{ user.pk }}.confirm_text = 'Save'
-                                })
-                            },
-                            delete_onclick: function () {
-                                // 动画效果
-                                progress_bar_app.hidden = false
-                                this.delete_text = 'Pending...'
-
-                                axios.post('{% url "gallery:api:delete_user" %}', {
-                                    pk: '{{ user.pk }}',
-                                })
-                                .then(function (response) {
-                                    showSnackbar('Deleted User ' + {{ user.pk }})
-                                    user_app_{{ user.pk }}.hidden = true
-                                })
-                                .catch(function (error) {
-                                    if (error.response) {
-                                        showSnackbar(error.response.data['error_message'])
-                                    } else {
-                                        showSnackbar(error)
-                                    }
-                                })
-                                .finally(function () {
-                                    progress_bar_app.hidden = true
-                                    user_app_{{ user.pk }}.delte_text = 'Delete User'
-                                })
-                            }
-                        },
-                    })
-                    </script>
-                {% endfor %}
+                <tr v-for="user in user_list" v-bind:key="user.pk">
+                    <td>[[ user.pk ]]</td>
+                    <td class="mdl-data-table__cell--non-numeric">[[ user.username ]]</td>
+                    <td class="mdl-data-table__cell--non-numeric">
+                        <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                            <input v-model="user.user_status" type="checkbox" class="mdl-checkbox__input">
+                            <span class="mdl-checkbox__label">Checkbox</span>
+                        </label>
+                    </td>
+                    <td class="mdl-data-table__cell--non-numeric">
+                        <button v-on:click="save_onclick(user)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+                            Save
+                        </button>
+                    </td>
+                    <td class="mdl-data-table__cell--non-numeric">
+                        <button class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
+    <script>
+        var user_management_app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#user_management_div',
+            data: {
+                user_list: [],
+            },
+            methods: {
+                save_onclick: function (user) {
+                    // 交互效果
+                    progress_bar_app.hidden = false
+                    axios.post('{% url "gallery:api:signup_management" %}', {
+                        pk: user.pk,
+                        user_status: user.user_status,
+                    })
+                    .then(function (response) {
+                        console.log(response)
+                        showSnackbar('Action Success')
+                    })
+                    .catch(function (error) {
+                        console.log(error)
+                        if (error.response) {
+                            showDialog(error.response.data['error_type'],
+                                error.response.data['error_message'])
+                        } else {
+                            showDialog('Network Error', error)
+                        }
+                    })
+                    .finally(function () {
+                        progress_bar_app.hidden = true
+                    })
+                }
+            },
+            created: function () {
+                axios.post('{% url "gallery:api:signup_management_user_list" %}', {})
+                .then(function (response) {
+                    console.log(response)
+                    user_management_app.user_list = response.data['user_list']
+                })
+            },
+        })
+    </script>
 {% endblock %}

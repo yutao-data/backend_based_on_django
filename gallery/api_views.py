@@ -122,13 +122,28 @@ class APISignUpManagementView(APIView):
         # 设置用户状态
         user = User.objects.get(pk=cleaned_data['pk'])
         user.is_active = cleaned_data['user_status']
-        if cleaned_data['user_status']:
-            user.save()
-        else:
-            # 需不需要删除账户？
-            # user.delete()
-            pass
+        user.save()
         return get_success_response()
+
+
+# 获取等待注册审核的用户信息
+class APISignUpManagementUserListView(APIView):
+    need_form = False
+
+    @staticmethod
+    def my_post(request):
+        user_list = []
+        for user in User.objects.all():
+            # 跳过管理员
+            if user.is_superuser:
+                continue
+            user_list.append({
+                'username': user.username,
+                'pk': user.pk,
+                'user_status': user.is_active,
+            })
+        return JsonResponse({'user_list': user_list})
+
 
 
 class APIDeleteUserView(APIView):

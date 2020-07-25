@@ -87,6 +87,46 @@
                 })
             }
         </script>
+        <!-- MDL 风格的对话框 dialog -->
+        <dialog id="dialog_div" class="mdl-dialog">
+            <p class="mdl-dialog__title">[[ heading ]]</p>
+            <div class="mdl-dialog__content">
+                <p>
+                    [[ message ]]
+                </p>
+            </div>
+            <div class="mdl-dialog__actions">
+                <button v-on:click="dialog_close_onclick" type="button" class="mdl-button mdl-button--raised mdl-button--colored">
+                    Finish
+                </button>
+            </div>
+        </dialog>
+        <script>
+            var dialog_app = new Vue({
+                delimiters: ['[[', ']]'],
+                el: '#dialog_div',
+                data: {
+                    heading: '',
+                    message: '',
+                },
+                methods: {
+                    show_dialog: function () {
+                        this.$el.showModal()
+                    },
+                    dialog_close_onclick: function () {
+                        this.$el.close()
+                        if (this.finish_fallback) {
+                            this.finish_fallback()
+                        }
+                    },
+                }
+            })
+            var showDialog = function (heading, message) {
+                dialog_app.heading = heading
+                dialog_app.message = message
+                dialog_app.show_dialog()
+            }
+        </script>
     </header>
     <div class="demo-drawer mdl-layout__drawer mdl-color--blue-grey-900 mdl-color-text--blue-grey-50">
         <header class="demo-drawer-header">
