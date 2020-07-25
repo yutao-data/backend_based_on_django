@@ -83,7 +83,7 @@ var signup_app = new Vue({
                 return
             }
             // 显示进度条
-            progress_bar_app.hidden = false
+            progress_bar_app.show = true
             // 提交注册申请
             axios.post('{% url "gallery:api:signup" %}', {
                 'username': this.username,
@@ -104,7 +104,7 @@ var signup_app = new Vue({
             })
             .finally(function (error) {
                 // 隐藏进度条
-                progress_bar_app.hidden = true
+                progress_bar_app.show = false
             })
         },
         check_password_match: function () {

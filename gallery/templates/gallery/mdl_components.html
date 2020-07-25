@@ -67,16 +67,16 @@
 </script>
 
 <!-- MDL 风格位于顶部的加载进度条 -->
-<div id="progress_bar" v-bind:hidden="hidden" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+<div id="progress_bar" v-show="show" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
 <script>
     // 调用方法：
-    // progress_bar_app.hidden = false // 显示进度条
-    // progress_bar_app.hidden = true  // 隐藏进度条
+    // progress_bar_app.show = true // 显示进度条
+    // progress_bar_app.show = false  // 隐藏进度条
     var progress_bar_app = new Vue({
         delimiters: ['[[', ']]'],
         el: '#progress_bar',
         data: {
-            hidden: true
+            show: false
         }
     })
 </script>

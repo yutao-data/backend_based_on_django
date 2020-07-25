@@ -46,7 +46,7 @@
                             methods: {
                                 logout_func: function () {
                                     // 显示进度条
-                                    progress_bar_app.hidden = false
+                                    progress_bar_app.show = true
                                     this.text = 'Waiting...'
                                     axios.post("{% url 'gallery:api:logout' %}", {})
                                     .then(function(response) {
@@ -61,8 +61,8 @@
                                         } else {
                                             showSnackbar(error)
                                         }
-                                        progress_bar_app.hidden = true
-                                        this.text = 'Logout'
+                                        progress_bar_app.show = false
+                                        logout_app.text = 'Logout'
                                     })
                                 }
                             }

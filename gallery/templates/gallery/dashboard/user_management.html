@@ -45,7 +45,7 @@
             methods: {
                 save_onclick: function (user) {
                     // 交互效果
-                    progress_bar_app.hidden = false
+                    progress_bar_app.show = true
                     axios.post('{% url "gallery:api:signup_management" %}', {
                         pk: user.pk,
                         user_status: user.user_status,
@@ -58,7 +58,7 @@
                         errorDialog(error)
                     })
                     .finally(function () {
-                        progress_bar_app.hidden = true
+                        progress_bar_app.show = false
                     })
                 }
             },
