@@ -108,6 +108,9 @@ class APISignupView(APIView):
         )
         # 设置用户可活动状态为False等待审核
         user.is_active = False
+
+        # 设置用户权限
+
         user.save()
         return get_success_response()
 
@@ -154,3 +157,19 @@ class APIDeleteUserView(APIView):
         user = User.objects.get(pk=cleaned_data['pk'])
         user.delete()
         return get_success_response()
+
+
+class APIGetUserType(APIView):
+    need_form = False
+
+    @staticmethod
+    def my_post(request):
+        user_type = ''
+        user_type_describe = ''
+        # 从高权限到低权限检查
+        if request.user.is_superuser:
+            user_type = 'superuser'
+        return JsonResponse({
+            'user_type': user_type,
+        })
+

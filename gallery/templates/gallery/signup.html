@@ -14,6 +14,22 @@
                     </td>
                 </tr>
                 <tr>
+                    <td class="mdl-data-table__cell--non-numeric">
+                        Sign up as:
+                    </td>
+                    <td>
+                        [[ user_type_text ]]
+                        <button id="menu-user_type" class="mdl-button mdl-js-button mdl-button--icon">
+                            <i class="material-icons">more_vert</i>
+                        </button>
+                        <ul class="mdl-menu mdl-js-menu" for="menu-user_type">
+                            <li v-on:click="" class="mdl-menu__item">Fast</li>
+                            <li class="mdl-menu__item">Medium</li>
+                            <li class="mdl-menu__item">Slow</li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
                     <td colspan="2" class="mdl-data-table__cell--non-numeric">
                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                             <input v-model="username" type="text" name="username" class="mdl-textfield__input">
