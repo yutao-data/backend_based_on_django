@@ -23,9 +23,10 @@
                             <i class="material-icons">more_vert</i>
                         </button>
                         <ul class="mdl-menu mdl-js-menu" for="menu-user_type">
-                            <li v-on:click="" class="mdl-menu__item">Fast</li>
-                            <li class="mdl-menu__item">Medium</li>
-                            <li class="mdl-menu__item">Slow</li>
+                            <li v-on:click="user_type_onclick('artist')" class="mdl-menu__item">Artist</li>
+                            <li v-on:click="user_type_onclick('teacher')" class="mdl-menu__item">Teacher</li>
+                            <li v-on:click="user_type_onclick('stuff')" class="mdl-menu__item">Stuff</li>
+                            <li v-on:click="user_type_onclick('superuser')" class="mdl-menu__item">Administrator</li>
                         </ul>
                     </td>
                 </tr>
@@ -90,6 +91,13 @@ var signup_app = new Vue({
         re_password: '',
         signup_form_seen: true,
         finished_message_seen: false,
+        user_type: '', // 用户类型，用于api提交
+        user_type_dict: { // 描述文本在这里
+            'artist': 'Can upload models',
+            'teacher': 'Can modify the scene and all items in it',
+            'stuff': 'Can control all scene',
+            'superuser': 'Site administrator',
+        },
     },
     methods: {
         signup_button_onclick: function () {
@@ -104,6 +112,7 @@ var signup_app = new Vue({
             axios.post('{% url "gallery:api:signup" %}', {
                 'username': this.username,
                 'password': this.password,
+                'user_type': this.user_type,
             })
             .then(function (response) {
                 // 隐藏表单，显示信息
@@ -133,6 +142,14 @@ var signup_app = new Vue({
             this.password_not_match_hidden= this.password === this.re_password
             return this.password_not_match_hidden
         },
+        user_type_onclick: function (user_type_selected) {
+            this.user_type = user_type_selected
+        }
+    },
+    computed: {
+        user_type_text: function () {
+            return this.user_type_dict[this.user_type]
+        }
     },
     watch: {
         password:function () {
