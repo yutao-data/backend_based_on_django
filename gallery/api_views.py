@@ -110,6 +110,20 @@ class APISignupView(APIView):
         user.is_active = False
 
         # 设置用户权限
+        # 用户类型有四种: artist/teacher/stuff/superuser
+        # 分别对应展品上传者/布展老师/展览管理员/站点管理员（超级用户user.is_superuser=true）
+        user_type = cleaned_data['user_type']
+        if user_type == 'artist':
+            pass
+        elif user_type == 'teacher':
+            pass
+        elif user_type == 'stuff':
+            pass
+        elif user_type == 'stuff':
+            pass
+        else:
+            # 用户提交了未定义的类型，引发一个错误
+            raise FormValidError
 
         user.save()
         return get_success_response()
