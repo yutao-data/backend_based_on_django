@@ -1,74 +1,76 @@
 {% extends "gallery/dashboard/base.html" %}
 
 {% block content %}
-    <div class="mdl-cell mdl-cell--12-col mdl-grid">
-        <table id="user_management_div" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
-            <thead>
-                <tr>
-                    <th class="mdl-data-table__cell--non-numeric">ID</th>
-                    <th class="mdl-data-table__cell--non-numeric">Username</th>
-                    <th class="mdl-data-table__cell--non-numeric">Accept</th>
-                    <th colspan="2" class="mdl-data-table__cell--non-numeric">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="user in user_list" v-bind:key="user.pk">
-                    <td>[[ user.pk ]]</td>
-                    <td class="mdl-data-table__cell--non-numeric">[[ user.username ]]</td>
-                    <td class="mdl-data-table__cell--non-numeric">
-                        <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                            <input v-model="user.user_status" type="checkbox" class="mdl-checkbox__input">
-                            <span class="mdl-checkbox__label">Checkbox</span>
-                        </label>
-                    </td>
-                    <td class="mdl-data-table__cell--non-numeric">
-                        <button v-on:click="save_onclick(user)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
-                            Save
-                        </button>
-                    </td>
-                    <td class="mdl-data-table__cell--non-numeric">
-                        <button class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
-                            Delete
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <script>
-        var user_management_app = new Vue({
-            delimiters: ['[[', ']]'],
-            el: '#user_management_div',
-            data: {
-                user_list: [],
-            },
-            methods: {
-                save_onclick: function (user) {
-                    // 交互效果
-                    progress_bar_app.show = true
-                    axios.post('{% url "gallery:api:user_management" %}', {
-                        pk: user.pk,
-                        user_status: user.user_status,
-                    })
+    <div class="mdl-grid demo-content">
+        <div class="mdl-cell mdl-cell--12-col mdl-grid">
+            <table id="user_management_div" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                <thead>
+                    <tr>
+                        <th class="mdl-data-table__cell--non-numeric">ID</th>
+                        <th class="mdl-data-table__cell--non-numeric">Username</th>
+                        <th class="mdl-data-table__cell--non-numeric">Accept</th>
+                        <th colspan="2" class="mdl-data-table__cell--non-numeric">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="user in user_list" v-bind:key="user.pk">
+                        <td>[[ user.pk ]]</td>
+                        <td class="mdl-data-table__cell--non-numeric">[[ user.username ]]</td>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+                                <input v-model="user.user_status" type="checkbox" class="mdl-checkbox__input">
+                                <span class="mdl-checkbox__label">Checkbox</span>
+                            </label>
+                        </td>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            <button v-on:click="save_onclick(user)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+                                Save
+                            </button>
+                        </td>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            <button class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <script>
+            var user_management_app = new Vue({
+                delimiters: ['[[', ']]'],
+                el: '#user_management_div',
+                data: {
+                    user_list: [],
+                },
+                methods: {
+                    save_onclick: function (user) {
+                        // 交互效果
+                        progress_bar_app.show = true
+                        axios.post('{% url "gallery:api:user_management" %}', {
+                            pk: user.pk,
+                            user_status: user.user_status,
+                        })
+                        .then(function (response) {
+                            console.log(response)
+                            showSnackbar('Action Success')
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                    }
+                },
+                created: function () {
+                    axios.post('{% url "gallery:api:user_management_user_list" %}', {})
                     .then(function (response) {
                         console.log(response)
-                        showSnackbar('Action Success')
+                        user_management_app.user_list = response.data['user_list']
                     })
-                    .catch(function (error) {
-                        errorDialog(error)
-                    })
-                    .finally(function () {
-                        progress_bar_app.show = false
-                    })
-                }
-            },
-            created: function () {
-                axios.post('{% url "gallery:api:user_management_user_list" %}', {})
-                .then(function (response) {
-                    console.log(response)
-                    user_management_app.user_list = response.data['user_list']
-                })
-            },
-        })
-    </script>
+                },
+            })
+        </script>
+    </div>
 {% endblock %}

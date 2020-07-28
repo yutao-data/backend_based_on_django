@@ -167,6 +167,9 @@ class APIUserManagementUserListView(APIView):
             # 跳过管理员
             if user.is_superuser:
                 continue
+            # 跳过匿名帐号
+            if user.username == 'AnonymousUser':
+                continue
             user_list.append({
                 'username': user.username,
                 'pk': user.pk,
