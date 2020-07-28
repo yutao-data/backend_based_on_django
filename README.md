@@ -27,7 +27,7 @@
     2. 删除对应scene.group的object权限
 - 结构
     - 普通用户artist不属于任何组，他们只有自己展品的object权限
-    - 老师teacher属于scene.group组，该组拥有scene内所有item的object权限
+    - 老师teacher属于scene.group组，该组拥有scene内所有item的object权限，和对应scene的object权限
     - 策展管理员stuff拥有item和scene的全局权限，可以管理所有物体
     - 站点管理员superuser / Site Administrator，is_superuser属性为True，可以登陆django.contrib.admin面板控制整个网站
 

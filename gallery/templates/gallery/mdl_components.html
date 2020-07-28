@@ -53,16 +53,18 @@
     }
     var errorDialog = function (error) {
         if (error.response) {
-            showDialog(
-                error.response.data['error_type'],
-                error.response.data['error_message']
-            )
-        } else {
-            showDialog(
-                "Error",
-                error
-            )
+            if (error.response.data['error_type'] && error.response.data['error_message']) {
+                showDialog(
+                    error.response.data['error_type'],
+                    error.response.data['error_message']
+                )
+                return
+            }
         }
+        showDialog(
+            "Error",
+            error
+        )
     }
 </script>
 

@@ -3,10 +3,12 @@ from django.views import View
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.forms import Form, CharField, IntegerField, NullBooleanField
+from django.forms import Form, CharField, IntegerField, NullBooleanField, ModelChoiceField
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from .error import Error, JsonError, FormValidError, AuthenticateError, APIFormNotDefine
+from .models import Scene
+from guardian.shortcuts import assign_perm
 from django.contrib.auth.decorators import login_required
 
 MAX_CHAR_LENGTH = 32
@@ -115,13 +117,23 @@ class APISignupView(APIView):
         # 分别对应展品上传者/布展老师/展览管理员/站点管理员（超级用户user.is_superuser=true）
         user_type = cleaned_data['user_type']
         if user_type == 'artist':
+            # 普通用户artist不属于任何组，他们只有自己展品的object权限
             pass
         elif user_type == 'teacher':
+            # 老师teacher属于scene.group组，该组拥有scene内所有item的object权限，和对应scene的object权限
             pass
         elif user_type == 'stuff':
-            pass
-        elif user_type == 'stuff':
-            pass
+            # 策展管理员stuff拥有item和scene的全局权限，可以管理所有物体
+            assign_perm('gallery.view_item', user)
+            assign_perm('gallery.add_item', user)
+            assign_perm('gallery.change_item', user)
+            assign_perm('gallery.delete_item', user)
+            assign_perm('gallery.view_scene', user)
+            assign_perm('gallery.add_scene', user)
+            assign_perm('gallery.change_scene', user)
+            assign_perm('gallery.delete_scene', user)
+        elif user_type == 'superuser':
+            user.is_superuser = True
         else:
             # 用户提交了未定义的类型，引发一个错误
             raise FormValidError
@@ -188,3 +200,21 @@ class APIGetUserType(APIView):
             'user_type': user_type,
         })
 
+
+# 获取所有场景的用户组信息
+class APIGetTeacherGroupList(APIView):
+    need_form = False
+
+    @staticmethod
+    def my_post(request):
+        teacher_group_list = []
+        for scene in Scene.objects.all():
+            if scene.group:
+                teacher_group = {
+                    'pk': scene.group.pk,
+                    'name': scene.group.name,
+                }
+                teacher_group_list.append(teacher_group)
+        return JsonResponse({
+            'teacher_group_list': teacher_group_list,
+        })

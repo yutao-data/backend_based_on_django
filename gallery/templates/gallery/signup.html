@@ -4,7 +4,7 @@
 {% block content %}
 
     <div id="signup_table" class="mdl-cell mdl-grid" style="width: max-content; margin: auto;">
-        <table v-if="signup_form_seen" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+        <table v-show="signup_form_seen" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
             <tbody>
                 <tr>
                     <td colspan="2" class="mdl-data-table__cell--non-numeric">
@@ -13,21 +13,43 @@
                         </div>
                     </td>
                 </tr>
+
                 <tr>
                     <td class="mdl-data-table__cell--non-numeric">
                         Sign up as:
                     </td>
                     <td>
-                        [[ user_type_text ]]
-                        <button id="menu-user_type" class="mdl-button mdl-js-button mdl-button--icon">
-                            <i class="material-icons">more_vert</i>
-                        </button>
-                        <ul class="mdl-menu mdl-js-menu" for="menu-user_type">
-                            <li v-on:click="user_type_onclick('artist')" class="mdl-menu__item">Artist</li>
-                            <li v-on:click="user_type_onclick('teacher')" class="mdl-menu__item">Teacher</li>
-                            <li v-on:click="user_type_onclick('stuff')" class="mdl-menu__item">Stuff</li>
-                            <li v-on:click="user_type_onclick('superuser')" class="mdl-menu__item">Administrator</li>
-                        </ul>
+                        <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="select-user_type-artist">
+                            <input class="mdl-radio__button" id="select-user_type-artist" v-model="user_type" type="radio" value="artist">
+                            <span class="mdl-radio__label">Artist</span>
+                        </label>
+                        <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="select-user_type-teacher">
+                            <input class="mdl-radio__button" id="select-user_type-teacher" v-model="user_type" type="radio" value="teacher">
+                            <span class="mdl-radio__label">Teacher</span>
+                        </label>
+                        <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="select-user_type-stuff">
+                            <input class="mdl-radio__button" id="select-user_type-stuff" v-model="user_type" type="radio" value="stuff">
+                            <span class="mdl-radio__label">Stuff</span>
+                        </label>
+                        <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="select-user_type-admin">
+                            <input class="mdl-radio__button" id="select-user_type-admin" v-model="user_type" type="radio" value="superuser">
+                            <span class="mdl-radio__label">Admin</span>
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                        Describe: [[ user_type_text ]]
+                    </td>
+                </tr>
+                <tr v-show="teacher_group_show">
+                    <td class="mdl-data-table__cell--non-numeric">
+                        Belong to scene:
+                    </td>
+                    <td>
+                        <select v-for="teacher_group in teacher_group_list" v-model="teacher_group_pk">
+                            <option v-bind:value="teacher_group.pk">[[ teacher_group.name ]]</option>
+                        </select>
                     </td>
                 </tr>
                 <tr>
@@ -54,9 +76,9 @@
                         </div>
                     </td>
                 </tr>
-                <tr v-bind:hidden="password_not_match_hidden">
+                <tr v-show="error_hint_show">
                     <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                        Your Password Don't Match!
+                        [[ error_hint_text ]]
                     </td>
                 </tr>
                 <tr>
@@ -73,7 +95,7 @@
                 </tr>
             </tbody>
         </table>
-        <p v-if="finished_message_seen">
+        <p v-show="finished_message_seen">
             Request submitted successfully.
         </p>
     </div>
@@ -85,7 +107,8 @@ var signup_app = new Vue({
     delimiters: ['[[', ']]'],
     el: '#signup_table',
     data: {
-        password_not_match_hidden: true,
+        error_hint_show: false,
+        error_hint_text: '',
         username: '',
         password: '',
         re_password: '',
@@ -98,12 +121,22 @@ var signup_app = new Vue({
             'stuff': 'Can control all scene',
             'superuser': 'Site administrator',
         },
+        teacher_group_text: '',
+        teacher_group_list: [],
+        teacher_group_pk: null,
     },
     methods: {
         signup_button_onclick: function () {
 
             // 检查密码匹配
             if (!this.check_password_match()) {
+                return
+            }
+            // 检查有无选中 teacher 对应的 scene
+            if (this.user_type === 'teacher' && this.teacher_group_pk == null) {
+                console.log('reached')
+                this.error_hint_text = 'Please select belong to which scene!'
+                this.error_hint_show = true
                 return
             }
             // 显示进度条
@@ -113,6 +146,7 @@ var signup_app = new Vue({
                 'username': this.username,
                 'password': this.password,
                 'user_type': this.user_type,
+                'teacher_group_pk': this.teacher_group_pk,
             })
             .then(function (response) {
                 // 隐藏表单，显示信息
@@ -139,17 +173,27 @@ var signup_app = new Vue({
             }
             // 如果密码相匹配则设置this.password_not_match_hidden为true隐藏提示
             // 反之亦然
-            this.password_not_match_hidden= this.password === this.re_password
-            return this.password_not_match_hidden
+            if (this.password !== this.re_password) {
+                this.error_hint_text = 'Your password do not match!'
+                this.error_hint_show = true
+                return false
+            }
+            // 密码检查通过
+            this.error_hint_show = false
+            return true
         },
-        user_type_onclick: function (user_type_selected) {
-            this.user_type = user_type_selected
+        teacher_group_onclick: function (teacher_group_selected) {
+            this.teacher_group_pk = teacher_group_selected.pk
+            this.teacher_group_text = teacher_group_selected.name
         }
     },
     computed: {
         user_type_text: function () {
             return this.user_type_dict[this.user_type]
-        }
+        },
+        teacher_group_show: function () {
+            return this.user_type === 'teacher';
+        },
     },
     watch: {
         password:function () {
@@ -158,7 +202,20 @@ var signup_app = new Vue({
         re_password: function () {
             this.check_password_match()
         },
-    }
+    },
+    created: function () {
+        progress_bar_app.show = true
+        axios.post('{% url "gallery:api:get_teacher_group_list" %}', {})
+        .then(function (response) {
+            signup_app.teacher_group_list = response.data['teacher_group_list']
+        })
+        .catch(function (error) {
+            errorDialog(error)
+        })
+        .finally(function () {
+            progress_bar_app.show = false
+        })
+    },
 })
 </script>
 {% endblock %}

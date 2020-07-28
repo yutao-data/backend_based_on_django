@@ -10,4 +10,5 @@ urlpatterns = [
     path('delete_user/', api_views.APIDeleteUserView.as_view(), name='delete_user'),
     path('signup_management_user_list', api_views.APIUserManagementUserListView.as_view(),
          name='user_management_user_list'),
+    path('get_teacher_group_list', api_views.APIGetTeacherGroupList.as_view(), name='get_teacher_group_list'),
 ]
