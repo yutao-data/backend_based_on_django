@@ -194,9 +194,11 @@ class APIGetUserType(APIView):
 
     @staticmethod
     def my_post(request):
-        user_type = ''
+        user_type = 'artist'
         user_type_describe = ''
-        # 从高权限到低权限检查
+        # 从低权限到高权限检查
+        if request.user.has_perm('gallery.change_scene'):
+            user_type = 'stuff'
         if request.user.is_superuser:
             user_type = 'superuser'
         return JsonResponse({
@@ -220,4 +222,20 @@ class APIGetTeacherGroupList(APIView):
                 teacher_group_list.append(teacher_group)
         return JsonResponse({
             'teacher_group_list': teacher_group_list,
+        })
+
+
+class APIGetAllScene(APIView):
+    need_form = False
+
+    @staticmethod
+    def my_post(request):
+        scene_list = []
+        for scene in Scene.objects.all():
+            scene_list.append({
+                'pk': scene.pk,
+                'name': scene.name,
+            })
+        return JsonResponse({
+            'scene_list': scene_list
         })

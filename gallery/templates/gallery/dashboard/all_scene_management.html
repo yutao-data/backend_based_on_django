@@ -1,0 +1,57 @@
+{% extends "gallery/dashboard/base.html" %}
+
+{% block content %}
+    <div class="mdl-grid demo-content">
+        <div class="mdl-cell mdl-cell--12-col mdl-grid">
+            <table id="all_scene_management_div" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                <thead>
+                    <tr>
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
+                            <button class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+                                Add Scene
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="mdl-data-table__cell--non-numeric">ID</th>
+                        <th class="mdl-data-table__cell--non-numeric">Scene Name</th>
+                        <th class="mdl-data-table__cell--non-numeric">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="scene in scene_list">
+                        <td>[[ scene.pk ]]</td>
+                        <td>[[ scene.name ]]</td>
+                        <td>
+                            <button class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <script>
+            var all_scene_management_app = new Vue({
+                delimiters: ['[[', ']]'],
+                el: '#all_scene_management_div',
+                data: {
+                    scene_list: [],
+                },
+                created: function () {
+                    progress_bar_app.show = true
+                    axios.post('{% url "gallery:api:get_all_scene" %}', {})
+                    .then(function (response) {
+                        all_scene_management_app.scene_list = response.data['scene_list']
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+                    .finally(function () {
+                        progress_bar_app.show = false
+                    })
+                }
+            })
+        </script>
+    </div>
+{% endblock %}

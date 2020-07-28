@@ -30,17 +30,16 @@ class UserManagement(View):
     def get(request):
         view_dict = {
             'title': 'User Management',
-            'user_list': [],
         }
-        # 遍历所有用户
-        for user in User.objects.all():
-            # 跳过超级管理员
-            if user.is_superuser:
-                continue
-            view_dict['user_list'].append(user)
-        # 检查空列表
-        if not view_dict['user_list']:
-            # 跳转回Dashboard主页
-            return HttpResponseRedirect(reverse('gallery:dashboard:index'))
         # 正常返回页面
         return render(request, 'gallery/dashboard/user_management.html', view_dict)
+
+
+class AllSceneManagementView(View):
+
+    @staticmethod
+    def get(request):
+        view_dict = {
+            'title': "All Scene Management"
+        }
+        return render(request, 'gallery/dashboard/all_scene_management.html', view_dict)
