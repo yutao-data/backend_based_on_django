@@ -65,8 +65,8 @@ class APIView(View):
 # 继承自定义的API视图
 class APILoginView(APIView):
     class MyForm(Form):
-        username = CharField()
-        password = CharField()
+        username = CharField(label='username')
+        password = CharField(label='password')
 
     @staticmethod
     def my_post(request, cleaned_data):
@@ -94,8 +94,9 @@ class APILogoutView(APIView):
 
 class APISignupView(APIView):
     class MyForm(Form):
-        username = CharField()
-        password = CharField()
+        username = CharField(label='username')
+        password = CharField(label='password')
+        user_type = CharField(label='user_type')
 
     @staticmethod
     def my_post(request, cleaned_data):
@@ -131,8 +132,8 @@ class APISignupView(APIView):
 
 class APIUserManagementView(APIView):
     class MyForm(Form):
-        pk = IntegerField()
-        user_status = NullBooleanField()
+        pk = IntegerField(label='pk')
+        user_status = NullBooleanField(label='user_status')
 
     @staticmethod
     def my_post(request, cleaned_data):
@@ -164,7 +165,7 @@ class APIUserManagementUserListView(APIView):
 
 class APIDeleteUserView(APIView):
     class MyForm(Form):
-        pk = IntegerField()
+        pk = IntegerField(label='pk')
 
     @staticmethod
     def my_post(request, cleaned_data):
