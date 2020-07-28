@@ -1,13 +1,48 @@
 {% extends "gallery/dashboard/base.html" %}
 
 {% block content %}
-    <div class="mdl-grid demo-content">
+    <div id="all_scene_management_div" class="mdl-grid demo-content">
+        <div class="mdl-cell mdl-cell--12-col mdl-grid" v-show="new_scene_show">
+            <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                <thead>
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <strong>Add New Scene</strong>
+                            </div>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input v-model="new_scene_name" type="text" name="new_scene_name" class="mdl-textfield__input">
+                                <label for="new_scene_name" class="mdl-textfield__label">New Scene Name</label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-show="new_scene_error_message_show">
+                        <td class="mdl-data-table__cell--non-numeric">
+                            [[ new_scene_error_message ]]
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button v-on:click="new_scene_onclick" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                                Add
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <div class="mdl-cell mdl-cell--12-col mdl-grid">
-            <table id="all_scene_management_div" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+            <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
                 <thead>
                     <tr>
                         <td colspan="100%" class="mdl-data-table__cell--non-numeric">
-                            <button class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+                            <button v-on:click="add_scene_onclick" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
                                 Add Scene
                             </button>
                         </td>
@@ -37,20 +72,62 @@
                 el: '#all_scene_management_div',
                 data: {
                     scene_list: [],
+                    new_scene_name: '',
+                    new_scene_show: false,
+                    new_scene_error_message_show: false,
+                    new_scene_error_message: '',
+                },
+                methods: {
+                    // 显示 add new scene 的表单
+                    add_scene_onclick: function () {
+                        this.new_scene_show = true
+                    },
+                    // 新建new scene
+                    new_scene_onclick: function () {
+                        // 先检查是否为空
+                        if (!this.new_scene_name) {
+                            this.new_scene_error_message = 'Please enter scene name'
+                            this.new_scene_error_message_show = true
+                            return
+                        }
+                        progress_bar_app.show = true
+                        axios.post('{% url "gallery:api:add_new_scene" %}', {
+                            scene_name: this.new_scene_name,
+                        })
+                        .then(function (response) {
+                            showSnackbar('Create New Scene Success')
+                            // 清空原有的表单数据
+                            all_scene_management_app.new_scene_name = ''
+                            all_scene_management_app.new_scene_error_message = ''
+                            all_scene_management_app.new_scene_error_message_show = false
+                            all_scene_management_app.new_scene_show = false
+                            // 刷新scene 列表
+                            all_scene_management_app.refresh_scene_lsit()
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                    },
+                    refresh_scene_lsit: function () {
+                        progress_bar_app.show = true
+                        axios.post('{% url "gallery:api:get_all_scene" %}', {})
+                        .then(function (response) {
+                            all_scene_management_app.scene_list = response.data['scene_list']
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                    }
                 },
                 created: function () {
-                    progress_bar_app.show = true
-                    axios.post('{% url "gallery:api:get_all_scene" %}', {})
-                    .then(function (response) {
-                        all_scene_management_app.scene_list = response.data['scene_list']
-                    })
-                    .catch(function (error) {
-                        errorDialog(error)
-                    })
-                    .finally(function () {
-                        progress_bar_app.show = false
-                    })
-                }
+                    this.refresh_scene_lsit()
+                },
             })
         </script>
     </div>

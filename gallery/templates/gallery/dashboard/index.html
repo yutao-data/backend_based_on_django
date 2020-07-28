@@ -50,8 +50,8 @@
                 <div class="mdl-card__supporting-text mdl-color-text--blue-grey-50">
                     <h3>UserManagement</h3>
                     <p v-show="user_management_text_show">[[ user_management_text ]]</p>
-                    <ul v-for="user in user_list" class="mdl-list">
-                        <li v-show="!user.user_status" class="mdl-list__item">
+                    <ul class="mdl-list">
+                        <li v-for="user in user_list" v-show="!user.user_status" class="mdl-list__item">
                             <span class="mdl-list__item-primary-content" style="color: #ece6f6">
                                 <i class="material-icons mdl-list__item-icon">person</i>
                                 [[ user.username ]]

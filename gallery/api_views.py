@@ -99,6 +99,7 @@ class APISignupView(APIView):
         username = CharField(label='username')
         password = CharField(label='password')
         user_type = CharField(label='user_type')
+        teacher_group_pk = IntegerField(label='teacher_group_pk', required=False)
 
     @staticmethod
     def my_post(request, cleaned_data):
@@ -121,7 +122,9 @@ class APISignupView(APIView):
             pass
         elif user_type == 'teacher':
             # 老师teacher属于scene.group组，该组拥有scene内所有item的object权限，和对应scene的object权限
-            pass
+            teacher_group_pk = cleaned_data['teacher_group_pk']
+            group = Group.objects.get(pk=teacher_group_pk)
+            group.user_set.add(user)
         elif user_type == 'stuff':
             # 策展管理员stuff拥有item和scene的全局权限，可以管理所有物体
             assign_perm('gallery.view_item', user)
@@ -239,3 +242,30 @@ class APIGetAllScene(APIView):
         return JsonResponse({
             'scene_list': scene_list
         })
+
+
+class APIAddNewScene(APIView):
+    class MyForm(Form):
+        scene_name = CharField(label='scene_name')
+
+    @staticmethod
+    def my_post(request, cleaned_data):
+        scene_name = cleaned_data['scene_name']
+        # 检查 scene_name 是否已经存在
+        if len(Scene.objects.filter(name=scene_name)) > 0:
+            raise Error(message='Scene name has been taken', status=403)
+        if len(Group.objects.filter(name=scene_name)) > 0:
+            raise Error(message='Scene permission group name has been taken.', status=403)
+
+        group = Group.objects.create(name=scene_name)
+        # 分配这个展厅的object权限到组里
+        assign_perm('gallery.view_scene', group)
+        assign_perm('gallery.change_scene', group)
+        # assign_perm('gallery.add_scene', group)
+        # assign_perm('gallery.delete_scene', group)
+        group.save()
+
+        scene = Scene.objects.create(name=scene_name, group=group)
+        scene.save()
+
+        return get_success_response()

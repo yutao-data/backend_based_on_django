@@ -47,8 +47,8 @@
                         Belong to scene:
                     </td>
                     <td>
-                        <select v-for="teacher_group in teacher_group_list" v-model="teacher_group_pk">
-                            <option v-bind:value="teacher_group.pk">[[ teacher_group.name ]]</option>
+                        <select v-model="teacher_group_pk">
+                            <option v-for="teacher_group in teacher_group_list" v-bind:value="teacher_group.pk">[[ teacher_group.name ]]</option>
                         </select>
                     </td>
                 </tr>
