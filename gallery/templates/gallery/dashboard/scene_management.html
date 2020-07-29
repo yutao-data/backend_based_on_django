@@ -1,0 +1,87 @@
+{% extends "gallery/dashboard/base.html" %}
+
+{% block content %}
+    <div id="scene_management_div" class="mdl-grid demo-content">
+        <div class="mdl-cell mdl-cell--12-col mdl-grid">
+            <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                <thead>
+                    <tr>
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
+                            <h4>Scene Management ID: [[ scene.pk ]]</h4>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input v-model="scene.name" class="mdl-textfield__input" id="scene_name_div" type="text">
+                                <label class="mdl-textfield__label" for="scene_name_div">Scene Name</label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
+                            <button v-on:click="save_onclick" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+                                Save
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+        var url = window.location.href //获取当前url
+        var dz_url = url.split('#')[0] //获取#/之前的字符串
+        var cs = dz_url.split('?')[1]  //获取?之后的参数字符串
+        var cs_arr = cs.split('&') //参数字符串分割为数组
+        var cs={}
+            for(var i=0;i<cs_arr.length;i++){//遍历数组，拿到json对象
+              cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
+            }
+        var scene_management_app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#scene_management_div',
+            data: {
+                scene: {
+                    pk: -1,
+                    name: '......',
+                },
+            },
+            created: function () {
+                progress_bar_app.show = true
+                axios.post('{% url "gallery:api:get_scene_information" %}', {
+                    pk: cs['pk']
+                })
+                .then(function (response) {
+                    scene_management_app.scene = response.data['scene']
+                })
+                .catch(function (error) {
+                    errorDialog(error)
+                })
+                .finally(function () {
+                    progress_bar_app.show = false
+                })
+            },
+            methods: {
+                save_onclick: function () {
+                    progress_bar_app.show = true
+                    axios.post('{% url "gallery:api:save_scene_information" %}', {
+                        pk: this.scene.pk,
+                        name: this.scene.name,
+                    })
+                    .then(function (response) {
+                        showSnackbar(response.data['message'])
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+                    .finally(function () {
+                        progress_bar_app.show = false
+                    })
+                }
+            }
+        })
+    </script>
+{% endblock %}

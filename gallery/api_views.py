@@ -269,3 +269,40 @@ class APIAddNewScene(APIView):
         scene.save()
 
         return get_success_response()
+
+
+# 获取单个Scene的详细信息
+class APIGetSceneInformation(APIView):
+    class MyForm(Form):
+        pk = IntegerField(label='pk')
+
+    @staticmethod
+    def my_post(request, cleaned_data):
+        pk = cleaned_data['pk']
+        scene = Scene.objects.get(pk=pk)
+        return JsonResponse({
+            'scene': {
+                'name': scene.name,
+                'pk': scene.pk,
+            }
+        })
+
+
+# 保存单个Scene的详细信息
+class APISaveSceneInformation(APIView):
+    class MyForm(Form):
+        pk = IntegerField(label='pk')
+        name = CharField(label='name', required=False)
+
+    @staticmethod
+    def my_post(request, cleaned_data):
+        pk = cleaned_data['pk']
+        scene = Scene.objects.get(pk=pk)
+        if cleaned_data.get('name') is not None:
+            name = cleaned_data['name']
+            scene.name = name
+
+        scene.save()
+        return get_success_response()
+
+

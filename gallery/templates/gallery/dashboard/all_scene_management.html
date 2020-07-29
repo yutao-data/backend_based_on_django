@@ -42,21 +42,31 @@
                 <thead>
                     <tr>
                         <td colspan="100%" class="mdl-data-table__cell--non-numeric">
+                            <h4>All Scene Management</h4>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
                             <button v-on:click="add_scene_onclick" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
-                                Add Scene
+                                Add New Scene
                             </button>
                         </td>
                     </tr>
                     <tr>
                         <th class="mdl-data-table__cell--non-numeric">ID</th>
                         <th class="mdl-data-table__cell--non-numeric">Scene Name</th>
-                        <th class="mdl-data-table__cell--non-numeric">Action</th>
+                        <th colspan="2" class="mdl-data-table__cell--non-numeric">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="scene in scene_list">
                         <td>[[ scene.pk ]]</td>
                         <td>[[ scene.name ]]</td>
+                        <td>
+                            <button v-on:click="modify_onclick(scene)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+                                Modify
+                            </button>
+                        </td>
                         <td>
                             <button class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
                                 Delete
@@ -66,7 +76,8 @@
                 </tbody>
             </table>
         </div>
-        <script>
+    </div>
+    <script>
             var all_scene_management_app = new Vue({
                 delimiters: ['[[', ']]'],
                 el: '#all_scene_management_div',
@@ -123,6 +134,11 @@
                         .finally(function () {
                             progress_bar_app.show = false
                         })
+                    },
+                    // 点击了 modify 按钮
+                    modify_onclick: function (scene) {
+                        progress_bar_app.show = true
+                        window.location = '{% url "gallery:dashboard:scene_management" %}' + '?pk=' + scene.pk
                     }
                 },
                 created: function () {
@@ -130,5 +146,4 @@
                 },
             })
         </script>
-    </div>
 {% endblock %}
