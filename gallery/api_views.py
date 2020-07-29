@@ -202,6 +202,8 @@ class APIGetUserType(APIView):
         # 从低权限到高权限检查
         if request.user.has_perm('gallery.change_scene'):
             user_type = 'stuff'
+        if request.user.groups.all():
+            user_type = 'teacher'
         if request.user.is_superuser:
             user_type = 'superuser'
         return JsonResponse({
