@@ -6,7 +6,14 @@ from django.utils.decorators import method_decorator
 from django.forms import Form, CharField, IntegerField, NullBooleanField, ModelChoiceField
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
-from .error import Error, JsonError, FormValidError, AuthenticateError, APIFormNotDefine
+from .error import (
+    Error,
+    JsonError,
+    FormValidError,
+    AuthenticateError,
+    APIFormNotDefine,
+    NoPermission,
+)
 from .models import Scene
 from guardian.shortcuts import assign_perm
 from django.contrib.auth.decorators import login_required
@@ -197,18 +204,24 @@ class APIGetUserType(APIView):
 
     @staticmethod
     def my_post(request):
-        user_type = 'artist'
         user_type_describe = ''
-        # 从低权限到高权限检查
-        if request.user.has_perm('gallery.change_scene'):
-            user_type = 'stuff'
-        if request.user.groups.all():
-            user_type = 'teacher'
-        if request.user.is_superuser:
-            user_type = 'superuser'
+        user_type = get_user_type(request)
         return JsonResponse({
             'user_type': user_type,
         })
+
+
+# 获取用户类型
+def get_user_type(request):
+    # 从低权限到高权限检查
+    user_type = 'artist'
+    if request.user.has_perm('gallery.change_scene'):
+        user_type = 'stuff'
+    if request.user.groups.all():
+        user_type = 'teacher'
+    if request.user.is_superuser:
+        user_type = 'superuser'
+    return user_type
 
 
 # 获取所有场景的用户组信息
@@ -235,12 +248,24 @@ class APIGetAllScene(APIView):
 
     @staticmethod
     def my_post(request):
+        user_type = get_user_type()
         scene_list = []
-        for scene in Scene.objects.all():
-            scene_list.append({
-                'pk': scene.pk,
-                'name': scene.name,
-            })
+        # 拒绝普通用户
+        if user_type == 'artist':
+            raise NoPermission
+        if user_type == 'teacher':
+            for scene in Scene.objects.all():
+                if request.user.has_perm('gallery.change_scene', scene):
+                    scene_list.append({
+                        'pk': scene.pk,
+                        'name': scene.name,
+                    })
+        if user_type == 'stuff' or user_type == 'superuser':
+            for scene in Scene.objects.all():
+                scene_list.append({
+                    'pk': scene.pk,
+                    'name': scene.name,
+                })
         return JsonResponse({
             'scene_list': scene_list
         })

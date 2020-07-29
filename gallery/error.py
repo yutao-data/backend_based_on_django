@@ -12,6 +12,11 @@ class Error(Exception):
         return self.message
 
 
+class NoPermission(Error):
+    def __init__(self, message='No Permission', status=403):
+        super().__init__(message, status)
+
+
 # 未定义API表单
 class APIFormNotDefine(Error):
     def __init__(self, message='API form not define', status=500):
