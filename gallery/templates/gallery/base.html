@@ -12,11 +12,17 @@
     <script src="{% static 'vue/vue.js' %}"></script>
     <!-- 载入 axios -->
     <script src="{% static 'axios/axios.js' %}"></script>
-
+    <style>
+        .my_background {
+            background-size: cover;
+            background-attachment: fixed;
+            background-image:url("{% static 'res/panorama.jpeg' %}");
+        }
+    </style>
 </head>
 
 
-<body>
+<body class="my_background">
     <!-- 模板样式参考自 https://getmdl.io/templates/portfolio/index.html -->
     <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
 
@@ -28,7 +34,7 @@
             </div>
 
             <!-- 顶部导航栏 -->
-            <div class="mdl-layout__header-row">
+            <div class="mdl-layout__header-row mdl-js-ripple-effect mdl-color--primary-dark mdl-js-ripple-effect--ignore-events">
                 {% block navigation %}
                 <nav class="mdl-navigation mdl-typography--body-1-force-preferred-font">
                     <a class="mdl-navigation__link is-active" href="{% url 'gallery:index' %}">Home Page</a>
