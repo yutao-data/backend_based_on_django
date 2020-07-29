@@ -280,11 +280,19 @@ class APIGetSceneInformation(APIView):
     def my_post(request, cleaned_data):
         pk = cleaned_data['pk']
         scene = Scene.objects.get(pk=pk)
+        group = scene.group
+        users = group.user_set.all()
+        user_list = []
+        for user in users:
+            user_list.append({
+                "username": user.username,
+            })
         return JsonResponse({
             'scene': {
                 'name': scene.name,
                 'pk': scene.pk,
-            }
+            },
+            'user_list': user_list,
         })
 
 

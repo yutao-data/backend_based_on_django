@@ -13,11 +13,26 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>
+                        <td colspan="100%">
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                                 <input v-model="scene.name" class="mdl-textfield__input" id="scene_name_div" type="text">
                                 <label class="mdl-textfield__label" for="scene_name_div">Scene Name</label>
                             </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            Manager List
+                        </td>
+                        <td>
+                            <ul class="mdl-list">
+                                <li v-for="user in user_list" class="mdl-list__item">
+                                    <span class="mdl-list__item-primary-content">
+                                        <i class="material-icons mdl-list__item-icon">person</i>
+                                        [[ user.username ]]
+                                    </span>
+                                </li>
+                            </ul>
                         </td>
                     </tr>
                     <tr>
@@ -48,6 +63,7 @@
                     pk: -1,
                     name: '......',
                 },
+                user_list: [],
             },
             created: function () {
                 progress_bar_app.show = true
@@ -56,6 +72,7 @@
                 })
                 .then(function (response) {
                     scene_management_app.scene = response.data['scene']
+                    scene_management_app.user_list = response.data['user_list']
                 })
                 .catch(function (error) {
                     errorDialog(error)
