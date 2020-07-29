@@ -35,11 +35,23 @@ class UserManagement(View):
         return render(request, 'gallery/dashboard/user_management.html', view_dict)
 
 
+# 所有 scene 的管理视图
 class AllSceneManagementView(View):
 
     @staticmethod
     def get(request):
         view_dict = {
-            'title': "All Scene Management"
+            'title': 'All Scene Management',
         }
         return render(request, 'gallery/dashboard/all_scene_management.html', view_dict)
+
+
+# 单个 scene 的管理视图
+class SceneManagementView(View):
+
+    @staticmethod
+    def get(request):
+        view_dict = {
+            'title': 'Scene Management',
+        }
+        return render(request, 'gallery/dashboard/scene_management.html', view_dict)
