@@ -220,7 +220,7 @@ class APIGetTeacherGroupList(APIView):
             if scene.group:
                 teacher_group = {
                     'pk': scene.group.pk,
-                    'name': scene.group.name,
+                    'name': scene.name,
                 }
                 teacher_group_list.append(teacher_group)
         return JsonResponse({
