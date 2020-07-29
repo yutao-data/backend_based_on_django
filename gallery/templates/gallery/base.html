@@ -12,11 +12,17 @@
     <script src="{% static 'vue/vue.js' %}"></script>
     <!-- 载入 axios -->
     <script src="{% static 'axios/axios.js' %}"></script>
-
+    <style>
+        .my_background {
+            background-size: cover;
+            background-attachment: fixed;
+            background-image:url("{% static 'res/panorama.jpeg' %}");
+        }
+    </style>
 </head>
 
 
-<body>
+<body class="my_background">
     <!-- 模板样式参考自 https://getmdl.io/templates/portfolio/index.html -->
     <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
 
