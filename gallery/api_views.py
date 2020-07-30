@@ -17,7 +17,12 @@ from .error import (
 from .models import Scene
 from guardian.shortcuts import assign_perm
 from django.contrib.auth.decorators import login_required
-
+# from rest_framework.views import View
+# rest_framework是个什么鬼，权限写成数组不和guardian兼容
+# 重写一堆方法写来写去403错也不爆
+# 官方文档插拔方法没个锤子用
+# 传的还不是django的HTTPResponse
+# 坑
 MAX_CHAR_LENGTH = 32
 
 
@@ -33,26 +38,38 @@ def get_success_response(message='Success'):
 class APIView(View):
     # 占位符避免no attribute 错误
     MyForm = None
-    # 是否需要表单
-    need_form = True
 
-    def post(self, requests):
+    def get(self, requests, *args, **kwargs):
+        try:
+            return self.my_get(requests, *args, **kwargs)
+        except Error as e:
+            return JsonResponse({
+                'error_type': str(e.__class__.__name__),  # 使用类名作为错误类型
+                'error_message': str(e)  # 调用e的__str__()方法，获取错误详细解释
+            }, status=e.status)
+        # 捕获未定义的错误
+        except Exception as e:
+            # 输出错误类型和错误信息到控制台
+            print('%s: %s' % (str(type(e)), str(e)))
+            return JsonResponse({
+                'error_type': 'NotDefine Error: ' + str(type(e)),
+                'error_message': str(e),
+            }, status=500)
+
+    def post(self, requests, *args, **kwargs):
         try:
             # 使用json解码
             data = json.loads(requests.body)
             # 表单未定义
-            if not self.MyForm and self.need_form:
+            if not self.MyForm:
                 raise APIFormNotDefine
-            # 如果不需要表单则不验证表单，直接返回视图
-            if not self.need_form:
-                return self.my_post(requests)
             # 验证表单
             form = self.MyForm(data)
             if not form.is_valid():
                 raise FormValidError
             cleaned_data = form.clean()
             # 调用真实的my_post函数处理请求
-            return self.my_post(requests, cleaned_data)
+            return self.my_post(requests, cleaned_data, *args, **kwargs)
 
         # 统一的错误处理，减少代码重复
         # To do: 细化错误处理
@@ -91,11 +108,9 @@ class APILoginView(APIView):
 
 
 class APILogoutView(APIView):
-    # 本视图不需要任何表单
-    need_form = False
 
     @staticmethod
-    def my_post(request):
+    def my_get(request):
         logout(request)
         request.session.flush()
         return get_success_response()
