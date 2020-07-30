@@ -183,10 +183,9 @@ class APIUserManagementView(APIView):
 
 # 获取等待注册审核的用户信息
 class APIUserManagementUserListView(APIView):
-    need_form = False
 
     @staticmethod
-    def my_post(request):
+    def my_get(request):
         user_list = []
         for user in User.objects.all():
             # 跳过管理员
@@ -215,10 +214,9 @@ class APIDeleteUserView(APIView):
 
 
 class APIGetUserType(APIView):
-    need_form = False
 
     @staticmethod
-    def my_post(request):
+    def my_get(request):
         user_type_describe = ''
         user_type = get_user_type(request)
         return JsonResponse({
@@ -241,10 +239,9 @@ def get_user_type(request):
 
 # 获取所有场景的用户组信息
 class APIGetTeacherGroupList(APIView):
-    need_form = False
 
     @staticmethod
-    def my_post(request):
+    def my_get(request):
         teacher_group_list = []
         for scene in Scene.objects.all():
             if scene.group:
@@ -259,10 +256,9 @@ class APIGetTeacherGroupList(APIView):
 
 
 class APIGetAllScene(APIView):
-    need_form = False
 
     @staticmethod
-    def my_post(request):
+    def my_get(request):
         user_type = get_user_type(request)
         scene_list = []
         # 拒绝普通用户

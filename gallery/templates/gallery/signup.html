@@ -205,7 +205,7 @@ var signup_app = new Vue({
     },
     created: function () {
         progress_bar_app.show = true
-        axios.post('{% url "gallery:api:get_teacher_group_list" %}', {})
+        axios.get('{% url "gallery:api:get_teacher_group_list" %}')
         .then(function (response) {
             signup_app.teacher_group_list = response.data['teacher_group_list']
         })

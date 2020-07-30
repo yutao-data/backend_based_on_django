@@ -64,7 +64,7 @@
                     }
                 },
                 created: function () {
-                    axios.post('{% url "gallery:api:user_management_user_list" %}', {})
+                    axios.get('{% url "gallery:api:user_management_user_list" %}')
                     .then(function (response) {
                         console.log(response)
                         user_management_app.user_list = response.data['user_list']

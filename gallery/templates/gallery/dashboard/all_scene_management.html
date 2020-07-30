@@ -124,7 +124,7 @@
                     },
                     refresh_scene_lsit: function () {
                         progress_bar_app.show = true
-                        axios.post('{% url "gallery:api:get_all_scene" %}', {})
+                        axios.get('{% url "gallery:api:get_all_scene" %}')
                         .then(function (response) {
                             all_scene_management_app.scene_list = response.data['scene_list']
                         })
