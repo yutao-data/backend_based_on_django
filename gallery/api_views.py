@@ -248,7 +248,7 @@ class APIGetAllScene(APIView):
 
     @staticmethod
     def my_post(request):
-        user_type = get_user_type()
+        user_type = get_user_type(request)
         scene_list = []
         # 拒绝普通用户
         if user_type == 'artist':
