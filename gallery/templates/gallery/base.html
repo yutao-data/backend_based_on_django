@@ -14,9 +14,12 @@
     <script src="{% static 'axios/axios.js' %}"></script>
     <style>
         .my_background {
-            background-size: cover;
-            background-attachment: fixed;
-            background-image:url("{% static 'res/panrama_city.jpeg' %}");
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position:center;
+            height:400px;
+            width:500px;
+            background-image:url("{% static 'res/gallery_panorama.jpg' %}");
         }
     </style>
 </head>
