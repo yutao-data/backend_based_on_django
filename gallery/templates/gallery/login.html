@@ -1,23 +1,25 @@
 {% extends "gallery/base.html" %}
 
 {% block content %}
-    <!-- 添加单个Cell居中的Style -->
-    <div id="login_table" class="mdl-cell mdl-grid" style="width: max-content; margin: auto;">
-        <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
-            <tbody>
+
+    <div class="mdl-grid">
+        <!-- 添加单个Cell居中的Style -->
+        <div id="login_table" class="mdl-cell mdl-grid" style="width: max-content; margin: auto;">
+            <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                <tbody>
                 {% if next %}
                     <tr>
-                    {% if user.is_authenticated %}
-                        <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                            Your account doesn't have access to this page.
-                            <br>
-                            To proceed, please login with an account that has access.
-                        </td>
-                    {% else %}
-                        <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                            Please login to see this page.
-                        </td>
-                    {% endif %}
+                        {% if user.is_authenticated %}
+                            <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                                Your account doesn't have access to this page.
+                                <br>
+                                To proceed, please login with an account that has access.
+                            </td>
+                        {% else %}
+                            <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                                Please login to see this page.
+                            </td>
+                        {% endif %}
                     </tr>
                 {% endif %}
                 <tr>
@@ -38,14 +40,15 @@
                 <tr>
                     <td colspan="2" class="mdl-data-table__cell--non-numeric">
                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <input v-model="password" v-on:keyup.enter="login_button_onclick" type="password" name="password" class="mdl-textfield__input">
+                            <input v-model="password" v-on:keyup.enter="login_button_onclick" type="password"
+                                   name="password" class="mdl-textfield__input">
                             <label for="password" class="mdl-textfield__label">Password</label>
                         </div>
                     </td>
                 </tr>
                 <tr v-bind:hidden="error_message_hidden">
                     <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                        <strong  style="color: #ff5f85">[[ error_message_text ]]<strong>
+                        <strong style="color: #ff5f85">[[ error_message_text ]]<strong>
                     </td>
                 </tr>
                 <tr>
@@ -54,62 +57,62 @@
                     </td>
                     <td>
                         <button
-                            v-on:click="login_button_onclick"
-                            class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+                                v-on:click="login_button_onclick"
+                                class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
                             Login
                         </button>
                     </td>
                 </tr>
-            </tbody>
+                </tbody>
 
-        </table>
+            </table>
+        </div>
     </div>
-
 {% endblock %}
 
 {% block script %}
-<script>
-var login_app = new Vue({
-    delimiters: ['[[', ']]'],
-    el: "#login_table",
-    data: {
-        progress_bar_hidden: true,
-        error_message_hidden: true,
-        username: '',
-        password: '',
-        error_message_text: '',
-    },
-    methods: {
-        login_button_onclick: function () {
-            // 检查用户名密码是否为空
-            if (!this.username || !this.password) {
-                this.error_message_text = 'Please input Username and Password!'
-                this.error_message_hidden = false
-                return
+    <script>
+        var login_app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: "#login_table",
+            data: {
+                progress_bar_hidden: true,
+                error_message_hidden: true,
+                username: '',
+                password: '',
+                error_message_text: '',
+            },
+            methods: {
+                login_button_onclick: function () {
+                    // 检查用户名密码是否为空
+                    if (!this.username || !this.password) {
+                        this.error_message_text = 'Please input Username and Password!'
+                        this.error_message_hidden = false
+                        return
+                    }
+                    // 关闭错误消息
+                    this.error_message_hidden = true
+                    // 显示进度条
+                    progress_bar_app.show = true
+                    // 发送登陆API请求
+                    axios.post("{% url 'gallery:api:login' %}", {
+                        'username': this.username,
+                        'password': this.password,
+                    })
+                        .then(function (response) {
+                            // 登陆成功，返回首页
+                            window.location = '{% url "gallery:index" %}'
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            // 关闭进度条
+                            progress_bar_app.show = false
+                        })
+                }
             }
-            // 关闭错误消息
-            this.error_message_hidden = true
-            // 显示进度条
-            progress_bar_app.show = true
-            // 发送登陆API请求
-            axios.post("{% url 'gallery:api:login' %}", {
-                'username': this.username,
-                'password': this.password,
-            })
-            .then(function(response) {
-                // 登陆成功，返回首页
-                window.location = '{% url "gallery:index" %}'
-            })
-            .catch(function (error) {
-                errorDialog(error)
-            })
-            .finally(function () {
-                // 关闭进度条
-                progress_bar_app.show = false
-            })
-        }
-    }
-})
+        })
 
-</script>
+    </script>
 {% endblock %}

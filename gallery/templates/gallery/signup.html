@@ -2,10 +2,10 @@
 
 
 {% block content %}
-
-    <div id="signup_table" class="mdl-cell mdl-grid" style="width: max-content; margin: auto;">
-        <table v-show="signup_form_seen" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
-            <tbody>
+    <div class="mdl-grid">
+        <div id="signup_table" class="mdl-cell mdl-grid" style="width: max-content; margin: auto;">
+            <table v-show="signup_form_seen" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                <tbody>
                 <tr>
                     <td colspan="2" class="mdl-data-table__cell--non-numeric">
                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
@@ -20,19 +20,23 @@
                     </td>
                     <td>
                         <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="select-user_type-artist">
-                            <input class="mdl-radio__button" id="select-user_type-artist" v-model="user_type" type="radio" value="artist">
+                            <input class="mdl-radio__button" id="select-user_type-artist" v-model="user_type"
+                                   type="radio" value="artist">
                             <span class="mdl-radio__label">Artist</span>
                         </label>
                         <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="select-user_type-teacher">
-                            <input class="mdl-radio__button" id="select-user_type-teacher" v-model="user_type" type="radio" value="teacher">
+                            <input class="mdl-radio__button" id="select-user_type-teacher" v-model="user_type"
+                                   type="radio" value="teacher">
                             <span class="mdl-radio__label">Teacher</span>
                         </label>
                         <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="select-user_type-stuff">
-                            <input class="mdl-radio__button" id="select-user_type-stuff" v-model="user_type" type="radio" value="stuff">
+                            <input class="mdl-radio__button" id="select-user_type-stuff" v-model="user_type"
+                                   type="radio" value="stuff">
                             <span class="mdl-radio__label">Stuff</span>
                         </label>
                         <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="select-user_type-admin">
-                            <input class="mdl-radio__button" id="select-user_type-admin" v-model="user_type" type="radio" value="superuser">
+                            <input class="mdl-radio__button" id="select-user_type-admin" v-model="user_type"
+                                   type="radio" value="superuser">
                             <span class="mdl-radio__label">Admin</span>
                         </label>
                     </td>
@@ -48,7 +52,9 @@
                     </td>
                     <td>
                         <select v-model="teacher_group_pk">
-                            <option v-for="teacher_group in teacher_group_list" v-bind:value="teacher_group.pk">[[ teacher_group.name ]]</option>
+                            <option v-for="teacher_group in teacher_group_list" v-bind:value="teacher_group.pk">[[
+                                teacher_group.name ]]
+                            </option>
                         </select>
                     </td>
                 </tr>
@@ -71,7 +77,8 @@
                 <tr>
                     <td colspan="2" class="mdl-data-table__cell--non-numeric">
                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <input v-model="re_password" type="password" name="re_password" class="mdl-textfield__input">
+                            <input v-model="re_password" type="password" name="re_password"
+                                   class="mdl-textfield__input">
                             <label for="re_password" class="mdl-textfield__label">Type Your Password Again</label>
                         </div>
                     </td>
@@ -87,135 +94,136 @@
                     </td>
                     <td>
                         <button
-                            v-on:click="signup_button_onclick"
-                            class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+                                v-on:click="signup_button_onclick"
+                                class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
                             Submit
                         </button>
                     </td>
                 </tr>
-            </tbody>
-        </table>
-        <p v-show="finished_message_seen">
-            Request submitted successfully.
-        </p>
+                </tbody>
+            </table>
+            <p v-show="finished_message_seen">
+                Request submitted successfully.
+            </p>
+        </div>
     </div>
 {% endblock %}
 
 {% block script %}
-<script>
-var signup_app = new Vue({
-    delimiters: ['[[', ']]'],
-    el: '#signup_table',
-    data: {
-        error_hint_show: false,
-        error_hint_text: '',
-        username: '',
-        password: '',
-        re_password: '',
-        signup_form_seen: true,
-        finished_message_seen: false,
-        user_type: '', // 用户类型，用于api提交
-        user_type_dict: { // 描述文本在这里
-            'artist': 'Can upload models',
-            'teacher': 'Can modify the scene and all items in it',
-            'stuff': 'Can control all scene',
-            'superuser': 'Site administrator',
-        },
-        teacher_group_text: '',
-        teacher_group_list: [],
-        teacher_group_pk: null,
-    },
-    methods: {
-        signup_button_onclick: function () {
+    <script>
+        var signup_app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#signup_table',
+            data: {
+                error_hint_show: false,
+                error_hint_text: '',
+                username: '',
+                password: '',
+                re_password: '',
+                signup_form_seen: true,
+                finished_message_seen: false,
+                user_type: '', // 用户类型，用于api提交
+                user_type_dict: { // 描述文本在这里
+                    'artist': 'Can upload models',
+                    'teacher': 'Can modify the scene and all items in it',
+                    'stuff': 'Can control all scene',
+                    'superuser': 'Site administrator',
+                },
+                teacher_group_text: '',
+                teacher_group_list: [],
+                teacher_group_pk: null,
+            },
+            methods: {
+                signup_button_onclick: function () {
 
-            // 检查密码匹配
-            if (!this.check_password_match()) {
-                return
-            }
-            // 检查有无选中 teacher 对应的 scene
-            if (this.user_type === 'teacher' && this.teacher_group_pk == null) {
-                console.log('reached')
-                this.error_hint_text = 'Please select belong to which scene!'
-                this.error_hint_show = true
-                return
-            }
-            // 显示进度条
-            progress_bar_app.show = true
-            // 提交注册申请
-            axios.post('{% url "gallery:api:signup" %}', {
-                'username': this.username,
-                'password': this.password,
-                'user_type': this.user_type,
-                'teacher_group_pk': this.teacher_group_pk,
-            })
-            .then(function (response) {
-                // 隐藏表单，显示信息
-                signup_app.signup_form_seen = false
-                signup_app.finished_message_seen = true
-                // 显示对话框
-                showDialog('Success', 'Signup application submitted. ' +
-                'Please wait for administrators to confirm. ' +
-                'Thank you')
+                    // 检查密码匹配
+                    if (!this.check_password_match()) {
+                        return
+                    }
+                    // 检查有无选中 teacher 对应的 scene
+                    if (this.user_type === 'teacher' && this.teacher_group_pk == null) {
+                        console.log('reached')
+                        this.error_hint_text = 'Please select belong to which scene!'
+                        this.error_hint_show = true
+                        return
+                    }
+                    // 显示进度条
+                    progress_bar_app.show = true
+                    // 提交注册申请
+                    axios.post('{% url "gallery:api:signup" %}', {
+                        'username': this.username,
+                        'password': this.password,
+                        'user_type': this.user_type,
+                        'teacher_group_pk': this.teacher_group_pk,
+                    })
+                        .then(function (response) {
+                            // 隐藏表单，显示信息
+                            signup_app.signup_form_seen = false
+                            signup_app.finished_message_seen = true
+                            // 显示对话框
+                            showDialog('Success', 'Signup application submitted. ' +
+                                'Please wait for administrators to confirm. ' +
+                                'Thank you')
 
-            })
-            .catch(function (error) {
-                errorDialog(error)
-            })
-            .finally(function (error) {
-                // 隐藏进度条
-                progress_bar_app.show = false
-            })
-        },
-        check_password_match: function () {
-            // 如果密码为空则不进行检查
-            if (!this.password || !this.re_password) {
-                return
-            }
-            // 如果密码相匹配则设置this.password_not_match_hidden为true隐藏提示
-            // 反之亦然
-            if (this.password !== this.re_password) {
-                this.error_hint_text = 'Your password do not match!'
-                this.error_hint_show = true
-                return false
-            }
-            // 密码检查通过
-            this.error_hint_show = false
-            return true
-        },
-        teacher_group_onclick: function (teacher_group_selected) {
-            this.teacher_group_pk = teacher_group_selected.pk
-            this.teacher_group_text = teacher_group_selected.name
-        }
-    },
-    computed: {
-        user_type_text: function () {
-            return this.user_type_dict[this.user_type]
-        },
-        teacher_group_show: function () {
-            return this.user_type === 'teacher';
-        },
-    },
-    watch: {
-        password:function () {
-            this.check_password_match()
-        },
-        re_password: function () {
-            this.check_password_match()
-        },
-    },
-    created: function () {
-        progress_bar_app.show = true
-        axios.post('{% url "gallery:api:get_teacher_group_list" %}', {})
-        .then(function (response) {
-            signup_app.teacher_group_list = response.data['teacher_group_list']
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function (error) {
+                            // 隐藏进度条
+                            progress_bar_app.show = false
+                        })
+                },
+                check_password_match: function () {
+                    // 如果密码为空则不进行检查
+                    if (!this.password || !this.re_password) {
+                        return
+                    }
+                    // 如果密码相匹配则设置this.password_not_match_hidden为true隐藏提示
+                    // 反之亦然
+                    if (this.password !== this.re_password) {
+                        this.error_hint_text = 'Your password do not match!'
+                        this.error_hint_show = true
+                        return false
+                    }
+                    // 密码检查通过
+                    this.error_hint_show = false
+                    return true
+                },
+                teacher_group_onclick: function (teacher_group_selected) {
+                    this.teacher_group_pk = teacher_group_selected.pk
+                    this.teacher_group_text = teacher_group_selected.name
+                }
+            },
+            computed: {
+                user_type_text: function () {
+                    return this.user_type_dict[this.user_type]
+                },
+                teacher_group_show: function () {
+                    return this.user_type === 'teacher';
+                },
+            },
+            watch: {
+                password: function () {
+                    this.check_password_match()
+                },
+                re_password: function () {
+                    this.check_password_match()
+                },
+            },
+            created: function () {
+                progress_bar_app.show = true
+                axios.post('{% url "gallery:api:get_teacher_group_list" %}', {})
+                    .then(function (response) {
+                        signup_app.teacher_group_list = response.data['teacher_group_list']
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+                    .finally(function () {
+                        progress_bar_app.show = false
+                    })
+            },
         })
-        .catch(function (error) {
-            errorDialog(error)
-        })
-        .finally(function () {
-            progress_bar_app.show = false
-        })
-    },
-})
-</script>
+    </script>
 {% endblock %}
