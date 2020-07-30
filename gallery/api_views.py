@@ -14,7 +14,7 @@ from .error import (
     APIFormNotDefine,
     NoPermission,
 )
-from .models import Scene
+from .models import Scene, Item
 from guardian.shortcuts import assign_perm
 from django.contrib.auth.decorators import login_required
 # from rest_framework.views import View

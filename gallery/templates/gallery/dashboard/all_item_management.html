@@ -1,0 +1,74 @@
+{% extends "gallery/dashboard/base.html" %}
+
+{% block content %}
+    <div id="all_item_management_div" class="mdl-grid demo-content">
+        <div class="mdl-cell mdl-cell--12-col mdl-grid">
+            <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                <thead>
+                    <tr>
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
+                            <h4>All Item Management</h4>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="mdl-data-table__cell--non-numeric">ID</th>
+                        <th class="mdl-data-table__cell--non-numeric">Item Name</th>
+                        <th colspan="2" class="mdl-data-table__cell--non-numeric">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="item in item_list">
+                        <td>[[ item.pk ]]</td>
+                        <td>[[ item.name ]]</td>
+                        <td>
+                            <button v-on:click="modify_onclick(item)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+                                Modify
+                            </button>
+                        </td>
+                        <td>
+                            <button class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+            var all_item_management_app = new Vue({
+                delimiters: ['[[', ']]'],
+                el: '#all_item_management_div',
+                data: {
+                    item_list: [],
+                    new_item_name: '',
+                    new_item_show: false,
+                    new_item_error_message_show: false,
+                    new_item_error_message: '',
+                },
+                methods: {
+                    refresh_item_lsit: function () {
+                        progress_bar_app.show = true
+                        axios.post('', {})
+                        .then(function (response) {
+                            all_item_management_app.item_list = response.data['item_list']
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                    },
+                    // 点击了 modify 按钮
+                    modify_onclick: function (item) {
+                        progress_bar_app.show = true
+                        window.location = '' + '?pk=' + item.pk
+                    }
+                },
+                created: function () {
+                    this.refresh_item_lsit()
+                },
+            })
+        </script>
+{% endblock %}

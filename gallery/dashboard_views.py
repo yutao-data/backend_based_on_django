@@ -62,3 +62,14 @@ class SceneManagementView(View):
             'title': 'Scene Management',
         }
         return render(request, 'gallery/dashboard/scene_management.html', view_dict)
+
+
+# 全部item的管理视图
+class AllItemManagementView(View):
+
+    @staticmethod
+    def get(request):
+        view_dict = {
+            'title': 'All Item Management',
+        }
+        return render(request, 'gallery/dashboard/all_item_management.html', view_dict)
