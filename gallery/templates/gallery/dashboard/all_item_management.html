@@ -2,54 +2,12 @@
 
 {% block content %}
     <div id="all_item_management_div" class="mdl-grid demo-content">
-        <div class="mdl-cell mdl-cell--12-col mdl-grid" v-show="new_item_show">
-            <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
-                <thead>
-                    <tr>
-                        <td class="mdl-data-table__cell--non-numeric">
-                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <strong>Add New Item</strong>
-                            </div>
-                        </td>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="mdl-data-table__cell--non-numeric">
-                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <input v-model="new_item_name" type="text" name="new_item_name" class="mdl-textfield__input">
-                                <label for="new_item_name" class="mdl-textfield__label">New Item Name</label>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr v-show="new_item_error_message_show">
-                        <td class="mdl-data-table__cell--non-numeric">
-                            [[ new_item_error_message ]]
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <button v-on:click="new_item_onclick" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
-                                Add
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
         <div class="mdl-cell mdl-cell--12-col mdl-grid">
             <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
                 <thead>
                     <tr>
                         <td colspan="100%" class="mdl-data-table__cell--non-numeric">
                             <h4>All Item Management</h4>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
-                            <button v-on:click="add_item_onclick" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
-                                Add New Item
-                            </button>
                         </td>
                     </tr>
                     <tr>
@@ -89,42 +47,9 @@
                     new_item_error_message: '',
                 },
                 methods: {
-                    // 显示 add new item 的表单
-                    add_item_onclick: function () {
-                        this.new_item_show = true
-                    },
-                    // 新建new item
-                    new_item_onclick: function () {
-                        // 先检查是否为空
-                        if (!this.new_item_name) {
-                            this.new_item_error_message = 'Please enter item name'
-                            this.new_item_error_message_show = true
-                            return
-                        }
-                        progress_bar_app.show = true
-                        axios.post('{% url "gallery:api:add_new_item" %}', {
-                            item_name: this.new_item_name,
-                        })
-                        .then(function (response) {
-                            showSnackbar('Create New Scene Success')
-                            // 清空原有的表单数据
-                            all_item_management_app.new_item_name = ''
-                            all_item_management_app.new_item_error_message = ''
-                            all_item_management_app.new_item_error_message_show = false
-                            all_item_management_app.new_item_show = false
-                            // 刷新item 列表
-                            all_item_management_app.refresh_item_lsit()
-                        })
-                        .catch(function (error) {
-                            errorDialog(error)
-                        })
-                        .finally(function () {
-                            progress_bar_app.show = false
-                        })
-                    },
                     refresh_item_lsit: function () {
                         progress_bar_app.show = true
-                        axios.post('{% url "gallery:api:get_all_item" %}', {})
+                        axios.post('', {})
                         .then(function (response) {
                             all_item_management_app.item_list = response.data['item_list']
                         })
@@ -138,7 +63,7 @@
                     // 点击了 modify 按钮
                     modify_onclick: function (item) {
                         progress_bar_app.show = true
-                        window.location = '{% url "gallery:dashboard:item_management" %}' + '?pk=' + item.pk
+                        window.location = '' + '?pk=' + item.pk
                     }
                 },
                 created: function () {
