@@ -2,6 +2,8 @@ from django.shortcuts import render, reverse
 from django.http import HttpResponseRedirect
 from django.views import View
 from django.contrib.auth.models import User
+from .api_views import get_user_type
+from .models import Scene
 
 
 # 管理面板Dashboard视图
@@ -12,6 +14,11 @@ class DashboardView(View):
         view_dict = {
             'title': 'Dashboard',
         }
+        user_type = get_user_type(request)
+        if user_type == 'teacher':
+            group = request.user.groups.all()[0]
+            scene = Scene.objects.filter(group=group)[0]
+            view_dict['my_scene_management_pk'] = scene.pk
         not_active_user_list = []
         # 检查是否有用户等待注册审批
         for user in User.objects.all():

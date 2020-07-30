@@ -123,7 +123,7 @@
                 return this.user_type === 'stuff' || this.user_type === 'superuser';
             },
             my_scene_management_url: function () {
-                return '{% url "gallery:dashboard:scene_management" %}'+ '?pk=' + '{{ requests.user.scene.pk }}'
+                return '{% url "gallery:dashboard:scene_management" %}'+ '?pk=' + '{{ my_scene_management_pk }}'
             },
         }
     })
