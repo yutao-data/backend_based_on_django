@@ -136,34 +136,34 @@
             methods: {
                 signup_button_onclick: function () {
 
-                    // 检查密码匹配
-                    if (!this.check_password_match()) {
-                        return
-                    }
-                    // 检查有无选中 teacher 对应的 scene
-                    if (this.user_type === 'teacher' && this.teacher_group_pk == null) {
-                        console.log('reached')
-                        this.error_hint_text = 'Please select belong to which scene!'
-                        this.error_hint_show = true
-                        return
-                    }
-                    // 显示进度条
-                    progress_bar_app.show = true
-                    // 提交注册申请
-                    axios.post('{% url "gallery:api:signup" %}', {
-                        'username': this.username,
-                        'password': this.password,
-                        'user_type': this.user_type,
-                        'teacher_group_pk': this.teacher_group_pk,
-                    })
-                        .then(function (response) {
-                            // 隐藏表单，显示信息
-                            signup_app.signup_form_seen = false
-                            signup_app.finished_message_seen = true
-                            // 显示对话框
-                            showDialog('Success', 'Signup application submitted. ' +
-                                'Please wait for administrators to confirm. ' +
-                                'Thank you')
+            // 检查密码匹配
+            if (!this.check_password_match()) {
+                return
+            }
+            // 检查有无选中 teacher 对应的 scene
+            if (this.user_type === 'teacher' && this.teacher_group_pk == null) {
+                console.log('reached')
+                this.error_hint_text = 'Please select belong to which scene!'
+                this.error_hint_show = true
+                return
+            }
+            // 显示进度条
+            progress_bar_app.show = true
+            // 提交注册申请
+            axios.post('{% url "gallery:api:signup" %}', {
+                'username': this.username,
+                'password': this.password,
+                'user_type': this.user_type,
+                'teacher_group_pk': this.teacher_group_pk,
+            })
+            .then(function (response) {
+                // 隐藏表单，显示信息
+                signup_app.signup_form_seen = false
+                signup_app.finished_message_seen = true
+                // 显示对话框
+                showDialog('Success', 'Signup application submitted. ' +
+                'Please wait for administrators to confirm. ' +
+                'Thank you')
 
                         })
                         .catch(function (error) {
@@ -213,7 +213,7 @@
             },
             created: function () {
                 progress_bar_app.show = true
-                axios.post('{% url "gallery:api:get_teacher_group_list" %}', {})
+                axios.get('{% url "gallery:api:get_teacher_group_list" %}')
                     .then(function (response) {
                         signup_app.teacher_group_list = response.data['teacher_group_list']
                     })
