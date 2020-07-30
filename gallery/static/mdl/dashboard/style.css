@@ -55,7 +55,7 @@ html, body {
   display: flex;
   position: relative;
   flex-direction: row;
-  align-items: center;
+  align-items:center;
   width: 100%;
 }
 
