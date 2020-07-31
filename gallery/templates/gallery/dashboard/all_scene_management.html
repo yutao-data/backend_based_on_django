@@ -60,7 +60,7 @@
                 </thead>
                 <tbody>
                     <tr v-for="scene in scene_list">
-                        <td>[[ scene.pk ]]</td>
+                        <td>[[ scene.id ]]</td>
                         <td>[[ scene.name ]]</td>
                         <td>
                             <button v-on:click="modify_onclick(scene)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
@@ -68,7 +68,8 @@
                             </button>
                         </td>
                         <td>
-                            <button class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                            <button v-on:click="delete_onclick(scene)"
+                                    class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
                                 Delete
                             </button>
                         </td>
@@ -137,9 +138,21 @@
                     },
                     // 点击了 modify 按钮
                     modify_onclick: function (scene) {
+                        window.location = '{% url "gallery:dashboard:scene_management" %}' + '?scene_id=' + scene.id
+                    },
+                    delete_onclick: function (scene) {
                         progress_bar_app.show = true
-                        window.location = '{% url "gallery:dashboard:scene_management" %}' + '?scene_id=' + scene.pk
-                    }
+                        axios.delete('/gallery/api/scene/' + scene.id + '/')
+                        .then(function (response) {
+                            all_scene_management_app.refresh_scene_list()
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                    },
                 },
                 created: function () {
                     this.refresh_scene_list()

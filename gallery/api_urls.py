@@ -14,7 +14,8 @@ urlpatterns = [
     path('get_user_type/', api_views.APIGetUserType.as_view(), name='get_user_type'),
     path('scenelist/', api_views.APIGetSceneList.as_view(), name='get_scene_list'),
     path('scene/add/', api_views.APIAddNewScene.as_view(), name='add_new_scene'),
-    path('scene/<int:scene_id>/info/', api_views.APISceneInformation.as_view(), name='get_scene_information'),
+    path('scene/<int:scene_id>/', api_views.APISceneDelete.as_view(), name='delete_scene'),
+    path('scene/<int:scene_id>/info/', api_views.APISceneInformation.as_view(), name='scene_information'),
     path('scene/<int:scene_id>/file/', api_views.APISceneFile.as_view(), name='upload_scene'),
     path('scene/<int:scene_id>/itemlist/', api_views.APIGetSceneList.as_view(), name='get_item_list'),
 ]

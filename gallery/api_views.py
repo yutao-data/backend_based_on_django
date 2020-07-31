@@ -64,6 +64,23 @@ class APIView(View):
                 'error_message': str(e),
             }, status=500)
 
+    def delete(self, request, *args, **kwargs):
+        try:
+            return self.my_del(request, *args, **kwargs)
+        except Error as e:
+            return JsonResponse({
+                'error_type': str(e.__class__.__name__),  # 使用类名作为错误类型
+                'error_message': str(e)  # 调用e的__str__()方法，获取错误详细解释
+            }, status=e.status)
+        # 捕获未定义的错误
+        except Exception as e:
+            # 输出错误类型和错误信息到控制台
+            print('%s: %s' % (str(type(e)), str(e)))
+            return JsonResponse({
+                'error_type': 'NotDefine Error: ' + str(type(e)),
+                'error_message': str(e),
+            }, status=500)
+
     def post(self, requests, *args, **kwargs):
         try:
             # 使用json解码
@@ -278,14 +295,14 @@ class APIGetSceneList(APIView):
             for scene in Scene.objects.all():
                 if request.user.has_perm('gallery.change_scene', scene):
                     scene_list.append({
-                        'pk': scene.pk,
+                        'id': scene.pk,
                         'name': scene.name,
                         'file': scene.file.name,
                     })
         if user_type == 'stuff' or user_type == 'superuser':
             for scene in Scene.objects.all():
                 scene_list.append({
-                    'pk': scene.pk,
+                    'id': scene.pk,
                     'name': scene.name,
                     'file': scene.file.name,
                 })
@@ -318,7 +335,12 @@ class APIAddNewScene(APIView):
         scene = Scene.objects.create(name=scene_name, group=group)
         scene.save()
 
-        return get_success_response()
+        return JsonResponse({
+            "scene": {
+                "name": scene.name,
+                "id": scene.pk,
+            }
+        })
 
 
 # 获取单个Scene的详细信息
@@ -382,6 +404,17 @@ class APISceneFile(View):
         f_p = os.path.join(MEDIA_ROOT, scene.file.name)
         f = open(f_p, 'rb')
         return FileResponse(f)
+
+
+class APISceneDelete(APIView):
+
+    @staticmethod
+    def my_del(request, scene_id):
+        scene = Scene.objects.get(pk=scene_id)
+        group = scene.group
+        group.delete()
+        scene.delete()
+        return get_success_response()
 
 
 class APIItemList(APIView):
