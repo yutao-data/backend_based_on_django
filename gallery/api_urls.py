@@ -17,5 +17,5 @@ urlpatterns = [
     path('scene/<int:scene_id>/', api_views.APISceneDelete.as_view(), name='delete_scene'),
     path('scene/<int:scene_id>/info/', api_views.APISceneInformation.as_view(), name='scene_information'),
     path('scene/<int:scene_id>/file/', api_views.APISceneFile.as_view(), name='upload_scene'),
-    path('scene/<int:scene_id>/itemlist/', api_views.APIGetSceneList.as_view(), name='get_item_list'),
+    path('scene/<int:scene_id>/itemlist/', api_views.APIGetItemList.as_view(), name='get_item_list'),
 ]

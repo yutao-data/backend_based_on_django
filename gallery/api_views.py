@@ -285,7 +285,7 @@ class APIGetTeacherGroupList(APIView):
 class APIGetSceneList(APIView):
 
     @staticmethod
-    def my_get(request, scene_id):
+    def my_get(request):
         user_type = get_user_type(request)
         scene_list = []
         # 拒绝普通用户
@@ -417,13 +417,13 @@ class APISceneDelete(APIView):
         return get_success_response()
 
 
-class APIItemList(APIView):
+class APIGetItemList(APIView):
 
     @staticmethod
     def my_get(request, scene_id):
         item_list = []
         for item in Item.objects.all():
-            if request.user.has_perm('gallery.chage_item', item):
+            if request.user.has_perm('gallery.change_item', item):
                 item_list.append({
                     'id': item.pk,
                     'name': item.name,
