@@ -37,7 +37,7 @@
                             </button>
                         </td>
                         <td v-show="download_button_show">
-                            <button
+                            <button v-on:click="download_onclick"
                                     class="mdl-button mdl-button-js mdl-button--colored mdl-button--raised">
                                 Download
                             </button>
@@ -148,6 +148,9 @@
                     this.file_field_show = true
                     this.upload_button_show = true
                     this.delete_button_show = true
+                },
+                download_onclick: function() {
+                    window.location = '/gallery/api/scene/' + cs['pk'] + '/file'
                 },
                 upload_onclick: function (event) {
                     let formData = new FormData();
