@@ -110,7 +110,7 @@
             },
             created: function () {
                 progress_bar_app.show = true
-                axios.get('/gallery/api/scene/'+cs['scene_id']+'/info')
+                axios.get('/gallery/api/scene/'+cs['scene_id']+'/info/')
                 .then(function (response) {
                     scene_management_app.scene = response.data['scene']
                     scene_management_app.user_list = response.data['user_list']
@@ -125,7 +125,7 @@
             methods: {
                 save_onclick: function () {
                     progress_bar_app.show = true
-                    axios.post('/gallery/api/scene/'+cs['scene_id']+'/info', {
+                    axios.post('/gallery/api/scene/'+cs['scene_id']+'/info/', {
                         id: this.scene.id,
                         name: this.scene.name,
                     })
@@ -148,7 +148,7 @@
                     this.delete_button_show = true
                 },
                 download_onclick: function() {
-                    window.location = '/gallery/api/scene/' + cs['scene_id'] + '/file'
+                    window.location = '/gallery/api/scene/' + cs['scene_id'] + '/file/'
                 },
                 upload_onclick: function (event) {
                     let formData = new FormData();

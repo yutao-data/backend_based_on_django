@@ -322,7 +322,7 @@ class APIAddNewScene(APIView):
 
 
 # 获取单个Scene的详细信息
-class APIGetSceneInformation(APIView):
+class APISceneInformation(APIView):
 
     @staticmethod
     def my_get(request, scene_id):

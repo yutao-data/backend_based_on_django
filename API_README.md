@@ -1,5 +1,9 @@
 # API
 
+# !!!
+API最后一定要用/结尾否则引发500错误
+(垃圾django)
+
 ## 说明
 - POST数据用JSON格式
 - 如无特殊说明，成功操作返回 `{ "message": string }`
