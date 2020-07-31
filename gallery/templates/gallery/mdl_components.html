@@ -33,6 +33,7 @@
         data: {
             heading: '',
             message: '',
+            redirect: '',
         },
         methods: {
             show_dialog: function () {
@@ -40,8 +41,8 @@
             },
             dialog_close_onclick: function () {
                 this.$el.close()
-                if (this.finish_fallback) {
-                    this.finish_fallback()
+                if (this.redirect) {
+                    window.location = this.redirect
                 }
             },
         }
