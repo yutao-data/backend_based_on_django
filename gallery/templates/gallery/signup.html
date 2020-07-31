@@ -51,8 +51,8 @@
                         Belong to scene:
                     </td>
                     <td>
-                        <select v-model="teacher_group_pk">
-                            <option v-for="teacher_group in teacher_group_list" v-bind:value="teacher_group.pk">[[
+                        <select v-model="teacher_group_id">
+                            <option v-for="teacher_group in teacher_group_list" v-bind:value="teacher_group.id">[[
                                 teacher_group.name ]]
                             </option>
                         </select>
@@ -127,7 +127,7 @@
                 },
                 teacher_group_text: '',
                 teacher_group_list: [],
-                teacher_group_pk: null,
+                teacher_group_id: null,
             },
             methods: {
                 signup_button_onclick: function () {
@@ -137,7 +137,7 @@
                 return
             }
             // 检查有无选中 teacher 对应的 scene
-            if (this.user_type === 'teacher' && this.teacher_group_pk == null) {
+            if (this.user_type === 'teacher' && this.teacher_group_id == null) {
                 console.log('reached')
                 this.error_hint_text = 'Please select belong to which scene!'
                 this.error_hint_show = true
@@ -150,7 +150,7 @@
                 'username': this.username,
                 'password': this.password,
                 'user_type': this.user_type,
-                'teacher_group_pk': this.teacher_group_pk,
+                'teacher_group_id': this.teacher_group_id,
             })
             .then(function (response) {
                 // 隐藏表单，显示信息
@@ -187,7 +187,7 @@
                     return true
                 },
                 teacher_group_onclick: function (teacher_group_selected) {
-                    this.teacher_group_pk = teacher_group_selected.pk
+                    this.teacher_group_id = teacher_group_selected.id
                     this.teacher_group_text = teacher_group_selected.name
                 }
             },

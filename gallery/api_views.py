@@ -171,8 +171,8 @@ class APISignupView(APIView):
             pass
         elif user_type == 'teacher':
             # 老师teacher属于scene.group组，该组拥有scene内所有item的object权限，和对应scene的object权限
-            teacher_group_pk = cleaned_data['teacher_group_pk']
-            group = Group.objects.get(pk=teacher_group_pk)
+            teacher_group_id = cleaned_data['teacher_group_id']
+            group = Group.objects.get(pk=teacher_group_id)
             group.user_set.add(user)
         elif user_type == 'stuff':
             # 策展管理员stuff拥有item和scene的全局权限，可以管理所有物体
@@ -273,7 +273,9 @@ class APIGetTeacherGroupList(APIView):
         for scene in Scene.objects.all():
             if scene.group:
                 teacher_group = {
-                    'pk': scene.group.pk,
+                    # 实际选择的是组
+                    # 显示的是Scene名
+                    'id': scene.group.pk,
                     'name': scene.name,
                 }
                 teacher_group_list.append(teacher_group)
@@ -424,10 +426,14 @@ class APIGetItemList(APIView):
         item_list = []
         for item in Item.objects.all():
             if request.user.has_perm('gallery.change_item', item):
+                # 解决可能没有author的bug
+                author = ''
+                if item.author:
+                    author = item.author.username
                 item_list.append({
                     'id': item.pk,
                     'name': item.name,
-                    'author': item.author.username,
+                    'author': author,
                 })
         return JsonResponse({
             'item_list': item_list,
@@ -435,14 +441,41 @@ class APIGetItemList(APIView):
 
 
 class APIAddItem(APIView):
+    class MyForm(Form):
+        name = CharField(label='name')
+        author_id = IntegerField(label='author_id')
 
     @staticmethod
     def my_post(request, cleaned_data, scene_id):
         item = Item.objects.create(name=cleaned_data['name'])
         scene = Scene.objects.get(pk=scene_id)
+        user = User.objects.get(pk=cleaned_data['author_id'])
         group = scene.group
+        # 分配物体的object权限到组里
         assign_perm('gallery.view_item', group, item)
         assign_perm('gallery.change_item', group, item)
         assign_perm('gallery.delete_item', group, item)
+        # 分配物体的object权限给用户
+        assign_perm('gallery.view_item', user, item)
+        assign_perm('gallery.change_item', user, item)
+        assign_perm('gallery.delete_item', user, item)
         item.save()
         return get_success_response()
+
+
+class APIGetArtistList(APIView):
+
+    @staticmethod
+    def my_get(request):
+        artist_list = []
+        for user in User.objects.all():
+            # 判断方式:用户不在任何组里即为artist
+            # 以后再改 Artist全部丢到一个组里,现在就先这样判
+            if not len(user.groups.all()) and not user.is_superuser and user.is_active and not user.username == 'AnonymousUser' and not user.has_perm('gallery.change_scene'):
+                artist_list.append({
+                    'username': user.username,
+                    'id': user.pk,
+                })
+        return JsonResponse({
+            'artist_list': artist_list,
+        })
