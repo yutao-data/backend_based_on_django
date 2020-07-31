@@ -362,3 +362,21 @@ class APISaveSceneInformation(APIView):
         scene.save()
         return get_success_response()
 
+
+@method_decorator(csrf_exempt, 'dispatch')
+class APISceneFile(View):
+
+    @staticmethod
+    def post(request, scene_id):
+        file = request.FILES.get('file')
+        data = request.POST.get('data')
+        scene = Scene.objects.get(pk=scene_id)
+        scene.file = file
+        scene.save()
+        return JsonResponse({
+            "scene": {
+                "name": scene.name,
+                "id": scene.pk,
+                "file": scene.file.name,
+            }
+        })

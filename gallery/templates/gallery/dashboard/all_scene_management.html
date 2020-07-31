@@ -113,7 +113,7 @@
                             all_scene_management_app.new_scene_error_message_show = false
                             all_scene_management_app.new_scene_show = false
                             // 刷新scene 列表
-                            all_scene_management_app.refresh_scene_lsit()
+                            all_scene_management_app.refresh_scene_list()
                         })
                         .catch(function (error) {
                             errorDialog(error)
@@ -122,7 +122,7 @@
                             progress_bar_app.show = false
                         })
                     },
-                    refresh_scene_lsit: function () {
+                    refresh_scene_list: function () {
                         progress_bar_app.show = true
                         axios.get('{% url "gallery:api:get_scene_list" %}')
                         .then(function (response) {
@@ -142,7 +142,7 @@
                     }
                 },
                 created: function () {
-                    this.refresh_scene_lsit()
+                    this.refresh_scene_list()
                 },
             })
         </script>

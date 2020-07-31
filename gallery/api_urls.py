@@ -16,4 +16,5 @@ urlpatterns = [
     path('add_new_scene', api_views.APIAddNewScene.as_view(), name='add_new_scene'),
     path('get_scene_inforamtion', api_views.APIGetSceneInformation.as_view(), name='get_scene_information'),
     path('save_scene_information', api_views.APISaveSceneInformation.as_view(), name='save_scene_information'),
+    path('scene/<int:scene_id>/file', api_views.APISceneFile.as_view(), name='upload_scene'),
 ]
