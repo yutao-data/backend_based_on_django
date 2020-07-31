@@ -37,7 +37,7 @@ class FormValidError(Error):
 
 # 用户认证失败
 class AuthenticateError(Error):
-    def __init__(self, message='User Authenticate Failed', status=403):
+    def __init__(self, message='User Authenticate Failed', status=401):
         super().__init__(message, status)
 
 
