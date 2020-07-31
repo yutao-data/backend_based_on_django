@@ -3,7 +3,13 @@ from django.views import View
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.forms import Form, CharField, IntegerField, NullBooleanField, ModelChoiceField
+from django.forms import (
+    Form,
+    CharField,
+    IntegerField,
+    NullBooleanField,
+    FileField,
+)
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from .error import (
@@ -104,7 +110,9 @@ class APILoginView(APIView):
             raise AuthenticateError()
         logout(request)
         login(request, user)
-        return get_success_response()
+        return JsonResponse({
+            'user_type': get_user_type(request),
+        })
 
 
 class APILogoutView(APIView):
@@ -255,7 +263,7 @@ class APIGetTeacherGroupList(APIView):
         })
 
 
-class APIGetAllScene(APIView):
+class APIGetSceneList(APIView):
 
     @staticmethod
     def my_get(request):
@@ -270,12 +278,14 @@ class APIGetAllScene(APIView):
                     scene_list.append({
                         'pk': scene.pk,
                         'name': scene.name,
+                        'file': scene.file.name,
                     })
         if user_type == 'stuff' or user_type == 'superuser':
             for scene in Scene.objects.all():
                 scene_list.append({
                     'pk': scene.pk,
                     'name': scene.name,
+                    'file': scene.file.name,
                 })
         return JsonResponse({
             'scene_list': scene_list
@@ -329,6 +339,7 @@ class APIGetSceneInformation(APIView):
             'scene': {
                 'name': scene.name,
                 'pk': scene.pk,
+                'file': scene.file.name,
             },
             'user_list': user_list,
         })
@@ -352,3 +363,20 @@ class APISaveSceneInformation(APIView):
         return get_success_response()
 
 
+@method_decorator(csrf_exempt, 'dispatch')
+class APISceneFile(View):
+
+    @staticmethod
+    def post(request, scene_id):
+        file = request.FILES.get('file')
+        data = request.POST.get('data')
+        scene = Scene.objects.get(pk=scene_id)
+        scene.file = file
+        scene.save()
+        return JsonResponse({
+            "scene": {
+                "name": scene.name,
+                "id": scene.pk,
+                "file": scene.file.name,
+            }
+        })

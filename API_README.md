@@ -20,10 +20,7 @@
 #### 200
 ```json
 {
-  "scene_list": [
-    { "id": int, "name": string,},
-    ...
-  ],
+  "message": string,
   "user_type": string,
 }
 ```
@@ -52,13 +49,28 @@
 #### GET gallery/api/scene/<int:id>/file
 
 #### 200
-二进制文件数据流
+待定
 
 #### 403 没有权限
 
 
 ### 上传展厅模型
-待定
+
+#### POST gallery/api/scene/<int:id>/file
+HTTP Form 类型
+"file" -> 文件
+"data" -> Json字符串,用于附带额外信息
+
+#### 200
+```json
+{
+  "scene": {
+    "name": string,
+    "id": int,
+    "file": string,
+  }
+}
+```
 
 
 ### 添加展厅
