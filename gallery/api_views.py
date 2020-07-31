@@ -104,7 +104,9 @@ class APILoginView(APIView):
             raise AuthenticateError()
         logout(request)
         login(request, user)
-        return get_success_response()
+        return JsonResponse({
+            'user_type': get_user_type(request),
+        })
 
 
 class APILogoutView(APIView):

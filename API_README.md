@@ -18,7 +18,12 @@
 ```
 
 #### 200
-
+```json
+{
+  "message": string,
+  "user_type": string,
+}
+```
 #### 401 密码错误
 
 
