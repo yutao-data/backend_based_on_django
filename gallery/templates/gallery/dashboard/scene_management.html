@@ -13,7 +13,7 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td colspan="100%">
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                                 <input v-model="scene.name" class="mdl-textfield__input" id="scene_name_div" type="text">
                                 <label class="mdl-textfield__label" for="scene_name_div">Scene Name</label>
@@ -21,11 +21,38 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="100%">
-                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                                <input v-model="scene.filename" class="mdl-textfield__input" id="scene_name_div" type="text">
-                                <label class="mdl-textfield__label" for="scene_name_div">File Name</label>
-                            </div>
+                        <td>
+                            <span>File</span>
+                        </td>
+                        <td v-show="file_span_show">
+                            <span>[[ scene.file ]]</span>
+                        </td>
+                        <td v-show="file_field_show">
+                            <input v-on:change="file_field_onchange($event)" type="file">
+                        </td>
+                        <td v-show="modify_button_show">
+                            <button v-on:click="modify_onclick($event)"
+                                    class="mdl-button mdl-button-js mdl-button--accent mdl-button--raised">
+                                Modify
+                            </button>
+                        </td>
+                        <td v-show="download_button_show">
+                            <button
+                                    class="mdl-button mdl-button-js mdl-button--colored mdl-button--raised">
+                                Download
+                            </button>
+                        </td>
+                        <td v-show="upload_button_show">
+                            <button v-on:click="upload_onclick"
+                                    class="mdl-button mdl-button-js mdl-button--colored mdl-button--raised">
+                                Upload
+                            </button>
+                        </td>
+                        <td v-show="delete_button_show">
+                            <button
+                                    class="mdl-button mdl-button-js mdl-button--accent mdl-button--raised">
+                                Delete
+                            </button>
                         </td>
                     </tr>
                     <tr>
@@ -70,9 +97,16 @@
                 scene: {
                     pk: -1,
                     name: '......',
-                    filename: '',
+                    file: '',
                 },
                 user_list: [],
+                modify_button_show: true,
+                upload_button_show: false,
+                download_button_show: true,
+                delete_button_show: false,
+                file_field_show: false,
+                file_span_show: true,
+                file: '',
             },
             created: function () {
                 progress_bar_app.show = true
@@ -106,8 +140,39 @@
                     .finally(function () {
                         progress_bar_app.show = false
                     })
+                },
+                modify_onclick: function() {
+                    this.modify_button_show = false
+                    this.download_button_show = false
+                    this.file_span_show = false
+                    this.file_field_show = true
+                    this.upload_button_show = true
+                    this.delete_button_show = true
+                },
+                upload_onclick: function (event) {
+                    let formData = new FormData();
+                    let data = JSON.stringify({
+                        name: this.file.name
+                    })
+                    formData.append('file', this.file)
+                    formData.append('data', data)
+                    let config = {
+                        headers: {'Content-Type': 'multipart/form-data'}
+                    }
+                    axios.post('', formData, config)
+                    .then(function (response) {
+                        console.log(response)
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+                },
+                file_field_onchange: function (event) {
+                    this.file = event.target.files[0]
+                    console.log(this.file)
                 }
-            }
+            },
+
         })
     </script>
 {% endblock %}

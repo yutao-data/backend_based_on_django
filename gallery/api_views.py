@@ -333,6 +333,7 @@ class APIGetSceneInformation(APIView):
             'scene': {
                 'name': scene.name,
                 'pk': scene.pk,
+                'file': scene.file.name,
             },
             'user_list': user_list,
         })
