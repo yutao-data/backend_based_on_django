@@ -102,9 +102,6 @@
                 </tr>
                 </tbody>
             </table>
-            <p v-show="finished_message_seen">
-                Request submitted successfully.
-            </p>
         </div>
     </div>
 {% endblock %}
@@ -121,7 +118,6 @@
                 password: '',
                 re_password: '',
                 signup_form_seen: true,
-                finished_message_seen: false,
                 user_type: '', // 用户类型，用于api提交
                 user_type_dict: { // 描述文本在这里
                     'artist': 'Can upload models',
@@ -159,7 +155,6 @@
             .then(function (response) {
                 // 隐藏表单，显示信息
                 signup_app.signup_form_seen = false
-                signup_app.finished_message_seen = true
                 // 显示对话框
                 showDialog('Success', 'Signup application submitted. ' +
                 'Please wait for administrators to confirm. ' +
