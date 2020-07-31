@@ -18,15 +18,7 @@
 ```
 
 #### 200
-```json
-{
-  "scene_list": [
-    { "id": int, "name": string,},
-    ...
-  ],
-  "user_type": string,
-}
-```
+
 #### 401 密码错误
 
 
