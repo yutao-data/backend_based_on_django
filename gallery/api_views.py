@@ -1,6 +1,8 @@
 import json
+import os.path
+from backend_based_on_django.settings import MEDIA_ROOT
 from django.views import View
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.forms import (
@@ -380,3 +382,10 @@ class APISceneFile(View):
                 "file": scene.file.name,
             }
         })
+
+    @staticmethod
+    def get(request, scene_id):
+        scene = Scene.objects.get(pk=scene_id)
+        f_p = os.path.join(MEDIA_ROOT, scene.file.name)
+        f = open(f_p, 'rb')
+        return FileResponse(f)
