@@ -323,13 +323,10 @@ class APIAddNewScene(APIView):
 
 # 获取单个Scene的详细信息
 class APIGetSceneInformation(APIView):
-    class MyForm(Form):
-        pk = IntegerField(label='pk')
 
     @staticmethod
-    def my_post(request, cleaned_data):
-        pk = cleaned_data['pk']
-        scene = Scene.objects.get(pk=pk)
+    def my_get(request, scene_id):
+        scene = Scene.objects.get(pk=scene_id)
         group = scene.group
         users = group.user_set.all()
         user_list = []
@@ -340,23 +337,19 @@ class APIGetSceneInformation(APIView):
         return JsonResponse({
             'scene': {
                 'name': scene.name,
-                'pk': scene.pk,
+                'id': scene.pk,
                 'file': scene.file.name,
             },
             'user_list': user_list,
         })
 
-
-# 保存单个Scene的详细信息
-class APISaveSceneInformation(APIView):
     class MyForm(Form):
-        pk = IntegerField(label='pk')
+        id = IntegerField(label='id')
         name = CharField(label='name', required=False)
 
     @staticmethod
-    def my_post(request, cleaned_data):
-        pk = cleaned_data['pk']
-        scene = Scene.objects.get(pk=pk)
+    def my_post(request, cleaned_data, scene_id):
+        scene = Scene.objects.get(pk=scene_id)
         if cleaned_data.get('name') is not None:
             name = cleaned_data['name']
             scene.name = name
@@ -389,3 +382,20 @@ class APISceneFile(View):
         f_p = os.path.join(MEDIA_ROOT, scene.file.name)
         f = open(f_p, 'rb')
         return FileResponse(f)
+
+
+class APIItemList(APIView):
+
+    @staticmethod
+    def my_get(request, scene_id):
+        item_list = []
+        for item in Item.objects.all():
+            if request.user.has_perm('gallery.chage_item', item):
+                item_list.append({
+                    'id': item.pk,
+                    'name': item.name,
+                    'author': item.author.username,
+                })
+        return JsonResponse({
+            'item_list': item_list,
+        })

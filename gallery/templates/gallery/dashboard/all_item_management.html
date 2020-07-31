@@ -36,6 +36,14 @@
         </div>
     </div>
     <script>
+            var url = window.location.href //获取当前url
+            var dz_url = url.split('#')[0] //获取#/之前的字符串
+            var cs = dz_url.split('?')[1]  //获取?之后的参数字符串
+            var cs_arr = cs.split('&') //参数字符串分割为数组
+            var cs={}
+            for(var i=0;i<cs_arr.length;i++){//遍历数组，拿到json对象
+              cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
+            }
             var all_item_management_app = new Vue({
                 delimiters: ['[[', ']]'],
                 el: '#all_item_management_div',
@@ -47,9 +55,9 @@
                     new_item_error_message: '',
                 },
                 methods: {
-                    refresh_item_lsit: function () {
+                    refresh_item_list: function () {
                         progress_bar_app.show = true
-                        axios.post('', {})
+                        axios.get()
                         .then(function (response) {
                             all_item_management_app.item_list = response.data['item_list']
                         })
@@ -63,11 +71,11 @@
                     // 点击了 modify 按钮
                     modify_onclick: function (item) {
                         progress_bar_app.show = true
-                        window.location = '' + '?pk=' + item.pk
+                        window.location = '' + '?item_id=' + item.id
                     }
                 },
                 created: function () {
-                    this.refresh_item_lsit()
+                    this.refresh_item_list()
                 },
             })
         </script>

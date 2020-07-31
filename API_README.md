@@ -66,7 +66,6 @@ HTTP Form 类型
 {
   "scene": {
     "name": string,
-    "id": int,
     "file": string,
   }
 }

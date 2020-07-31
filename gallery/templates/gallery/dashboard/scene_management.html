@@ -95,7 +95,7 @@
             el: '#scene_management_div',
             data: {
                 scene: {
-                    pk: -1,
+                    id: -1,
                     name: '......',
                     file: '',
                 },
@@ -110,9 +110,7 @@
             },
             created: function () {
                 progress_bar_app.show = true
-                axios.post('{% url "gallery:api:get_scene_information" %}', {
-                    pk: cs['pk']
-                })
+                axios.get('/gallery/api/scene/'+cs['scene_id']+'/info')
                 .then(function (response) {
                     scene_management_app.scene = response.data['scene']
                     scene_management_app.user_list = response.data['user_list']
@@ -127,8 +125,8 @@
             methods: {
                 save_onclick: function () {
                     progress_bar_app.show = true
-                    axios.post('{% url "gallery:api:save_scene_information" %}', {
-                        pk: this.scene.pk,
+                    axios.post('/gallery/api/scene/'+cs['scene_id']+'/info', {
+                        id: this.scene.id,
                         name: this.scene.name,
                     })
                     .then(function (response) {
@@ -150,7 +148,7 @@
                     this.delete_button_show = true
                 },
                 download_onclick: function() {
-                    window.location = '/gallery/api/scene/' + cs['pk'] + '/file'
+                    window.location = '/gallery/api/scene/' + cs['scene_id'] + '/file'
                 },
                 upload_onclick: function (event) {
                     let formData = new FormData();
@@ -166,7 +164,7 @@
                     // django 的费拉模板功能
                     // 有个锤子用
                     progress_bar_app.show = true
-                    axios.post('/gallery/api/scene/' + cs['pk'] + "/file", formData, config)
+                    axios.post('/gallery/api/scene/' + cs['scene_id'] + "/file", formData, config)
                     .then(function (response) {
                         scene_management_app.scene = response.data['scene']
                         scene_management_app.file_field_show = false
