@@ -3,7 +3,13 @@ from django.views import View
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.forms import Form, CharField, IntegerField, NullBooleanField, ModelChoiceField
+from django.forms import (
+    Form,
+    CharField,
+    IntegerField,
+    NullBooleanField,
+    FileField,
+)
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 from .error import (
@@ -355,5 +361,4 @@ class APISaveSceneInformation(APIView):
 
         scene.save()
         return get_success_response()
-
 
