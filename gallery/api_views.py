@@ -417,13 +417,13 @@ class APISceneDelete(APIView):
         return get_success_response()
 
 
-class APIItemList(APIView):
+class APIGetItemList(APIView):
 
     @staticmethod
     def my_get(request, scene_id):
         item_list = []
         for item in Item.objects.all():
-            if request.user.has_perm('gallery.chage_item', item):
+            if request.user.has_perm('gallery.change_item', item):
                 item_list.append({
                     'id': item.pk,
                     'name': item.name,
@@ -432,3 +432,17 @@ class APIItemList(APIView):
         return JsonResponse({
             'item_list': item_list,
         })
+
+
+class APIAddItem(APIView):
+
+    @staticmethod
+    def my_post(request, cleaned_data, scene_id):
+        item = Item.objects.create(name=cleaned_data['name'])
+        scene = Scene.objects.get(pk=scene_id)
+        group = scene.group
+        assign_perm('gallery.view_item', group, item)
+        assign_perm('gallery.change_item', group, item)
+        assign_perm('gallery.delete_item', group, item)
+        item.save()
+        return get_success_response()
