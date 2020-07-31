@@ -9,6 +9,7 @@ class Scene(models.Model):
     def __str__(self):
         return str(self.name)
     name = models.CharField(max_length=NAME_MAX_CHAR)
+    file = models.FileField(blank=True, null=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True)
 
 

@@ -257,7 +257,7 @@ class APIGetTeacherGroupList(APIView):
         })
 
 
-class APIGetAllScene(APIView):
+class APIGetSceneList(APIView):
 
     @staticmethod
     def my_get(request):
@@ -272,12 +272,14 @@ class APIGetAllScene(APIView):
                     scene_list.append({
                         'pk': scene.pk,
                         'name': scene.name,
+                        'file': scene.file.name,
                     })
         if user_type == 'stuff' or user_type == 'superuser':
             for scene in Scene.objects.all():
                 scene_list.append({
                     'pk': scene.pk,
                     'name': scene.name,
+                    'file': scene.file.name,
                 })
         return JsonResponse({
             'scene_list': scene_list
