@@ -285,7 +285,7 @@ class APIGetTeacherGroupList(APIView):
 class APIGetSceneList(APIView):
 
     @staticmethod
-    def my_get(request):
+    def my_get(request, scene_id):
         user_type = get_user_type(request)
         scene_list = []
         # 拒绝普通用户

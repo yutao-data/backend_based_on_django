@@ -57,7 +57,7 @@
                 methods: {
                     refresh_item_list: function () {
                         progress_bar_app.show = true
-                        axios.get()
+                        axios.get('/gallery/api/scene/'+cs['scene_id']+'/itemlist/')
                         .then(function (response) {
                             all_item_management_app.item_list = response.data['item_list']
                         })
