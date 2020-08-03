@@ -16,22 +16,21 @@ API最后一定要用/结尾否则引发500错误
 #### POST /gallery/api/login
 ```json
 {
-  "username": string,
-  "password": string,
+  "username": "UserName",
+  "password": "woshimima",
 }
 ```
 
 #### 200
 ```json
 {
-  "message": string,
-  "user_type": string,
+  "user_type": "aritist/teacher/stuff/superuser",
 }
 ```
 #### 401 密码错误
 
 
-### 展厅列表
+### 获取展厅列表
 
 #### GET gallery/api/scenelist
 
@@ -39,7 +38,7 @@ API最后一定要用/结尾否则引发500错误
 ```json
 {
   "scene_list": [
-    { "name": string, "id": int, "file": string },
+    { "name": "SceneName", "id": 3, "file": "upload/scene_model_file_1a2b3c.obj" },
     ...
   ],
 }
@@ -53,7 +52,8 @@ API最后一定要用/结尾否则引发500错误
 #### GET gallery/api/scene/<int:id>/file
 
 #### 200
-待定
+传回文件数据流，文件名位于header中  
+`Content-Disposition: inline; filename="i_am_file_name_1a2b3c.obj"`
 
 #### 403 没有权限
 
@@ -69,11 +69,13 @@ HTTP Form 类型
 ```json
 {
   "scene": {
-    "name": string,
-    "file": string,
+    "name": "SceneName",
+    "file": "I_am_file_name_1a2b3c.obj",
+    "id": 3,
   }
 }
 ```
+如果上传的文件名，已经存在于服务器upload目录，Django会自动在文件名后添加随机字符串，如`filename_1a2b3c.obj`，上传成功后，文件名会在`scene.file`中返回
 
 
 ### 添加展厅
@@ -82,7 +84,7 @@ HTTP Form 类型
 ```json
 {
   "scene": {
-    "name": string
+    "name": "SceneName"
   }
 }
 ```
@@ -91,8 +93,8 @@ HTTP Form 类型
 ```json
 {
   "scene": {
-    "name": string,
-    "id": int
+    "name": "SceneName",
+    "id": 3
   }
 }
 ```
@@ -108,7 +110,7 @@ HTTP Form 类型
 ```json
 {
   "scene": {
-    "scene_name": string
+    "name": "SceneName"
   }
 }
 ```
@@ -138,14 +140,18 @@ HTTP Form 类型
 {
   "item_list": [
     {
-      "name": string,
-      "id": int,
-      "author": string(username),
-      "x": float,
-      "y": float,
-      "z": float,
-      "roatation": float,
-      "scale": float,
+      "name": "SceneName",
+      "id": 3,
+      "author": "UserName",
+      "pos_x": 3.9,
+      "pos_y": 1.8,
+      "pos_z": 6.0,
+      "rot_x": 1.0,
+      "rot_y": 1.0,
+      "rot_z": 1.0,
+      "scl_x": 1.1,
+      "scl_y": 1.1,
+      "scl_z": 1.1,
     },
     ...
   ]
@@ -161,8 +167,8 @@ HTTP Form 类型
 ```json
 {
   "item": {
-    "name": string,
-    "author": string(username)
+    "name": "ItemName",
+    "author": "UserName"
   }
 }
 ```
@@ -171,10 +177,10 @@ HTTP Form 类型
 ```json
 {
   "item": {
-    "name": string,
-    "id": int,
-    "author": string(username),
-    "file": string
+    "name": "ItemName",
+    "id": 39,
+    "author": "UserName",
+    "file": "Item_model_file_1a2b3c.obj"
 }
 ```
 
@@ -184,7 +190,7 @@ HTTP Form 类型
 ### 获取展品模型
 
 #### GET gallery/api/scene/<int:scene_id>/item/<int:item_id>/file/
-二进制数据流
+二进制数据
 
 #### 403 没有权限
 
@@ -197,10 +203,10 @@ HTTP Form 类型
 ```json
 {
   "item": {
-    "name": string,
-    "id": int,
-    "author": string(username),
-    "file": string
+    "name": "ItemName",
+    "id": 39,
+    "author": "UserName",
+    "file": "Item_model_file_1a2b3c.obj"
   }
 }
 ```
