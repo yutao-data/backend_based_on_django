@@ -448,10 +448,14 @@ class APIAddItem(APIView):
 
     @staticmethod
     def my_post(request, cleaned_data, scene_id):
-        item = Item.objects.create(name=cleaned_data['name'])
         scene = Scene.objects.get(pk=scene_id)
-        user = User.objects.get(pk=cleaned_data['author_id'])
         group = scene.group
+        user = User.objects.get(pk=cleaned_data['author_id'])
+        item = Item.objects.create(
+            name=cleaned_data['name'],
+            scene=scene,
+            author=user
+        )
         # 分配物体的object权限到组里
         assign_perm('gallery.view_item', group, item)
         assign_perm('gallery.change_item', group, item)
