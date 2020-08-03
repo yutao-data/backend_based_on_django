@@ -184,7 +184,7 @@
                     // django 的费拉模板功能
                     // 有个锤子用
                     progress_bar_app.show = true
-                    axios.post('/gallery/api/scene/' + cs['scene_id'] + "/file", formData, config)
+                    axios.post('/gallery/api/scene/' + cs['scene_id'] + "/file/", formData, config)
                     .then(function (response) {
                         scene_management_app.scene = response.data['scene']
                         scene_management_app.file_field_show = false
