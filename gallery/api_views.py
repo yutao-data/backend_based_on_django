@@ -424,7 +424,8 @@ class APIGetItemList(APIView):
     @staticmethod
     def my_get(request, scene_id):
         item_list = []
-        for item in Item.objects.all():
+        scene = Scene.objects.get(pk=scene_id)
+        for item in Item.objects.filter(scene=scene):
             if request.user.has_perm('gallery.change_item', item):
                 # 解决可能没有author的bug
                 author = ''
