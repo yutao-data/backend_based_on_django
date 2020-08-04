@@ -140,15 +140,17 @@ HTTP Form 类型
 {
   "item_list": [
     {
-      "name": "SceneName",
+      "name": "ItemName",
       "id": 3,
       "author": "UserName",
+      "author_id": 16,
       "pos_x": 3.9,
       "pos_y": 1.8,
       "pos_z": 6.0,
       "rot_x": 1.0,
       "rot_y": 1.0,
       "rot_z": 1.0,
+      "rot_w": 1.0,
       "scl_x": 1.1,
       "scl_y": 1.1,
       "scl_z": 1.1,
@@ -168,7 +170,7 @@ HTTP Form 类型
 {
   "item": {
     "name": "ItemName",
-    "author": "UserName"
+    "author_id": 16
   }
 }
 ```
@@ -177,10 +179,7 @@ HTTP Form 类型
 ```json
 {
   "item": {
-    "name": "ItemName",
-    "id": 39,
-    "author": "UserName",
-    "file": "Item_model_file_1a2b3c.obj"
+    // 参见展品列表返回数据
 }
 ```
 
@@ -206,6 +205,7 @@ HTTP Form 类型
     "name": "ItemName",
     "id": 39,
     "author": "UserName",
+    "author_id": 16,
     "file": "Item_model_file_1a2b3c.obj"
   }
 }

@@ -427,18 +427,75 @@ class APIGetItemList(APIView):
         scene = Scene.objects.get(pk=scene_id)
         for item in Item.objects.filter(scene=scene):
             if request.user.has_perm('gallery.change_item', item):
-                # 解决可能没有author的bug
-                author = ''
-                if item.author:
-                    author = item.author.username
-                item_list.append({
-                    'id': item.pk,
-                    'name': item.name,
-                    'author': author,
-                })
+                item_list.append(get_item_information(item))
         return JsonResponse({
             'item_list': item_list,
         })
+
+
+class APIItemInformation(APIView):
+
+    @staticmethod
+    def my_get(request, scene_id, item_id):
+        item = Item.objects.get(pk=item_id)
+        return JsonResponse(get_item_information(item))
+
+    @staticmethod
+    def my_post(request, cleaned_data, scene_id, item_id):
+        item = Item.objects.get(pk=item_id)
+        if cleaned_data.get('name') is not None:
+            item.name = cleaned_data['name']
+        # 网页端用 user_id 来 
+        if cleaned_data.get('author_id') is not None:
+            item.author = User.objects.get(pk=cleaned_data['author_id'])
+        if cleaned_data.get('author') is not None:
+            item.author = User.objects.get(username=cleaned_data['author'])
+        if cleaned_data.get('pos_x') is not None:
+            item.pos_x = cleaned_data['pos_x']
+        if cleaned_data.get('pos_y') is not None:
+            item.pos_y = cleaned_data['pos_y']
+        if cleaned_data.get('pos_z') is not None:
+            item.pos_z = cleaned_data['pos_z']
+        if cleaned_data.get('rot_x') is not None:
+            item.rot_x = cleaned_data['rot_x']
+        if cleaned_data.get('rot_y') is not None:
+            item.rot_y = cleaned_data['rot_y']
+        if cleaned_data.get('rot_z') is not None:
+            item.rot_z = cleaned_data['rot_z']
+        if cleaned_data.get('row_w') is not None:
+            item.row_w = cleaned_data['rot_w']
+        if cleaned_data.get('scl_x') is not None:
+            item.scl_x = cleaned_data['scl_x']
+        if cleaned_data.get('scl_y') is not None:
+            item.scl_y = cleaned_data['scl_y']
+        if cleaned_data.get('scl_z') is not None:
+            item.scl_z = cleaned_data['scl_z']
+        item.save()
+
+
+def get_item_information(item):
+    # 解决可能没有author的bug
+    author = ''
+    author_id = -1
+    if item.author:
+        author = item.author.username
+        author_id = item.author.pk
+    return {
+        'id': item.pk,
+        'name': item.name,
+        'author': author,
+        'author_id': author_id,
+        'pos_x': item.pos_x,
+        'pos_y': item.pos_y,
+        'pos_z': item.pos_z,
+        'rot_x': item.rot_x,
+        'rot_y': item.rot_y,
+        'rot_z': item.rot_z,
+        'rot_w': item.rot_w,
+        'scl_x': item.scl_x,
+        'scl_y': item.scl_y,
+        'scl_z': item.scl_z,
+    }
 
 
 class APIAddItem(APIView):
