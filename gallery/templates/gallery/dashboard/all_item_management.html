@@ -127,7 +127,7 @@
                     // 点击了 modify 按钮
                     modify_onclick: function (item) {
                         progress_bar_app.show = true
-                        window.location = '' + '?item_id=' + item.id
+                        window.location = '{% url "gallery:dashboard:item_management" %}'+'?item_id='+item.id
                     },
                     new_item_onclick: function () {
                         progress_bar_app.show = true

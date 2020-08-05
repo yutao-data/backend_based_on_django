@@ -46,6 +46,7 @@ def get_success_response(message='Success'):
 class APIView(View):
     # 占位符避免no attribute 错误
     MyForm = None
+    use_form = True
 
     def get(self, requests, *args, **kwargs):
         try:
@@ -85,6 +86,8 @@ class APIView(View):
         try:
             # 使用json解码
             data = json.loads(requests.body)
+            if not self.use_form:
+                return self.my_post(requests, data, *args, **kwargs)
             # 表单未定义
             if not self.MyForm:
                 raise APIFormNotDefine
@@ -434,43 +437,48 @@ class APIGetItemList(APIView):
 
 
 class APIItemInformation(APIView):
+    use_form = False
 
     @staticmethod
-    def my_get(request, scene_id, item_id):
+    def my_get(request, item_id):
         item = Item.objects.get(pk=item_id)
-        return JsonResponse(get_item_information(item))
+        return JsonResponse({
+            'item': get_item_information(item),
+        })
 
     @staticmethod
-    def my_post(request, cleaned_data, scene_id, item_id):
+    def my_post(request, data, item_id):
         item = Item.objects.get(pk=item_id)
-        if cleaned_data.get('name') is not None:
-            item.name = cleaned_data['name']
-        # 网页端用 user_id 来 
-        if cleaned_data.get('author_id') is not None:
-            item.author = User.objects.get(pk=cleaned_data['author_id'])
-        if cleaned_data.get('author') is not None:
-            item.author = User.objects.get(username=cleaned_data['author'])
-        if cleaned_data.get('pos_x') is not None:
-            item.pos_x = cleaned_data['pos_x']
-        if cleaned_data.get('pos_y') is not None:
-            item.pos_y = cleaned_data['pos_y']
-        if cleaned_data.get('pos_z') is not None:
-            item.pos_z = cleaned_data['pos_z']
-        if cleaned_data.get('rot_x') is not None:
-            item.rot_x = cleaned_data['rot_x']
-        if cleaned_data.get('rot_y') is not None:
-            item.rot_y = cleaned_data['rot_y']
-        if cleaned_data.get('rot_z') is not None:
-            item.rot_z = cleaned_data['rot_z']
-        if cleaned_data.get('row_w') is not None:
-            item.row_w = cleaned_data['rot_w']
-        if cleaned_data.get('scl_x') is not None:
-            item.scl_x = cleaned_data['scl_x']
-        if cleaned_data.get('scl_y') is not None:
-            item.scl_y = cleaned_data['scl_y']
-        if cleaned_data.get('scl_z') is not None:
-            item.scl_z = cleaned_data['scl_z']
+        if data.get('name') is not None:
+            item.name = data['name']
+        # 网页端用 user_id 来选择author
+        print(data)
+        if data.get('item.author_id') is not None:
+            item.author = User.objects.get(pk=data['item.author_id'])
+        if data.get('item.author') is not None:
+            item.author = User.objects.get(username=data['item.author'])
+        if data.get('item.pos_x') is not None:
+            item.pos_x = data['item.pos_x']
+        if data.get('item.pos_y') is not None:
+            item.pos_y = data['item.pos_y']
+        if data.get('item.pos_z') is not None:
+            item.pos_z = data['item.pos_z']
+        if data.get('item.rot_x') is not None:
+            item.rot_x = data['item.rot_x']
+        if data.get('item.rot_y') is not None:
+            item.rot_y = data['item.rot_y']
+        if data.get('item.rot_z') is not None:
+            item.rot_z = data['item.rot_z']
+        if data.get('item.row_w') is not None:
+            item.row_w = data['item.rot_w']
+        if data.get('item.scl_x') is not None:
+            item.scl_x = data['item.scl_x']
+        if data.get('item.scl_y') is not None:
+            item.scl_y = data['item.scl_y']
+        if data.get('item.scl_z') is not None:
+            item.scl_z = data['item.scl_z']
         item.save()
+        return get_success_response()
 
 
 def get_item_information(item):

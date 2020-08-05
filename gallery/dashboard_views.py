@@ -73,3 +73,14 @@ class AllItemManagementView(View):
             'title': 'All Item Management',
         }
         return render(request, 'gallery/dashboard/all_item_management.html', view_dict)
+
+
+# 单个item的管理视图
+class ItemManagementView(View):
+
+    @staticmethod
+    def get(request):
+        view_dict = {
+            'title': 'Item Management',
+        }
+        return render(request, 'gallery/dashboard/item_management.html', view_dict)

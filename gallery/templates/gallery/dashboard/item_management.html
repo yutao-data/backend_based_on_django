@@ -1,0 +1,104 @@
+{% extends "gallery/dashboard/base.html" %}
+
+{% block content %}
+    <div id="item_management_div" class="mdl-grid demo-content">
+        <div class="mdl-cell mdl-cell--12-col mdl-grid">
+            <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                <thead>
+                <tr>
+                    <td colspan="100%" class="mdl-data-table__cell--non-numeric">
+                        <h4>Item Management</h4>
+                    </td>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td class="mdl-data-table__cell--non-numeric">ID</td>
+                    <td>[[ item.id ]]</td>
+                </tr>
+                <tr>
+                    <td class="mdl-data-table__cell--non-numeric">Item Name</td>
+                    <td>
+                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input v-model="item.name" type="text" name="item_name" class="mdl-textfield__input">
+                            <label for="item_name" class="mdl-textfield__label"></label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="mdl-data-table__cell--non-numeric">Author</td>
+                    <td>
+                        <select v-model="item.author_id">
+                            <option v-for="artist in artist_list" v-bind:value="artist.id">
+                                [[ artist.username ]]
+                            </option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="100%">
+                        <button v-on:click="save_onclick" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+                            Save
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+            var url = window.location.href //获取当前url
+            var dz_url = url.split('#')[0] //获取#/之前的字符串
+            var cs = dz_url.split('?')[1] //获取?之后的参数字符串
+            var cs_arr = cs.split('&') //参数字符串分割为数组
+            var cs={}
+            for(var i=0;i<cs_arr.length;i++){//遍历数组，拿到json对象
+                cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
+            }
+            var item_management_app = new Vue({
+                delimiters: ['[[', ']]'],
+                el: '#item_management_div',
+                data: {
+                    item: {},
+                    artist_list: [],
+                },
+                methods: {
+                    save_onclick: function () {
+                        progress_bar_app.show = true
+                        axios.post('/gallery/api/item/'+cs['item_id']+'/info/', {
+                            item: item_management_app.item,
+                        })
+                        .then(function (response) {
+                            showSnackbar("Saved")
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                    }
+                },
+                created: function () {
+                    progress_bar_app.show = true
+                    axios.get('/gallery/api/item/'+cs['item_id']+'/info/')
+                    .then(function (response) {
+                        item_management_app.item = response.data['item']
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+                    .finally(function () {
+                        progress_bar_app.show = false
+                    })
+                    axios.get('/gallery/api/author_list/')
+                    .then(function (response) {
+                        item_management_app.artist_list = response.data['artist_list']
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+                },
+            })
+        </script>
+{% endblock %}
