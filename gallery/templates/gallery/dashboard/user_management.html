@@ -13,8 +13,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="user in user_list" v-bind:key="user.pk">
-                        <td>[[ user.pk ]]</td>
+                    <tr v-for="user in user_list" v-bind:key="user.id">
+                        <td>[[ user.id ]]</td>
                         <td class="mdl-data-table__cell--non-numeric">[[ user.username ]]</td>
                         <td class="mdl-data-table__cell--non-numeric">
                             <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
@@ -28,7 +28,7 @@
                             </button>
                         </td>
                         <td class="mdl-data-table__cell--non-numeric">
-                            <button class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                            <button v-on:click="delete_onclick(user)" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
                                 Delete
                             </button>
                         </td>
@@ -48,7 +48,7 @@
                         // 交互效果
                         progress_bar_app.show = true
                         axios.post('{% url "gallery:api:user_management" %}', {
-                            pk: user.pk,
+                            id: user.id,
                             user_status: user.user_status,
                         })
                         .then(function (response) {
@@ -61,14 +61,33 @@
                         .finally(function () {
                             progress_bar_app.show = false
                         })
+                    },
+                    delete_onclick: function (user) {
+                        progress_bar_app.show = true
+                        axios.post('{% url "gallery:api:delete_user" %}', {
+                            id: user.id,
+                        })
+                        .then(function (response) {
+                            user_management_app.refresh_user_list()
+                            showSnackbar('Deleted')
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                    },
+                    refresh_user_list: function () {
+                        axios.get('{% url "gallery:api:user_management_user_list" %}')
+                        .then(function (response) {
+                            console.log(response)
+                            user_management_app.user_list = response.data['user_list']
+                        })
                     }
                 },
                 created: function () {
-                    axios.get('{% url "gallery:api:user_management_user_list" %}')
-                    .then(function (response) {
-                        console.log(response)
-                        user_management_app.user_list = response.data['user_list']
-                    })
+                    this.refresh_user_list()
                 },
             })
         </script>

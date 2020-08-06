@@ -199,13 +199,13 @@ class APISignupView(APIView):
 
 class APIUserManagementView(APIView):
     class MyForm(Form):
-        pk = IntegerField(label='pk')
+        id = IntegerField(label='id')
         user_status = NullBooleanField(label='user_status')
 
     @staticmethod
     def my_post(request, cleaned_data):
         # 设置用户状态
-        user = User.objects.get(pk=cleaned_data['pk'])
+        user = User.objects.get(pk=cleaned_data['id'])
         user.is_active = cleaned_data['user_status']
         user.save()
         return get_success_response()
@@ -226,7 +226,7 @@ class APIUserManagementUserListView(APIView):
                 continue
             user_list.append({
                 'username': user.username,
-                'pk': user.pk,
+                'id': user.id,
                 'user_status': user.is_active,
             })
         return JsonResponse({'user_list': user_list})
@@ -234,11 +234,11 @@ class APIUserManagementUserListView(APIView):
 
 class APIDeleteUserView(APIView):
     class MyForm(Form):
-        pk = IntegerField(label='pk')
+        id = IntegerField(label='id')
 
     @staticmethod
     def my_post(request, cleaned_data):
-        user = User.objects.get(pk=cleaned_data['pk'])
+        user = User.objects.get(pk=cleaned_data['id'])
         user.delete()
         return get_success_response()
 
