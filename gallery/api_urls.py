@@ -20,4 +20,5 @@ urlpatterns = [
     path('scene/<int:scene_id>/itemlist/', api_views.APIGetItemList.as_view(), name='get_item_list'),
     path('scene/<int:scene_id>/itemadd/', api_views.APIAddItem.as_view(), name='add_item'),
     path('item/<int:item_id>/info/', api_views.APIItemInformation.as_view(), name='item_information'),
+    path('item/<int:item_id>/', api_views.APIDeleteItem.as_view(), name='item_delete'),
 ]

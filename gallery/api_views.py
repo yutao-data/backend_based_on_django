@@ -482,17 +482,9 @@ class APIItemInformation(APIView):
 
 
 def get_item_information(item):
-    # 解决可能没有author的bug
-    author = ''
-    author_id = -1
-    if item.author:
-        author = item.author.username
-        author_id = item.author.pk
-    return {
+    result_dict = {
         'id': item.pk,
         'name': item.name,
-        'author': author,
-        'author_id': author_id,
         'pos_x': item.pos_x,
         'pos_y': item.pos_y,
         'pos_z': item.pos_z,
@@ -504,6 +496,17 @@ def get_item_information(item):
         'scl_y': item.scl_y,
         'scl_z': item.scl_z,
     }
+    # 解决可能没有author的bug
+    author = None
+    author_id = None
+    if item.author:
+        author = item.author.username
+        author_id = item.author.pk
+    if author is not None:
+        result_dict['author'] = author
+    if author_id is not None:
+        result_dict['author_id'] = author_id
+    return result_dict
 
 
 class APIAddItem(APIView):
@@ -530,6 +533,17 @@ class APIAddItem(APIView):
         assign_perm('gallery.change_item', user, item)
         assign_perm('gallery.delete_item', user, item)
         item.save()
+        return get_success_response()
+
+
+class APIDeleteItem(APIView):
+    
+    @staticmethod
+    def my_del(request, item_id):
+        item = Item.objects.get(pk=item_id)
+        # 删除权限
+        # todo
+        item.delete()
         return get_success_response()
 
 

@@ -67,20 +67,22 @@
                     <tr>
                         <th class="mdl-data-table__cell--non-numeric">ID</th>
                         <th class="mdl-data-table__cell--non-numeric">Item Name</th>
+                        <th class="mdl-data-table__cell--non-numeric">Author</th>
                         <th colspan="2" class="mdl-data-table__cell--non-numeric">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="item in item_list">
-                        <td>[[ item.pk ]]</td>
+                        <td>[[ item.id ]]</td>
                         <td>[[ item.name ]]</td>
+                        <td>[[ item.author ]]</td>
                         <td>
                             <button v-on:click="modify_onclick(item)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
                                 Modify
                             </button>
                         </td>
                         <td>
-                            <button class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                            <button v-on:click="delete_onclick(item)" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
                                 Delete
                             </button>
                         </td>
@@ -143,13 +145,27 @@
                         })
                         .finally(function () {
                             all_item_management_app.refresh_item_list()
-                            all_item_management_app.new_scene_show = false
+                            all_item_management_app.new_item_show = false
                             progress_bar_app.show = false
                         })
                     },
                     add_item_onclick: function () {
                         this.new_item_show = true
-                    }
+                    },
+                    delete_onclick: function (item) {
+                        progress_bar_app.show = true
+                        axios.delete('/gallery/api/item/' + item.id + '/')
+                        .then(function (response) {
+                            showSnackbar('Deleted')
+                            all_item_management_app.refresh_item_list()
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                    },
                 },
                 created: function () {
                     progress_bar_app.show = true
