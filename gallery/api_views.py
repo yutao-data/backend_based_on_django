@@ -151,7 +151,7 @@ class APISignupView(APIView):
         username = CharField(label='username')
         password = CharField(label='password')
         user_type = CharField(label='user_type')
-        teacher_group_pk = IntegerField(label='teacher_group_pk', required=False)
+        teacher_group_id = IntegerField(label='teacher_group_id', required=False)
 
     @staticmethod
     def my_post(request, cleaned_data):
