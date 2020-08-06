@@ -14,11 +14,11 @@
                 <tbody>
                 <tr>
                     <td class="mdl-data-table__cell--non-numeric">ID</td>
-                    <td>[[ item.id ]]</td>
+                    <td colspan="100%">[[ item.id ]]</td>
                 </tr>
                 <tr>
                     <td class="mdl-data-table__cell--non-numeric">Item Name</td>
-                    <td>
+                    <td colspan="100%">
                         <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                             <input v-model="item.name" type="text" name="item_name" class="mdl-textfield__input">
                             <label for="item_name" class="mdl-textfield__label"></label>
@@ -27,12 +27,47 @@
                 </tr>
                 <tr>
                     <td class="mdl-data-table__cell--non-numeric">Author</td>
-                    <td>
+                    <td colspan="100%">
                         <select v-model="item.author_id">
                             <option v-for="artist in artist_list" v-bind:value="artist.id">
                                 [[ artist.username ]]
                             </option>
                         </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="mdl-data-table__cell--non-numeric">
+                        <span>File</span>
+                    </td>
+                    <td v-show="file_span_show">
+                        <span>[[ item.file ]]</span>
+                    </td>
+                    <td v-show="file_field_show">
+                        <input v-on:change="file_field_onchange($event)" type="file">
+                    </td>
+                    <td v-show="modify_button_show">
+                        <button v-on:click="modify_onclick($event)"
+                                class="mdl-button mdl-button-js mdl-button--accent mdl-button--raised">
+                            Modify
+                        </button>
+                    </td>
+                    <td v-show="download_button_show">
+                        <button v-on:click="download_onclick"
+                                class="mdl-button mdl-button-js mdl-button--colored mdl-button--raised">
+                            Download
+                        </button>
+                    </td>
+                    <td v-show="upload_button_show">
+                        <button v-on:click="upload_onclick"
+                                class="mdl-button mdl-button-js mdl-button--colored mdl-button--raised">
+                            Upload
+                        </button>
+                    </td>
+                    <td v-show="delete_button_show">
+                        <button
+                                class="mdl-button mdl-button-js mdl-button--accent mdl-button--raised">
+                            Delete
+                        </button>
                     </td>
                 </tr>
                 <tr>
@@ -61,6 +96,13 @@
                 data: {
                     item: {},
                     artist_list: [],
+                    file_span_show: true,
+                    file_field_show: false,
+                    delete_button_show: false,
+                    download_button_show: true,
+                    upload_button_show: false,
+                    modify_button_show: true,
+                    file: '',
                 },
                 methods: {
                     save_onclick: function () {
@@ -77,7 +119,49 @@
                         .finally(function () {
                             progress_bar_app.show = false
                         })
-                    }
+                    },
+                    modify_onclick: function() {
+                        this.modify_button_show = false
+                        this.download_button_show = false
+                        this.file_span_show = false
+                        this.file_field_show = true
+                        this.upload_button_show = true
+                        this.delete_button_show = true
+                    },
+                    download_onclick: function () {
+                        window.location = '/gallery/api/item/' + cs['item_id'] + '/file/'
+                    },
+                    upload_onclick: function () {
+                        let formData = new FormData();
+                        let data = JSON.stringify({
+                            name: this.file.name
+                        })
+                        formData.append('file', this.file)
+                        formData.append('data', data)
+                        let config = {
+                            headers: {'Content-Type': 'multipart/form-data'}
+                        }
+                        progress_bar_app.show = true
+                        axios.post('/gallery/api/item/' + cs['item_id'] + "/file/", formData, config)
+                        .then(function (response) {
+                            item_management_app.item = response.data['item']
+                            item_management_app.file_field_show = false
+                            item_management_app.upload_button_show = false
+                            item_management_app.delete_button_show = false
+                            item_management_app.modify_button_show = true
+                            item_management_app.download_button_show = true
+                            item_management_app.file_span_show = true
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                    },
+                    file_field_onchange: function (event) {
+                        this.file = event.target.files[0]
+                    },
                 },
                 created: function () {
                     progress_bar_app.show = true
@@ -91,7 +175,7 @@
                     .finally(function () {
                         progress_bar_app.show = false
                     })
-                    axios.get('/gallery/api/author_list/')
+                    axios.get('{% url "gallery:api:get_artist_list" %}')
                     .then(function (response) {
                         item_management_app.artist_list = response.data['artist_list']
                     })

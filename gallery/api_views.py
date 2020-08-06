@@ -452,7 +452,6 @@ class APIItemInformation(APIView):
         if data.get('name') is not None:
             item.name = data['name']
         # 网页端用 user_id 来选择author
-        print(data)
         if data.get('item.author_id') is not None:
             item.author = User.objects.get(pk=data['item.author_id'])
         if data.get('item.author') is not None:
@@ -506,6 +505,8 @@ def get_item_information(item):
         result_dict['author'] = author
     if author_id is not None:
         result_dict['author_id'] = author_id
+    if item.file is not None:
+        result_dict['file'] = item.file.name
     return result_dict
 
 
@@ -545,6 +546,30 @@ class APIDeleteItem(APIView):
         # todo
         item.delete()
         return get_success_response()
+
+
+@method_decorator(csrf_exempt, 'dispatch')
+class APIItemFile(View):
+
+    @staticmethod
+    def get(request, item_id):
+        item = Item.objects.get(pk=item_id)
+        f_p = os.path.join(MEDIA_ROOT, item.file.name)
+        f = open(f_p, 'rb')
+        return FileResponse(f)
+
+    @staticmethod
+    def post(request, item_id):
+        # todo: 代码复用
+        file = request.FILES.get('file')
+        data = request.POST.get('data')
+        item = Item.objects.get(pk=item_id)
+        item.file = file
+        item.save()
+        return JsonResponse({
+            "item": get_item_information(item)
+        })
+
 
 
 class APIGetArtistList(APIView):

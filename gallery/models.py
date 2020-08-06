@@ -20,6 +20,7 @@ class Item(models.Model):
     name = models.CharField(max_length=NAME_MAX_CHAR)
     author = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     scene = models.ForeignKey(Scene, on_delete=models.CASCADE, blank=True, null=True)
+    file = models.FileField(blank=True, null=True)
     pos_x = models.FloatField(default=0.0)
     pos_y = models.FloatField(default=0.0)
     pos_z = models.FloatField(default=0.0)

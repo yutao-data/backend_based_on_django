@@ -98,13 +98,13 @@
 
     <script>
         var url = window.location.href //获取当前url
-        var dz_url = url.split('#')[0] //获取#/之前的字符串
-        var cs = dz_url.split('?')[1]  //获取?之后的参数字符串
-        var cs_arr = cs.split('&') //参数字符串分割为数组
-        var cs={}
-            for(var i=0;i<cs_arr.length;i++){//遍历数组，拿到json对象
-              cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
-            }
+        var dz_url = url.split('#')[0] //获取#/之前的字符串
+        var cs = dz_url.split('?')[1]  //获取?之后的参数字符串
+        var cs_arr = cs.split('&') //参数字符串分割为数组
+        var cs={}
+        for(var i=0;i<cs_arr.length;i++){//遍历数组，拿到json对象
+            cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
+        }
         var scene_management_app = new Vue({
             delimiters: ['[[', ']]'],
             el: '#scene_management_div',
@@ -203,7 +203,6 @@
                 },
                 file_field_onchange: function (event) {
                     this.file = event.target.files[0]
-                    console.log(this.file)
                 }
             },
 
