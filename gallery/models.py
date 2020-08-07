@@ -32,3 +32,10 @@ class Item(models.Model):
     scl_y = models.FloatField(default=1.0)
     scl_z = models.FloatField(default=1.0)
 
+
+# 策展
+class Exhibition(models.Model):
+    def __str__(self):
+        return str(self.name)
+    name = models.CharField(max_length=NAME_MAX_CHAR)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True)

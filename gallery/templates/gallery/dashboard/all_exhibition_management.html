@@ -1,0 +1,153 @@
+{% extends "gallery/dashboard/base.html" %}
+
+{% block content %}
+    <div id="all_exhibition_management_div" class="mdl-grid demo-content">
+        <div class="mdl-cell mdl-cell--12-col mdl-grid" v-show="new_exhibition_show">
+            <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                <thead>
+                    <tr>
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <strong>Add New Exhibition</strong>
+                            </div>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input v-model="new_exhibition_name" type="text" name="new_exhibition_name" class="mdl-textfield__input">
+                                <label for="new_exhibition_name" class="mdl-textfield__label">New Exhibition Name</label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-show="new_exhibition_error_message_show">
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
+                            [[ new_exhibition_error_message ]]
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <button v-on:click="new_exhibition_onclick" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                                Add
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="mdl-cell mdl-cell--12-col mdl-grid">
+            <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                <thead>
+                    <tr>
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
+                            <h4>All Exhibition Management</h4>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
+                            <button v-on:click="add_exhibition_onclick" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+                                Add New Exhibition 
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="mdl-data-table__cell--non-numeric">ID</th>
+                        <th class="mdl-data-table__cell--non-numeric">Exhibition Name</th>
+                        <th class="mdl-data-table__cell--non-numeric">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="exhibition in exhibition_list">
+                        <td>[[ exhibition.id ]]</td>
+                        <td>[[ exhibition.name ]]</td>
+                        <td>
+                            <button v-on:click="delete_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+            var all_exhibition_management_app = new Vue({
+                delimiters: ['[[', ']]'],
+                el: '#all_exhibition_management_div',
+                data: {
+                    exhibition_list: [],
+                    new_exhibition_name: '',
+                    new_exhibition_show: false,
+                    new_exhibition_error_message_show: false,
+                    new_exhibition_error_message: '',
+                    artist_list: [],
+                    author_id: null,
+                },
+                methods: {
+                    refresh_exhibition_list: function () {
+                        progress_bar_app.show = true
+                        axios.get('/gallery/api/exhibitionlist/')
+                        .then(function (response) {
+                            all_exhibition_management_app.exhibition_list = response.data['exhibition_list']
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                    },
+                    new_exhibition_onclick: function () {
+                        progress_bar_app.show = true
+                        axios.post('/gallery/api/exhibitionadd/', {
+                            name: this.new_exhibition_name,
+                        })
+                        .then(function (response) {
+                            showSnackbar('Add Exhibition Success')
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            all_exhibition_management_app.refresh_exhibition_list()
+                            all_exhibition_management_app.new_exhibition_show = false
+                            progress_bar_app.show = false
+                        })
+                    },
+                    add_exhibition_onclick: function () {
+                        this.new_exhibition_show = true
+                    },
+                    delete_onclick: function (exhibition) {
+                        progress_bar_app.show = true
+                        axios.delete('/gallery/api/exhibition/' + exhibition.id + '/')
+                        .then(function (response) {
+                            showSnackbar('Deleted')
+                            all_exhibition_management_app.refresh_exhibition_list()
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                    },
+                },
+                created: function () {
+                    progress_bar_app.show = true
+                    this.refresh_exhibition_list()
+                    axios.get('{% url "gallery:api:get_artist_list" %}')
+                    .then(function (response) {
+                        all_exhibition_management_app.artist_list = response.data['artist_list']
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+                    .finally(function () {
+                        progress_bar_app.show = false
+                    })
+                },
+            })
+        </script>
+{% endblock %}

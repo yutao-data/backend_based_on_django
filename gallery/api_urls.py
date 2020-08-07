@@ -28,8 +28,19 @@ urlpatterns = [
     # 获取一个组列表，teacher类型用户注册时需要选择一个组
     path('account/teacher_group_list/', api_views.APIGetTeacherGroupList.as_view(), name='get_teacher_group_list'),
 
+    path('account/stuff_group_list/', api_views.APIGetSceneList.as_view(), name='get_stuff_group_list'),
+
     # 获取当前已经登陆的用户的类型，返回artist/teacher/stuff/superuser
     path('account/user_type/', api_views.APIGetUserType.as_view(), name='get_user_type'),
+    
+    # Exhibition list
+    path('exhibitionlist/', api_views.APIExhibitionList.as_view(), name='get_exhibition_list'),
+
+    # Exhibition Add
+    path('exhibitionadd/', api_views.APIExhibitionAdd.as_view(), name='exhibition_add'),
+
+    # Exhibition Delete
+    path('exhibition/<int:exhibition_id>/', api_views.APIExhibitionDelete.as_view(), name='delete_exhibition'),
 
     # 获取场景列表
     path('scenelist/', api_views.APIGetSceneList.as_view(), name='get_scene_list'),

@@ -22,15 +22,10 @@ from .error import (
     APIFormNotDefine,
     NoPermission,
 )
-from .models import Scene, Item
+from .models import Scene, Item, Exhibition
 from guardian.shortcuts import assign_perm
 from django.contrib.auth.decorators import login_required
-# from rest_framework.views import View
-# rest_framework是个什么鬼，权限写成数组不和guardian兼容
-# 重写一堆方法写来写去403错也不爆
-# 官方文档插拔方法没个锤子用
-# 传的还不是django的HTTPResponse
-# 坑
+
 MAX_CHAR_LENGTH = 32
 
 
@@ -102,6 +97,7 @@ class APIView(View):
         # 统一的错误处理，减少代码重复
         # To do: 细化错误处理
         except Error as e:
+            print('Catch Error %s: %s' % (str(type(e)), str(e)))
             return JsonResponse({
                 'error_type': str(e.__class__.__name__),  # 使用类名作为错误类型
                 'error_message': str(e)  # 调用e的__str__()方法，获取错误详细解释
@@ -109,7 +105,7 @@ class APIView(View):
         # 捕获未定义的错误
         except Exception as e:
             # 输出错误类型和错误信息到控制台
-            print('%s: %s' % (str(type(e)), str(e)))
+            print('Unexcepted Error %s: %s' % (str(type(e)), str(e)))
             return JsonResponse({
                 'error_type': 'NotDefine Error: ' + str(type(e)),
                 'error_message': str(e),
@@ -121,6 +117,16 @@ class APILoginView(APIView):
     class MyForm(Form):
         username = CharField(label='username')
         password = CharField(label='password')
+
+
+    @staticmethod
+    def my_get(request):
+        if request.user.is_authenticated:
+            return JsonResponse({
+                'user_type': get_user_type(request),
+            })
+        else:
+            raise AuthenticateError
 
     @staticmethod
     def my_post(request, cleaned_data):
@@ -171,8 +177,8 @@ class APISignupView(APIView):
         user_type = cleaned_data['user_type']
         if user_type == 'artist':
             # 普通用户
-            user_group = Group.objects.get_or_create(name='user_group')[0]
-            user_group.user_set.add(user)
+            artist_group = Group.objects.get_or_create(name='artist_group')[0]
+            artist_group.user_set.add(user)
         elif user_type == 'teacher':
             # 添加老师到teacher_group组
             teacher_group = Group.objects.get_or_create(name='teacher_group')[0]
@@ -267,6 +273,8 @@ class APIGetUserType(APIView):
 # 获取用户类型
 def get_user_type(request):
     user_type = ''
+    if request.user.is_superuser:
+        user_type = 'superuser'
     for group in request.user.groups.all():
         if group.name == 'artist_group':
             user_type = 'artist'
@@ -302,6 +310,24 @@ class APIGetTeacherGroupList(APIView):
         return JsonResponse({
             'teacher_group_list': teacher_group_list,
         })
+
+
+class APIGetStuffGroupList(APIView):
+    
+    @staticmethod
+    def my_get(request):
+        stuff_group_list = []
+        for exhibition in Exhibition.objects.all():
+            if exhibition.group:
+                sutff_group = {
+                    'id': exhibition.group.pk,
+                    'name': exhibition.name,
+                }
+            stuff_group_list.append(stuff_group)
+        return JsonResponse({
+            'stuff_group_list': stuff_group_list,
+        })
+
 
 
 class APIGetSceneList(APIView):
@@ -496,7 +522,7 @@ class APIItemInformation(APIView):
         item.save()
         return get_success_response()
 
-
+# todo args include user and check perms
 def get_item_information(item):
     result_dict = {
         'id': item.pk,
@@ -588,7 +614,6 @@ class APIItemFile(View):
         })
 
 
-
 class APIGetArtistList(APIView):
 
     @staticmethod
@@ -604,4 +629,72 @@ class APIGetArtistList(APIView):
                 })
         return JsonResponse({
             'artist_list': artist_list,
+        })
+
+
+def get_exhibition_information(request, exhibition):
+    result_dict = {
+        'id': exhibition.pk,
+        'name': exhibition.name,
+    }
+    return result_dict
+
+
+
+class APIExhibitionAdd(APIView):
+    class MyForm(Form):
+        name = CharField(label='name')
+
+    @staticmethod
+    def my_post(request, cleaned_data):
+        exhibition_name = cleaned_data['name']
+        exhibition = Exhibition.objects.create(name=exhibition_name)
+        # todo group_name add random string
+        group = Group.objects.create(name=exhibition_name)
+        exhibition.group = group
+        exhibition.save()
+        return get_success_response()
+
+
+class APIExhibitionInfo(APIView):
+    class MyForm(Form):
+        name = CharField(label='name')
+
+    @staticmethod
+    def my_get(request, exhibition_id):
+        exhibition = Exhibition.objects.get(pk=exhibition_id)
+        return {
+            'exhibition': get_exhibition_information(request, exhibition)
+        }
+
+    @staticmethod
+    def my_post(request, cleaned_data, exhibition_id):
+        exhibition = Exhibition.objects.get(pk=exhibition_id)
+        name = cleaned_data['name']
+        exhibition_name = name
+        exhibition.save()
+        return get_success_response()
+
+
+class APIExhibitionDelete(APIView):
+
+    @staticmethod
+    def my_del(request, exhibition_id):
+        exhibition = Exhibition.objects.get(pk=exhibition_id)
+        exhibition.delete()
+        return get_success_response()
+
+
+class APIExhibitionList(APIView):
+
+    @staticmethod
+    def my_get(request):
+        exhibition_list = []
+        for exhibition in Exhibition.objects.all():
+            exhibition_list.append({
+                'name': exhibition.name,
+                'id': exhibition.pk,
+            })
+        return JsonResponse({
+            'exhibition_list': exhibition_list,
         })
