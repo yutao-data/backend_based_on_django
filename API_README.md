@@ -1,4 +1,21 @@
 # API
+目录
+- `/api/login/`
+- `/api/logout/`
+- `/api/exhibitionadd/`
+- `/api/exhibitionlist/`
+- `/api/exhibition/<int:exhibition_id>/info/`
+- `/api/exhibition/<int:exhibition_id>/sceneadd/`
+- `/api/exhibition/<int:exhibition_id>/scenelist/`
+- `/api/scene/<int:scene_id>/`
+- `/api/scene/<int:scene_id>/info/`
+- `/api/scene/<int:scene_id>/file/`
+- `/api/scene/<int:scene_id>/itemadd/`
+- `/api/scene/<int:scene_id>/itemlist/`
+- `/api/item/<int:item_id>/`
+- `/api/item/<int:item_id>/info/`
+- `/api/item/<int:item_id>/file/`
+
 
 # !!!
 API最后一定要用/结尾否则引发500错误
@@ -13,7 +30,7 @@ API最后一定要用/结尾否则引发500错误
 
 ### login
 
-#### POST /gallery/api/login
+#### POST /api/login/
 ```json
 {
   "username": "UserName",
@@ -29,10 +46,15 @@ API最后一定要用/结尾否则引发500错误
 ```
 #### 401 密码错误
 
+### 登出
+
+#### GET /api/logout/
+
+#### 200
 
 ### 获取展厅列表
 
-#### GET gallery/api/scenelist
+#### GET /api/exhibition/<int:exhibition_id>/scenelist/
 
 #### 200
 ```json
@@ -49,7 +71,7 @@ API最后一定要用/结尾否则引发500错误
 
 ### 下载展厅模型
 
-#### GET gallery/api/scene/<int:id>/file
+#### GET /api/scene/<int:id>/file/
 
 #### 200
 传回文件数据流，文件名位于header中  
@@ -60,7 +82,7 @@ API最后一定要用/结尾否则引发500错误
 
 ### 上传展厅模型
 
-#### POST gallery/api/scene/<int:id>/file
+#### POST /api/scene/<int:id>/file/
 HTTP Form 类型
 "file" -> 文件
 "data" -> Json字符串,用于附带额外信息
@@ -80,7 +102,7 @@ HTTP Form 类型
 
 ### 添加展厅
 
-#### POST gallery/api/sceneadd
+#### POST /api/exhibition/<int:exhibition_id>sceneadd/
 ```json
 {
   "scene": {
@@ -106,7 +128,7 @@ HTTP Form 类型
 
 ### 修改展厅信息
 
-#### POST gallery/api/scene/<int:scene_id>/info/
+#### POST /api/scene/<int:scene_id>/info/
 ```json
 {
   "scene": {
@@ -122,7 +144,7 @@ HTTP Form 类型
 
 ### 删除展厅
 
-#### DELETE gallery/api/scene/<int:scene_id>/
+#### DELETE /api/scene/<int:scene_id>/
 
 #### 200
 
@@ -133,7 +155,7 @@ HTTP Form 类型
 
 ### 展品列表
 
-#### GET gallery/api/scene/<int:scene_id>/itemlist/
+#### GET /api/scene/<int:scene_id>/itemlist/
 
 #### 200
 ```json
@@ -165,7 +187,7 @@ HTTP Form 类型
 
 ### 添加展品
 
-#### POST gallery/api/scene/<int:scene_id>/itemadd/
+#### POST /api/scene/<int:scene_id>/itemadd/
 ```json
 {
   "item": {
@@ -188,7 +210,7 @@ HTTP Form 类型
 
 ### 获取展品模型
 
-#### GET gallery/api/scene/<int:scene_id>/item/<int:item_id>/file/
+#### GET /api/item/<int:item_id>/file/
 二进制数据
 
 #### 403 没有权限
@@ -198,7 +220,7 @@ HTTP Form 类型
 
 ### 修改展品信息
 
-#### POST gallery/api/scene/<int:scene_id>/item/<int:item_id>/info/
+#### POST /api/item/<int:item_id>/info/
 ```json
 {
   "item": {
@@ -214,7 +236,7 @@ HTTP Form 类型
 
 ### 删除模型
 
-#### DELETE gallery/api/scene/<int:scene_id>/item/<int:item_id>/
+#### DELETE /api/item/<int:item_id>/
 
 #### 403 没有权限
 
