@@ -170,14 +170,21 @@ class APISignupView(APIView):
         # 分别对应展品上传者/布展老师/展览管理员/站点管理员（超级用户user.is_superuser=true）
         user_type = cleaned_data['user_type']
         if user_type == 'artist':
-            # 普通用户artist不属于任何组，他们只有自己展品的object权限
-            pass
+            # 普通用户
+            user_group = Group.objects.get_or_create(name='user_group')[0]
+            user_group.user_set.add(user)
         elif user_type == 'teacher':
+            # 添加老师到teacher_group组
+            teacher_group = Group.objects.get_or_create(name='teacher_group')[0]
+            teacher_group.user_set.add(user)
             # 老师teacher属于scene.group组，该组拥有scene内所有item的object权限，和对应scene的object权限
             teacher_group_id = cleaned_data['teacher_group_id']
             group = Group.objects.get(pk=teacher_group_id)
             group.user_set.add(user)
         elif user_type == 'stuff':
+            # 添加stuff到stuff_group组
+            stuff_group = Group.objects.get_or_create(name='stuff_group')[0]
+            stuff_group.user_set.add(user)
             # 策展管理员stuff拥有item和scene的全局权限，可以管理所有物体
             assign_perm('gallery.view_item', user)
             assign_perm('gallery.add_item', user)
@@ -188,6 +195,9 @@ class APISignupView(APIView):
             assign_perm('gallery.change_scene', user)
             assign_perm('gallery.delete_scene', user)
         elif user_type == 'superuser':
+            # 添加超级用户到超级用户组
+            superuser_group = Group.objects.get_or_create(name='superuser_group')[0]
+            superuser_group.user_set.add(user)
             user.is_superuser = True
         else:
             # 用户提交了未定义的类型，引发一个错误
@@ -256,14 +266,21 @@ class APIGetUserType(APIView):
 
 # 获取用户类型
 def get_user_type(request):
-    # 从低权限到高权限检查
-    user_type = 'artist'
-    if request.user.has_perm('gallery.change_scene'):
-        user_type = 'stuff'
-    if request.user.groups.all():
-        user_type = 'teacher'
-    if request.user.is_superuser:
-        user_type = 'superuser'
+    user_type = ''
+    for group in request.user.groups.all():
+        if group.name == 'artist_group':
+            user_type = 'artist'
+            break
+        elif group.name == 'teacher_group':
+            user_type = 'teacher'
+            break
+        elif group.name == 'stuff_group':
+            user_type = 'stuff'
+            break
+        elif group.name == 'superuser_group':
+            user_type = 'superuser'
+    if not user_type:
+        raise Error("User type not define", status=500)
     return user_type
 
 
