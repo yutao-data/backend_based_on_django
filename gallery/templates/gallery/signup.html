@@ -52,8 +52,7 @@
                     </td>
                     <td>
                         <select v-model="teacher_group_id">
-                            <option v-for="teacher_group in teacher_group_list" v-bind:value="teacher_group.id">[[
-                                teacher_group.name ]]
+                            <option v-for="teacher_group in teacher_group_list" v-bind:value="teacher_group.id">[[ teacher_group.name ]]
                             </option>
                         </select>
                     </td>
@@ -215,6 +214,16 @@
                 axios.get('{% url "gallery:api:get_teacher_group_list" %}')
                     .then(function (response) {
                         signup_app.teacher_group_list = response.data['teacher_group_list']
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+                    .finally(function () {
+                        progress_bar_app.show = false
+                    })
+		axios.get('{% url "gallery:api:get_stuff_group_list" %}')
+                    .then(function (response) {
+                        signup_app.stuff_group_list = response.data['stuff_group_list']
                     })
                     .catch(function (error) {
                         errorDialog(error)

@@ -191,15 +191,8 @@ class APISignupView(APIView):
             # 添加stuff到stuff_group组
             stuff_group = Group.objects.get_or_create(name='stuff_group')[0]
             stuff_group.user_set.add(user)
-            # 策展管理员stuff拥有item和scene的全局权限，可以管理所有物体
-            assign_perm('gallery.view_item', user)
-            assign_perm('gallery.add_item', user)
-            assign_perm('gallery.change_item', user)
-            assign_perm('gallery.delete_item', user)
-            assign_perm('gallery.view_scene', user)
-            assign_perm('gallery.add_scene', user)
-            assign_perm('gallery.change_scene', user)
-            assign_perm('gallery.delete_scene', user)
+            # 策展管理员stuff拥有所属exhibition下所有scene的object权限
+            # todo stuff 权限分配
         elif user_type == 'superuser':
             # 添加超级用户到超级用户组
             superuser_group = Group.objects.get_or_create(name='superuser_group')[0]
