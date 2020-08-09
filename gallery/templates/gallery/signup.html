@@ -52,7 +52,20 @@
                     </td>
                     <td>
                         <select v-model="teacher_group_id">
-                            <option v-for="teacher_group in teacher_group_list" v-bind:value="teacher_group.id">[[ teacher_group.name ]]
+                            <option v-for="teacher_group in teacher_group_list" v-bind:value="teacher_group.id">
+                                [[ teacher_group.name ]]
+                            </option>
+                        </select>
+                    </td>
+                </tr>
+                <tr v-show="stuff_group_show">
+                    <td class="mdl-data-table__cell--non-numeric">
+                        Belong to exhibition:
+                    </td>
+                    <td>
+                        <select v-model="stuff_group_id">
+                            <option v-for="stuff_group in stuff_group_list" v-bind:value="stuff_group.id">
+                                [[ stuff_group.name ]]
                             </option>
                         </select>
                     </td>
@@ -140,8 +153,13 @@
             }
             // 检查有无选中 teacher 对应的 scene
             if (this.user_type === 'teacher' && this.teacher_group_id == null) {
-                console.log('reached')
-                this.error_hint_text = 'Please select belong to which scene!'
+                this.error_hint_text = 'Please select a scene!'
+                this.error_hint_show = true
+                return
+            }
+            // 检查有无选中 stuff 对应的 exhibition
+            if (this.user_type === 'stuff' && this.stuff_group_id == null) {
+                this.error_hint_text = 'Please select an exhibition!'
                 this.error_hint_show = true
                 return
             }
@@ -153,6 +171,7 @@
                 'password': this.password,
                 'user_type': this.user_type,
                 'teacher_group_id': this.teacher_group_id,
+                'stuff_group_id': this.stuff_group_id,
             })
             .then(function (response) {
                 // 隐藏表单，显示信息
@@ -198,7 +217,10 @@
                     return this.user_type_dict[this.user_type]
                 },
                 teacher_group_show: function () {
-                    return this.user_type === 'teacher';
+                    return this.user_type === 'teacher'
+                },
+                stuff_group_show: function () {
+                    return this.user_type === 'stuff'
                 },
             },
             watch: {
