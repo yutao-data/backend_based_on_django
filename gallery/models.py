@@ -4,6 +4,14 @@ from django.contrib.auth.models import User, Group
 NAME_MAX_CHAR = 32
 
 
+# 策展
+class Exhibition(models.Model):
+    def __str__(self):
+        return str(self.name)
+    name = models.CharField(max_length=NAME_MAX_CHAR)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True)
+
+
 # 展厅
 class Scene(models.Model):
     def __str__(self):
@@ -11,6 +19,7 @@ class Scene(models.Model):
     name = models.CharField(max_length=NAME_MAX_CHAR)
     file = models.FileField(blank=True, null=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True)
+    exhibition = models.ForeignKey(Exhibition, on_delete=models.CASCADE, blank=True, null=True)
 
 
 # 展品
@@ -33,9 +42,4 @@ class Item(models.Model):
     scl_z = models.FloatField(default=1.0)
 
 
-# 策展
-class Exhibition(models.Model):
-    def __str__(self):
-        return str(self.name)
-    name = models.CharField(max_length=NAME_MAX_CHAR)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE, blank=True, null=True)
+
