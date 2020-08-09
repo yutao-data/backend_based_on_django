@@ -27,9 +27,9 @@
                             Belong to Exhibition:
                         </td>
                         <td class="mdl-data-table__cell--non-numeric">
-                            <select v-model="stuff_group_id">
-                                <option v-for="stuff_group in stuff_group_list" v-bind:value="stuff_group.id">
-                                    [[ stuff_group.name ]]
+                            <select v-model="exhibition_id">
+                                <option v-for="exhibition in exhibition_list" v-bind:value="exhibition.id">
+                                    [[ exhibition.name ]]
                                 </option>
                             </select>
                         </td>
@@ -100,9 +100,9 @@
                     new_scene_show: false,
                     new_scene_error_message_show: false,
                     new_scene_error_message: '',
-                    stuff_group_id: null,
-                    stuff_group_list: [],
-                    stuff_group_text: '',
+                    exhibition_id: null,
+                    exhibition_list: [],
+                    exhibition_text: '',
                 },
                 methods: {
                     // 显示 add new scene 的表单
@@ -118,14 +118,15 @@
                             return
                         }
                         // 检查有无选中 exhibition
-                        if (this.stuff_group_id == null) {
+                        if (this.exhibition_id == null) {
                             this.new_scene_error_message = 'Please select an exhibition!'
                             this.new_scene_error_message_show = true
                             return
                         }
                         progress_bar_app.show = true
                         axios.post('{% url "gallery:api:add_new_scene" %}', {
-                            scene_name: this.new_scene_name,
+                            name: this.new_scene_name,
+                            exhibition_id: this.exhibition_id,
 
                         })
                         .then(function (response) {
@@ -178,9 +179,9 @@
                 },
                 created: function () {
                     this.refresh_scene_list()
-                    axios.get('/gallery/api/account/stuff_group_list')
+                    axios.get('{% url "gallery:api:signup_exhibition_list" %}')
                     .then(function (response) {
-                        all_scene_management_app.stuff_group_list = response.data['stuff_group_list']
+                        all_scene_management_app.exhibition_list = response.data['exhibition_list']
                     })
                 },
             })

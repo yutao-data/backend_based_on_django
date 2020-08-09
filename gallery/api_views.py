@@ -329,19 +329,23 @@ def get_scene_information(scene):
     return {
         'id': scene.pk,
         'name': scene.name,
-        'file': scene.file,
+        'file': scene.file.name,
     }
-
 
 
 class APIAddNewScene(APIView):
     class MyForm(Form):
         name = CharField(label='name')
-
+        exhibition_id = IntegerField(label='exhibition_id')
 
     @staticmethod
     def my_post(request, cleaned_data):
         name = cleaned_data['name']
+        exhibition_id = cleaned_data['exhibition_id']
+
+        exhibition = Exhibition.objects.get(pk=exhibition_id)
+        exhibition_group = exhibition.group
+
         # 检查 name 是否已经存在
         if len(Scene.objects.filter(name=name)) > 0:
             raise Error(message='Scene name has been taken', status=403)
@@ -349,14 +353,20 @@ class APIAddNewScene(APIView):
             raise Error(message='Scene permission group name has been taken.', status=403)
 
         group = Group.objects.create(name=name)
+
         # 分配这个展厅的object权限到组里
-        assign_perm('gallery.view_scene', group)
+        # assign_perm('gallery.view_scene', group)
         assign_perm('gallery.change_scene', group)
         # assign_perm('gallery.add_scene', group)
         # assign_perm('gallery.delete_scene', group)
+
+        # 添加该展厅的object权限到对应exhibition里
+        # assign_perm('gallery.view_scene', exhibition_group)
+        assign_perm('gallery.change_scene', exhibition_group)
+
         group.save()
 
-        scene = Scene.objects.create(name=name, group=group)
+        scene = Scene.objects.create(name=name, group=group, exhibition=exhibition)
         scene.save()
 
         return JsonResponse({
