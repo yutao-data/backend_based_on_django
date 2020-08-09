@@ -46,26 +46,26 @@
                         Describe: [[ user_type_text ]]
                     </td>
                 </tr>
-                <tr v-show="teacher_group_show">
+                <tr v-show="scene_show">
                     <td class="mdl-data-table__cell--non-numeric">
                         Belong to scene:
                     </td>
                     <td>
-                        <select v-model="teacher_group_id">
-                            <option v-for="teacher_group in teacher_group_list" v-bind:value="teacher_group.id">
-                                [[ teacher_group.name ]]
+                        <select v-model="scene_id">
+                            <option v-for="scene in scene_list" v-bind:value="scene.id">
+                                [[ scene.name ]]
                             </option>
                         </select>
                     </td>
                 </tr>
-                <tr v-show="stuff_group_show">
+                <tr v-show="exhibition_show">
                     <td class="mdl-data-table__cell--non-numeric">
                         Belong to exhibition:
                     </td>
                     <td>
-                        <select v-model="stuff_group_id">
-                            <option v-for="stuff_group in stuff_group_list" v-bind:value="stuff_group.id">
-                                [[ stuff_group.name ]]
+                        <select v-model="exhibition_id">
+                            <option v-for="exhibition in exhibition_list" v-bind:value="exhibition.id">
+                                [[ exhibition.name ]]
                             </option>
                         </select>
                     </td>
@@ -137,12 +137,12 @@
                     'stuff': 'Can control all scene',
                     'superuser': 'Site administrator',
                 },
-                teacher_group_text: '',
-                teacher_group_list: [],
-                teacher_group_id: null,
-                stuff_group_text: '',
-                stuff_group_list: [],
-                stuff_group_id: null,
+                scene_text: '',
+                scene_list: [],
+                scene_id: null,
+                exhibition_text: '',
+                exhibition_list: [],
+                exhibition_id: null,
             },
             methods: {
                 signup_button_onclick: function () {
@@ -152,13 +152,13 @@
                 return
             }
             // 检查有无选中 teacher 对应的 scene
-            if (this.user_type === 'teacher' && this.teacher_group_id == null) {
+            if (this.user_type === 'teacher' && this.scene_id == null) {
                 this.error_hint_text = 'Please select a scene!'
                 this.error_hint_show = true
                 return
             }
             // 检查有无选中 stuff 对应的 exhibition
-            if (this.user_type === 'stuff' && this.stuff_group_id == null) {
+            if (this.user_type === 'stuff' && this.exhibition_id == null) {
                 this.error_hint_text = 'Please select an exhibition!'
                 this.error_hint_show = true
                 return
@@ -170,8 +170,8 @@
                 'username': this.username,
                 'password': this.password,
                 'user_type': this.user_type,
-                'teacher_group_id': this.teacher_group_id,
-                'stuff_group_id': this.stuff_group_id,
+                'scene_id': this.scene_id,
+                'exhibition_id': this.exhibition_id,
             })
             .then(function (response) {
                 // 隐藏表单，显示信息
@@ -207,19 +207,19 @@
                     this.error_hint_show = false
                     return true
                 },
-                teacher_group_onclick: function (teacher_group_selected) {
-                    this.teacher_group_id = teacher_group_selected.id
-                    this.teacher_group_text = teacher_group_selected.name
+                scene_onclick: function (scene_selected) {
+                    this.scene_id = scene_selected.id
+                    this.scene_text = scene_selected.name
                 }
             },
             computed: {
                 user_type_text: function () {
                     return this.user_type_dict[this.user_type]
                 },
-                teacher_group_show: function () {
+                scene_show: function () {
                     return this.user_type === 'teacher'
                 },
-                stuff_group_show: function () {
+                exhibition_show: function () {
                     return this.user_type === 'stuff'
                 },
             },
@@ -233,9 +233,9 @@
             },
             created: function () {
                 progress_bar_app.show = true
-                axios.get('{% url "gallery:api:get_teacher_group_list" %}')
+                axios.get('{% url "gallery:api:signup_scene_list" %}')
                     .then(function (response) {
-                        signup_app.teacher_group_list = response.data['teacher_group_list']
+                        signup_app.scene_list = response.data['scene_list']
                     })
                     .catch(function (error) {
                         errorDialog(error)
@@ -243,9 +243,9 @@
                     .finally(function () {
                         progress_bar_app.show = false
                     })
-		axios.get('{% url "gallery:api:get_stuff_group_list" %}')
+		        axios.get('{% url "gallery:api:signup_exhibition_list" %}')
                     .then(function (response) {
-                        signup_app.stuff_group_list = response.data['stuff_group_list']
+                        signup_app.exhibition_list = response.data['exhibition_list']
                     })
                     .catch(function (error) {
                         errorDialog(error)

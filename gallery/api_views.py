@@ -157,7 +157,8 @@ class APISignupView(APIView):
         username = CharField(label='username')
         password = CharField(label='password')
         user_type = CharField(label='user_type')
-        teacher_group_id = IntegerField(label='teacher_group_id', required=False)
+        scene_id = IntegerField(label='scene_id', required=False)
+        exhibition_id = IntegerField(label='exhibition_id', required=False)
 
     @staticmethod
     def my_post(request, cleaned_data):
@@ -184,8 +185,9 @@ class APISignupView(APIView):
             teacher_group = Group.objects.get_or_create(name='teacher_group')[0]
             teacher_group.user_set.add(user)
             # 老师teacher属于scene.group组，该组拥有scene内所有item的object权限，和对应scene的object权限
-            teacher_group_id = cleaned_data['teacher_group_id']
-            group = Group.objects.get(pk=teacher_group_id)
+            scene_id = cleaned_data['scene_id']
+            scene = Scene.objects.get(pk=scene_id)
+            group = scene.group
             group.user_set.add(user)
         elif user_type == 'stuff':
             # 添加stuff到stuff_group组
@@ -266,6 +268,9 @@ class APIGetUserType(APIView):
 # 获取用户类型
 def get_user_type(request):
     user_type = ''
+    # 游客
+    if not request.user.is_authenticated:
+        user_type = 'anonymous'
     if request.user.is_superuser:
         user_type = 'superuser'
     for group in request.user.groups.all():
@@ -285,43 +290,20 @@ def get_user_type(request):
     return user_type
 
 
-# 获取所有场景的用户组信息
-class APIGetTeacherGroupList(APIView):
+# 不进行权限检查，返回所有scene
+class APIGetSignupSceneList(APIView):
 
     @staticmethod
     def my_get(request):
-        teacher_group_list = []
+        scene_list = []
         for scene in Scene.objects.all():
-            if scene.group:
-                teacher_group = {
-                    # 实际选择的是组
-                    # 显示的是Scene名
-                    'id': scene.group.pk,
-                    'name': scene.name,
-                }
-                teacher_group_list.append(teacher_group)
+            scene_list.append(get_scene_information(scene))
         return JsonResponse({
-            'teacher_group_list': teacher_group_list,
+            'scene_list': scene_list,
         })
 
 
-class APIGetStuffGroupList(APIView):
-    
-    @staticmethod
-    def my_get(request):
-        stuff_group_list = []
-        for exhibition in Exhibition.objects.all():
-            if exhibition.group:
-                stuff_group = {
-                    'id': exhibition.group.pk,
-                    'name': exhibition.name,
-                }
-                stuff_group_list.append(stuff_group)
-        return JsonResponse({
-            'stuff_group_list': stuff_group_list,
-        })
-
-
+# 进行权限检查的scene list版本
 class APIGetSceneList(APIView):
 
     @staticmethod
@@ -334,37 +316,39 @@ class APIGetSceneList(APIView):
         if user_type == 'teacher':
             for scene in Scene.objects.all():
                 if request.user.has_perm('gallery.change_scene', scene):
-                    scene_list.append({
-                        'id': scene.pk,
-                        'name': scene.name,
-                        'file': scene.file.name,
-                    })
+                    scene_list.append(get_scene_information(scene))
         if user_type == 'stuff' or user_type == 'superuser':
             for scene in Scene.objects.all():
-                scene_list.append({
-                    'id': scene.pk,
-                    'name': scene.name,
-                    'file': scene.file.name,
-                })
+                scene_list.append(get_scene_information(scene))
         return JsonResponse({
             'scene_list': scene_list
         })
 
 
+def get_scene_information(scene):
+    return {
+        'id': scene.pk,
+        'name': scene.name,
+        'file': scene.file,
+    }
+
+
+
 class APIAddNewScene(APIView):
     class MyForm(Form):
-        scene_name = CharField(label='scene_name')
+        name = CharField(label='name')
+
 
     @staticmethod
     def my_post(request, cleaned_data):
-        scene_name = cleaned_data['scene_name']
-        # 检查 scene_name 是否已经存在
-        if len(Scene.objects.filter(name=scene_name)) > 0:
+        name = cleaned_data['name']
+        # 检查 name 是否已经存在
+        if len(Scene.objects.filter(name=name)) > 0:
             raise Error(message='Scene name has been taken', status=403)
-        if len(Group.objects.filter(name=scene_name)) > 0:
+        if len(Group.objects.filter(name=name)) > 0:
             raise Error(message='Scene permission group name has been taken.', status=403)
 
-        group = Group.objects.create(name=scene_name)
+        group = Group.objects.create(name=name)
         # 分配这个展厅的object权限到组里
         assign_perm('gallery.view_scene', group)
         assign_perm('gallery.change_scene', group)
@@ -372,7 +356,7 @@ class APIAddNewScene(APIView):
         # assign_perm('gallery.delete_scene', group)
         group.save()
 
-        scene = Scene.objects.create(name=scene_name, group=group)
+        scene = Scene.objects.create(name=name, group=group)
         scene.save()
 
         return JsonResponse({
@@ -624,15 +608,6 @@ class APIGetArtistList(APIView):
         })
 
 
-def get_exhibition_information(request, exhibition):
-    result_dict = {
-        'id': exhibition.pk,
-        'name': exhibition.name,
-    }
-    return result_dict
-
-
-
 class APIExhibitionAdd(APIView):
     class MyForm(Form):
         name = CharField(label='name')
@@ -677,16 +652,34 @@ class APIExhibitionDelete(APIView):
         return get_success_response()
 
 
+# 不不进行权限检查的exhibition 版本
+class APISignupExhibitionList(APIView):
+
+    @staticmethod
+    def my_get(request):
+        exhibition_list = []
+        for exhibition in Exhibition.objects.all():
+            exhibition_list.append(get_exhibition_information(exhibition))
+        return JsonResponse({
+            'exhibition_list': exhibition_list,
+        })
+
+
+# 进行权限检查的exhibition list 版本
 class APIExhibitionList(APIView):
 
     @staticmethod
     def my_get(request):
         exhibition_list = []
         for exhibition in Exhibition.objects.all():
-            exhibition_list.append({
-                'name': exhibition.name,
-                'id': exhibition.pk,
-            })
+            exhibition_list.append(get_exhibition_information(exhibition))
         return JsonResponse({
             'exhibition_list': exhibition_list,
         })
+
+
+def get_exhibition_information(exhibition):
+    return {
+        'id': exhibition.pk,
+        'name': exhibition.name,
+    }

@@ -22,6 +22,18 @@
                             </div>
                         </td>
                     </tr>
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            Belong to Exhibition:
+                        </td>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            <select v-model="stuff_group_id">
+                                <option v-for="stuff_group in stuff_group_list" v-bind:value="stuff_group.id">
+                                    [[ stuff_group.name ]]
+                                </option>
+                            </select>
+                        </td>
+                    </tr>
                     <tr v-show="new_scene_error_message_show">
                         <td class="mdl-data-table__cell--non-numeric">
                             [[ new_scene_error_message ]]
@@ -88,6 +100,9 @@
                     new_scene_show: false,
                     new_scene_error_message_show: false,
                     new_scene_error_message: '',
+                    stuff_group_id: null,
+                    stuff_group_list: [],
+                    stuff_group_text: '',
                 },
                 methods: {
                     // 显示 add new scene 的表单
@@ -98,13 +113,20 @@
                     new_scene_onclick: function () {
                         // 先检查是否为空
                         if (!this.new_scene_name) {
-                            this.new_scene_error_message = 'Please enter scene name'
+                            this.new_scene_error_message = 'Please enter scene name!'
+                            this.new_scene_error_message_show = true
+                            return
+                        }
+                        // 检查有无选中 exhibition
+                        if (this.stuff_group_id == null) {
+                            this.new_scene_error_message = 'Please select an exhibition!'
                             this.new_scene_error_message_show = true
                             return
                         }
                         progress_bar_app.show = true
                         axios.post('{% url "gallery:api:add_new_scene" %}', {
                             scene_name: this.new_scene_name,
+
                         })
                         .then(function (response) {
                             showSnackbar('Create New Scene Success')
@@ -156,6 +178,10 @@
                 },
                 created: function () {
                     this.refresh_scene_list()
+                    axios.get('/gallery/api/account/stuff_group_list')
+                    .then(function (response) {
+                        all_scene_management_app.stuff_group_list = response.data['stuff_group_list']
+                    })
                 },
             })
         </script>

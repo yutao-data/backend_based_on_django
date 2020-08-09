@@ -26,9 +26,9 @@ urlpatterns = [
     path('account/user_management_user_list/', api_views.APIUserManagementUserListView.as_view(), name='user_management_user_list'),
 
     # 获取一个组列表，teacher类型用户注册时需要选择一个组
-    path('account/teacher_group_list/', api_views.APIGetTeacherGroupList.as_view(), name='get_teacher_group_list'),
+    path('account/scenelist', api_views.APIGetSignupSceneList.as_view(), name='signup_scene_list'),
 
-    path('account/stuff_group_list/', api_views.APIGetStuffGroupList.as_view(), name='get_stuff_group_list'),
+    path('account/exhibitionlist', api_views.APISignupExhibitionList.as_view(), name='signup_exhibition_list'),
 
     # 获取当前已经登陆的用户的类型，返回artist/teacher/stuff/superuser
     path('account/user_type/', api_views.APIGetUserType.as_view(), name='get_user_type'),
