@@ -28,7 +28,7 @@ urlpatterns = [
     # 获取一个组列表，teacher类型用户注册时需要选择一个组
     path('account/teacher_group_list/', api_views.APIGetTeacherGroupList.as_view(), name='get_teacher_group_list'),
 
-    path('account/stuff_group_list/', api_views.APIGetSceneList.as_view(), name='get_stuff_group_list'),
+    path('account/stuff_group_list/', api_views.APIGetStuffGroupList.as_view(), name='get_stuff_group_list'),
 
     # 获取当前已经登陆的用户的类型，返回artist/teacher/stuff/superuser
     path('account/user_type/', api_views.APIGetUserType.as_view(), name='get_user_type'),

@@ -312,15 +312,14 @@ class APIGetStuffGroupList(APIView):
         stuff_group_list = []
         for exhibition in Exhibition.objects.all():
             if exhibition.group:
-                sutff_group = {
+                stuff_group = {
                     'id': exhibition.group.pk,
                     'name': exhibition.name,
                 }
-            stuff_group_list.append(stuff_group)
+                stuff_group_list.append(stuff_group)
         return JsonResponse({
             'stuff_group_list': stuff_group_list,
         })
-
 
 
 class APIGetSceneList(APIView):
