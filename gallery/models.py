@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User, Group
 
-NAME_MAX_CHAR = 32
+NAME_MAX_CHAR = 128
 
 
 # 策展
