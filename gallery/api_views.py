@@ -628,9 +628,16 @@ class APIExhibitionAdd(APIView):
     def my_post(request, cleaned_data):
         exhibition_name = cleaned_data['name']
         exhibition = Exhibition.objects.create(name=exhibition_name)
+
         # todo group_name add random string
         group = Group.objects.create(name=exhibition_name)
         exhibition.group = group
+
+        # 分配操作该exhibition的object权限到组里
+        assign_perm('gallery.view_exhibition', group, exhibition)
+        assign_perm('gallery.change_exhibition', group, exhibition)
+
+        group.save()
         exhibition.save()
         return get_success_response()
 
