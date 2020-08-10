@@ -52,7 +52,7 @@
         <div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
             <div class="demo-options mdl-card mdl-color--deep-purple-500 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--3-col-tablet mdl-cell--12-col-desktop">
                 <div class="mdl-card__supporting-text mdl-color-text--blue-grey-50">
-                    <h3>UserManagement</h3>
+                    <h3>User Management</h3>
                     <p v-show="user_management_text_show">[[ user_management_text ]]</p>
                     <ul class="mdl-list">
                         <li v-for="user in user_list" v-show="!user.user_status" class="mdl-list__item">
@@ -64,7 +64,7 @@
                     </ul>
                 </div>
                 <div class="mdl-card__actions mdl-card--border">
-                    <a href="{% url 'gallery:dashboard:user_management' %}" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--blue-grey-50">Go to checkout</a>
+                    <a href="{% url 'gallery:dashboard:user_management' %}" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--blue-grey-50">User Management</a>
                     <div class="mdl-layout-spacer"></div>
                 </div>
             </div>
@@ -94,7 +94,7 @@
                 dashboard_app.user_list = response.data['user_list']
                 var has_user = false
                 for (const user of dashboard_app.user_list) {
-                    if (!user.is_active) {
+                    if (!user.user_status) {
                         has_user = true
                     }
                 }
