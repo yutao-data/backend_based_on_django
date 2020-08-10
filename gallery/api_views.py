@@ -279,16 +279,17 @@ def get_user_type(request):
     if request.user.is_superuser:
         user_type = 'superuser'
     for group in request.user.groups.all():
-        if group.name == 'artist_group':
+        group_name = group.name
+        if group_name == 'artist_group':
             user_type = 'artist'
             break
-        elif group.name == 'teacher_group':
+        elif group_name == 'teacher_group':
             user_type = 'teacher'
             break
-        elif group.name == 'stuff_group':
+        elif group_name == 'stuff_group':
             user_type = 'stuff'
             break
-        elif group.name == 'superuser_group':
+        elif group_name == 'superuser_group':
             user_type = 'superuser'
     if not user_type:
         raise Error("User type not define", status=500)
