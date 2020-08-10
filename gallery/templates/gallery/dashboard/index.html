@@ -105,7 +105,7 @@
                 return this.user_type === 'stuff' || this.user_type === 'superuser';
             },
             my_scene_management_url: function () {
-                return '{% url "gallery:dashboard:scene_management" %}'+ '?pk=' + '{{ my_scene_management_pk }}'
+                return '{% url "gallery:dashboard:all_scene_management" %}'+ '?pk=' + '{{ my_scene_management_pk }}'
             },
             exhibition_management_url: function () {
 		    return '{% url "gallery:dashboard:all_exhibition_management" %}'

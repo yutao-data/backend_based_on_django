@@ -126,7 +126,7 @@ class APILoginView(APIView):
     def my_get(request):
         if request.user.is_authenticated:
             return JsonResponse({
-                'user_type': get_user_type(request),
+                'user_type': get_user_type(request.user),
             })
         else:
             raise AuthenticateError
@@ -142,7 +142,7 @@ class APILoginView(APIView):
         logout(request)
         login(request, user)
         return JsonResponse({
-            'user_type': get_user_type(request),
+            'user_type': get_user_type(request.user),
         })
 
 
@@ -246,7 +246,7 @@ class APIUserManagementUserListView(APIView):
                 'username': user.username,
                 'id': user.id,
                 'user_status': user.is_active,
-                'user_type': get_user_type(request),
+                'user_type': get_user_type(request.user),
             })
         return JsonResponse(user_list, safe=False)
 
@@ -267,21 +267,21 @@ class APIGetUserType(APIView):
     @staticmethod
     def my_get(request):
         user_type_describe = ''
-        user_type = get_user_type(request)
+        user_type = get_user_type(request.user)
         return JsonResponse({
             'user_type': user_type,
         })
 
 
 # 获取用户类型
-def get_user_type(request):
+def get_user_type(user):
     user_type = ''
     # 游客
-    if not request.user.is_authenticated:
+    if not user.is_authenticated:
         user_type = 'anonymous'
-    if request.user.is_superuser:
+    if user.is_superuser:
         user_type = 'superuser'
-    for group in request.user.groups.all():
+    for group in user.groups.all():
         group_name = group.name
         if group_name == 'artist_group':
             user_type = 'artist'
@@ -298,18 +298,33 @@ def get_user_type(request):
         raise Error("User type not define", status=500)
     return user_type
 
-
-# 不进行权限检查，返回所有scene
+# 用于注册的scenelist
 class APIGetSignupSceneList(APIView):
 
     @staticmethod
     def my_get(request):
+        user_type = get_user_type(request.user)
         scene_list = []
         for scene in Scene.objects.all():
             scene_list.append(get_scene_information(scene))
-        return JsonResponse({
-            'scene_list': scene_list,
-        })
+
+        return JsonResponse(scene_list, safe=False)
+
+
+# 不限定exhibition，获取所有scene
+class APIGetAllSceneList(APIView):
+
+    @staticmethod
+    def my_get(request):
+        user_type = get_user_type(request.user)
+        scene_list = []
+        # 拒绝普通用户
+        if user_type == 'artist':
+            raise NoPermission
+        for scene in Scene.objects.all():
+            if check_perm('gallery.change_scene', request, scene):
+                scene_list.append(scene)
+        return JsonResponse(scene_list, safe=False)
 
 
 # 进行权限检查的scene list版本
@@ -317,7 +332,7 @@ class APIGetSceneList(APIView):
 
     @staticmethod
     def my_get(request, exhibition_id):
-        user_type = get_user_type(request)
+        user_type = get_user_type(request.user)
         scene_list = []
         # 拒绝普通用户
         if user_type == 'artist':
@@ -694,9 +709,7 @@ class APISignupExhibitionList(APIView):
         exhibition_list = []
         for exhibition in Exhibition.objects.all():
             exhibition_list.append(get_exhibition_information(exhibition))
-        return JsonResponse({
-            'exhibition_list': exhibition_list,
-        })
+        return JsonResponse(exhibition_list, safe=False)
 
 
 # 进行权限检查的exhibition list 版本
