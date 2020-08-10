@@ -353,20 +353,22 @@ class APIAddNewScene(APIView):
             raise Error(message='Scene permission group name has been taken.', status=403)
 
         group = Group.objects.create(name=name)
+        scene = Scene.objects.create(name=name, group=group, exhibition=exhibition)
 
         # 分配这个展厅的object权限到组里
-        # assign_perm('gallery.view_scene', group)
-        assign_perm('gallery.change_scene', group)
-        # assign_perm('gallery.add_scene', group)
-        # assign_perm('gallery.delete_scene', group)
+        assign_perm('gallery.view_scene', group, scene)
+        assign_perm('gallery.change_scene', group, scene)
+        # assign_perm('gallery.add_scene', group, scene)
+        # assign_perm('gallery.delete_scene', group, scene)
 
         # 添加该展厅的object权限到对应exhibition里
-        # assign_perm('gallery.view_scene', exhibition_group)
-        assign_perm('gallery.change_scene', exhibition_group)
+        assign_perm('gallery.view_scene', exhibition_group, scene)
+        assign_perm('gallery.change_scene', exhibition_group, scene)
+        # assign_perm('gallery.add_scene', exhibition_group, scene)
+        assign_perm('gallery.delete_scene', exhibition_group, scene)
 
         group.save()
 
-        scene = Scene.objects.create(name=name, group=group, exhibition=exhibition)
         scene.save()
 
         return JsonResponse({
