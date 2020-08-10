@@ -1,3 +1,5 @@
+import random
+import hashlib
 import json
 import os.path
 from backend_based_on_django.settings import MEDIA_ROOT
@@ -352,7 +354,7 @@ class APIAddNewScene(APIView):
         if len(Group.objects.filter(name=name)) > 0:
             raise Error(message='Scene permission group name has been taken.', status=403)
 
-        group = Group.objects.create(name=name)
+        group = Group.objects.create(name=gen_random_name(name))
 
         # 分配这个展厅的object权限到组里
         # assign_perm('gallery.view_scene', group)
@@ -618,6 +620,10 @@ class APIGetArtistList(APIView):
         })
 
 
+def gen_random_name(data):
+    random_string = hashlib.sha1().update(str(random.random()).encode()).hexdigest()
+    return '_'.join([data, random_string])
+
 class APIExhibitionAdd(APIView):
     class MyForm(Form):
         name = CharField(label='name')
@@ -627,7 +633,7 @@ class APIExhibitionAdd(APIView):
         exhibition_name = cleaned_data['name']
         exhibition = Exhibition.objects.create(name=exhibition_name)
         # todo group_name add random string
-        group = Group.objects.create(name=exhibition_name)
+        group = Group.objects.create(name=gen_random_name(exhibition_name))
         exhibition.group = group
         exhibition.save()
         return get_success_response()
