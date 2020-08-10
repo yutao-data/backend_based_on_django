@@ -638,6 +638,9 @@ class APIExhibitionAdd(APIView):
 
     @staticmethod
     def my_post(request, cleaned_data):
+        # 只有superuser才能新建exhibition
+        if not request.user.is_superuser:
+            raise NoPermission
         exhibition_name = cleaned_data['name']
         exhibition = Exhibition.objects.create(name=exhibition_name)
 
