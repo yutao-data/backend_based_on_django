@@ -641,7 +641,6 @@ class APIExhibitionAdd(APIView):
         exhibition_name = cleaned_data['name']
         exhibition = Exhibition.objects.create(name=exhibition_name)
 
-        # todo group_name add random string
         group = Group.objects.create(name=gen_random_name(exhibition_name))
         exhibition.group = group
 
@@ -666,7 +665,11 @@ class APIExhibitionInfo(APIView):
         }
     
     @staticmethod
-    @permission_required_or_403('gallery.change_exhibition',(Exhibition, 'pk', 'exhibition_id')  ,accept_global_perms=True)
+    @permission_required_or_403(
+        'gallery.change_exhibition',
+        (Exhibition, 'pk', 'exhibition_id'),
+        accept_global_perms=True
+    )
     def my_post(request, cleaned_data, exhibition_id):
         exhibition = Exhibition.objects.get(pk=exhibition_id)
         name = cleaned_data['name']
@@ -706,10 +709,7 @@ class APIExhibitionList(APIView):
         for exhibition in Exhibition.objects.all():
             if check_perm('gallery.change_exhibition', request, exhibition):
                 exhibition_list.append(get_exhibition_information(exhibition))
-        return JsonResponse({
-            'exhibition_list': exhibition_list,
-        })
-
+        return JsonResponse(exhibition_list, safe=False)
 
 def get_exhibition_information(exhibition):
     return {

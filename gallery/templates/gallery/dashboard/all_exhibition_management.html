@@ -97,7 +97,7 @@
                         progress_bar_app.show = true
                         axios.get('/gallery/api/exhibitionlist/')
                         .then(function (response) {
-                            all_exhibition_management_app.exhibition_list = response.data['exhibition_list']
+                            all_exhibition_management_app.exhibition_list = response.data
                         })
                         .catch(function (error) {
                             errorDialog(error)
@@ -140,9 +140,9 @@
                             progress_bar_app.show = false
                         })
                     },
-		    save_onclick: function (exhibition) {
-			progress_bar_app.show = true
-			axios.post('/gallery/api/exhibition/'+exhibition.id+'/info/', {
+		save_onclick: function (exhibition) {
+		    progress_bar_app.show = true
+		    axios.post('/gallery/api/exhibition/'+exhibition.id+'/info/', {
 			    name: exhibition.name
 			})
 			.then(function (response) {
