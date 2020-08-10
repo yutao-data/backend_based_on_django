@@ -613,14 +613,12 @@ class APIGetArtistList(APIView):
     @staticmethod
     def my_get(request):
         artist_list = []
-        for user in User.objects.all():
-            # 判断方式:用户不在任何组里即为artist
-            # 以后再改 Artist全部丢到一个组里,现在就先这样判
-            if not len(user.groups.all()) and not user.is_superuser and user.is_active and not user.username == 'AnonymousUser' and not user.has_perm('gallery.change_scene'):
-                artist_list.append({
-                    'username': user.username,
-                    'id': user.pk,
-                })
+        artist_group = Group.objects.get_or_create(name='artist_group')[0]
+        for user in artist_group.user_set.all():
+            artist_list.append({
+                'username': user.username,
+                'id': user.pk,
+            })
         return JsonResponse({
             'artist_list': artist_list,
         })
