@@ -196,7 +196,8 @@ class APISignupView(APIView):
             stuff_group = Group.objects.get_or_create(name='stuff_group')[0]
             stuff_group.user_set.add(user)
             # 策展管理员stuff拥有所属exhibition下所有scene的object权限
-            # todo stuff 权限分配
+            group = Exhibition.objects.get(pk=exhibition_id)
+            group.user_set.add(user)
         elif user_type == 'superuser':
             # 添加超级用户到超级用户组
             superuser_group = Group.objects.get_or_create(name='superuser_group')[0]
@@ -204,7 +205,7 @@ class APISignupView(APIView):
             user.is_superuser = True
         else:
             # 用户提交了未定义的类型，引发一个错误
-            raise FormValidError
+            raise FormValidError(message="Unknown user type, can not signup")
 
         user.save()
         return get_success_response()
