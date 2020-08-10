@@ -6,7 +6,7 @@
             <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
                 <thead>
                     <tr>
-                        <td class="mdl-data-table__cell--non-numeric">
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                                 <strong>Add New Scene</strong>
                             </div>
@@ -15,7 +15,7 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="mdl-data-table__cell--non-numeric">
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                                 <input v-model="new_scene_name" type="text" name="new_scene_name" class="mdl-textfield__input">
                                 <label for="new_scene_name" class="mdl-textfield__label">New Scene Name</label>
@@ -35,12 +35,12 @@
                         </td>
                     </tr>
                     <tr v-show="new_scene_error_message_show">
-                        <td class="mdl-data-table__cell--non-numeric">
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
                             [[ new_scene_error_message ]]
                         </td>
                     </tr>
                     <tr>
-                        <td>
+                        <td colspan="100%">
                             <button v-on:click="new_scene_onclick" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
                                 Add
                             </button>
