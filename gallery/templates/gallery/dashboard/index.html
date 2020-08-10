@@ -66,7 +66,6 @@
             user_list: [],
             user_management_text: '',
             user_management_text_show: true,
-            all_exhibition_management_show: true,
         },
         created: function () {
             progress_bar_app.show = true
@@ -76,7 +75,7 @@
             })
             axios.get('{% url "gallery:api:user_management_user_list" %}')
             .then(function (response) {
-                dashboard_app.user_list = response.data['user_list']
+                dashboard_app.user_list = response.data
                 var has_user = false
                 for (const user of dashboard_app.user_list) {
                     if (!user.user_status) {
@@ -102,7 +101,7 @@
                 return this.user_type === 'teacher';
             },
             // 对 stuff 和 super user 显示 all scene management 入口
-            all_scene_management_show: function () {
+            all_exhibition_management_show: function () {
                 return this.user_type === 'stuff' || this.user_type === 'superuser';
             },
             my_scene_management_url: function () {
