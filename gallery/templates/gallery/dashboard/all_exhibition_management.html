@@ -55,14 +55,24 @@
                     <tr>
                         <th class="mdl-data-table__cell--non-numeric">ID</th>
                         <th class="mdl-data-table__cell--non-numeric">Exhibition Name</th>
-                        <th class="mdl-data-table__cell--non-numeric">Action</th>
+                        <th class="mdl-data-table__cell--non-numeric" colspan="2">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="exhibition in exhibition_list">
                         <td>[[ exhibition.id ]]</td>
-                        <td>[[ exhibition.name ]]</td>
+			<td>
+			    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+				<input v-model="exhibition.name" type="text" class="mdl-textfield__input">
+			    </div>
+			</td>
                         <td>
+                            <button v-on:click="save_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+				Save
+			    </button>
+                            <button v-on:click="modify_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+				Scene
+			    </button>
                             <button v-on:click="delete_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
                                 Delete
                             </button>
@@ -82,7 +92,6 @@
                     new_exhibition_show: false,
                     new_exhibition_error_message_show: false,
                     new_exhibition_error_message: '',
-                    artist_list: [],
                     author_id: null,
                 },
                 methods: {
@@ -90,7 +99,7 @@
                         progress_bar_app.show = true
                         axios.get('/gallery/api/exhibitionlist/')
                         .then(function (response) {
-                            all_exhibition_management_app.exhibition_list = response.data['exhibition_list']
+                            all_exhibition_management_app.exhibition_list = response.data
                         })
                         .catch(function (error) {
                             errorDialog(error)
@@ -133,20 +142,28 @@
                             progress_bar_app.show = false
                         })
                     },
+		    save_onclick: function (exhibition) {
+			progress_bar_app.show = true
+			axios.post('/gallery/api/exhibition/'+exhibition.id+'/info/', {
+			    name: exhibition.name
+			})
+			.then(function (response) {
+			    showSnackbar('Saved')
+			})
+			.catch(function (error) {
+			    errorDialog(error)
+			})
+			.finally(function () {
+			    progress_bar_app.show = false
+			})
+		    },
+		    modify_onclick: function (exhibition) {
+			window.location = '{% url "gallery:dashboard:all_scene_management" %}'+'?exhibition_id='+exhibition.id
+		    },
                 },
                 created: function () {
                     progress_bar_app.show = true
                     this.refresh_exhibition_list()
-                    axios.get('{% url "gallery:api:get_artist_list" %}')
-                    .then(function (response) {
-                        all_exhibition_management_app.artist_list = response.data['artist_list']
-                    })
-                    .catch(function (error) {
-                        errorDialog(error)
-                    })
-                    .finally(function () {
-                        progress_bar_app.show = false
-                    })
                 },
             })
         </script>

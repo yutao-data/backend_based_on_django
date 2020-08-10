@@ -8,6 +8,7 @@
                     <tr>
                         <th class="mdl-data-table__cell--non-numeric">ID</th>
                         <th class="mdl-data-table__cell--non-numeric">Username</th>
+                        <th class="mdl-data-table__cell--non-numeric">Type</th>
                         <th class="mdl-data-table__cell--non-numeric">Accept</th>
                         <th colspan="2" class="mdl-data-table__cell--non-numeric">Action</th>
                     </tr>
@@ -16,6 +17,7 @@
                     <tr v-for="user in user_list" v-bind:key="user.id">
                         <td>[[ user.id ]]</td>
                         <td class="mdl-data-table__cell--non-numeric">[[ user.username ]]</td>
+			<td class="mdl-data-table__cell--non-numeric">[[ user.user_type ]]</td>
                         <td class="mdl-data-table__cell--non-numeric">
                             <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
                                 <input v-model="user.user_status" type="checkbox" class="mdl-checkbox__input">
@@ -82,7 +84,7 @@
                         axios.get('{% url "gallery:api:user_management_user_list" %}')
                         .then(function (response) {
                             console.log(response)
-                            user_management_app.user_list = response.data['user_list']
+                            user_management_app.user_list = response.data
                         })
                     }
                 },

@@ -1,3 +1,5 @@
+import random
+import hashlib
 import json
 import os.path
 from backend_based_on_django.settings import MEDIA_ROOT
@@ -23,7 +25,8 @@ from .error import (
     NoPermission,
 )
 from .models import Scene, Item, Exhibition
-from guardian.shortcuts import assign_perm
+from guardian.shortcuts import assign_perm, get_perms
+from guardian.decorators import permission_required, permission_required_or_403
 from django.contrib.auth.decorators import login_required
 
 MAX_CHAR_LENGTH = 32
@@ -123,7 +126,7 @@ class APILoginView(APIView):
     def my_get(request):
         if request.user.is_authenticated:
             return JsonResponse({
-                'user_type': get_user_type(request),
+                'user_type': get_user_type(request.user),
             })
         else:
             raise AuthenticateError
@@ -139,7 +142,7 @@ class APILoginView(APIView):
         logout(request)
         login(request, user)
         return JsonResponse({
-            'user_type': get_user_type(request),
+            'user_type': get_user_type(request.user),
         })
 
 
@@ -194,7 +197,11 @@ class APISignupView(APIView):
             stuff_group = Group.objects.get_or_create(name='stuff_group')[0]
             stuff_group.user_set.add(user)
             # 策展管理员stuff拥有所属exhibition下所有scene的object权限
-            # todo stuff 权限分配
+            exhibition_id = cleaned_data['exhibition_id']
+            exhibition = Exhibition.objects.get(pk=exhibition_id)
+            group = exhibition.group
+            group.user_set.add(user)
+
         elif user_type == 'superuser':
             # 添加超级用户到超级用户组
             superuser_group = Group.objects.get_or_create(name='superuser_group')[0]
@@ -202,7 +209,7 @@ class APISignupView(APIView):
             user.is_superuser = True
         else:
             # 用户提交了未定义的类型，引发一个错误
-            raise FormValidError
+            raise FormValidError(message="Unknown user type, can not signup")
 
         user.save()
         return get_success_response()
@@ -239,8 +246,9 @@ class APIUserManagementUserListView(APIView):
                 'username': user.username,
                 'id': user.id,
                 'user_status': user.is_active,
+                'user_type': get_user_type(request.user),
             })
-        return JsonResponse({'user_list': user_list})
+        return JsonResponse(user_list, safe=False)
 
 
 class APIDeleteUserView(APIView):
@@ -259,70 +267,81 @@ class APIGetUserType(APIView):
     @staticmethod
     def my_get(request):
         user_type_describe = ''
-        user_type = get_user_type(request)
+        user_type = get_user_type(request.user)
         return JsonResponse({
             'user_type': user_type,
         })
 
 
 # 获取用户类型
-def get_user_type(request):
+def get_user_type(user):
     user_type = ''
     # 游客
-    if not request.user.is_authenticated:
+    if not user.is_authenticated:
         user_type = 'anonymous'
-    if request.user.is_superuser:
+    if user.is_superuser:
         user_type = 'superuser'
-    for group in request.user.groups.all():
-        if group.name == 'artist_group':
+    for group in user.groups.all():
+        group_name = group.name
+        if group_name == 'artist_group':
             user_type = 'artist'
             break
-        elif group.name == 'teacher_group':
+        elif group_name == 'teacher_group':
             user_type = 'teacher'
             break
-        elif group.name == 'stuff_group':
+        elif group_name == 'stuff_group':
             user_type = 'stuff'
             break
-        elif group.name == 'superuser_group':
+        elif group_name == 'superuser_group':
             user_type = 'superuser'
     if not user_type:
         raise Error("User type not define", status=500)
     return user_type
 
-
-# 不进行权限检查，返回所有scene
+# 用于注册的scenelist
 class APIGetSignupSceneList(APIView):
 
     @staticmethod
     def my_get(request):
+        user_type = get_user_type(request.user)
         scene_list = []
         for scene in Scene.objects.all():
             scene_list.append(get_scene_information(scene))
-        return JsonResponse({
-            'scene_list': scene_list,
-        })
+
+        return JsonResponse(scene_list, safe=False)
+
+
+# 不限定exhibition，获取所有scene
+class APIGetAllSceneList(APIView):
+
+    @staticmethod
+    def my_get(request):
+        user_type = get_user_type(request.user)
+        scene_list = []
+        # 拒绝普通用户
+        if user_type == 'artist':
+            raise NoPermission
+        for scene in Scene.objects.all():
+            if check_perm('gallery.change_scene', request, scene):
+                scene_list.append(scene)
+        return JsonResponse(scene_list, safe=False)
 
 
 # 进行权限检查的scene list版本
 class APIGetSceneList(APIView):
 
     @staticmethod
-    def my_get(request):
-        user_type = get_user_type(request)
+    def my_get(request, exhibition_id):
+        user_type = get_user_type(request.user)
         scene_list = []
         # 拒绝普通用户
         if user_type == 'artist':
             raise NoPermission
-        if user_type == 'teacher':
-            for scene in Scene.objects.all():
-                if request.user.has_perm('gallery.change_scene', scene):
-                    scene_list.append(get_scene_information(scene))
-        if user_type == 'stuff' or user_type == 'superuser':
-            for scene in Scene.objects.all():
+        exhibition = Exhibition.objects.get(pk=exhibition_id)
+        for scene in Scene.objects.filter(exhibition=exhibition):
+            if check_perm('gallery.change_scene', request, scene):
                 scene_list.append(get_scene_information(scene))
-        return JsonResponse({
-            'scene_list': scene_list
-        })
+        return JsonResponse(scene_list, safe=False)
 
 
 def get_scene_information(scene):
@@ -352,21 +371,23 @@ class APIAddNewScene(APIView):
         if len(Group.objects.filter(name=name)) > 0:
             raise Error(message='Scene permission group name has been taken.', status=403)
 
-        group = Group.objects.create(name=name)
+        group = Group.objects.create(name=gen_random_name(name))
+        scene = Scene.objects.create(name=name, group=group, exhibition=exhibition)
 
         # 分配这个展厅的object权限到组里
-        # assign_perm('gallery.view_scene', group)
-        assign_perm('gallery.change_scene', group)
-        # assign_perm('gallery.add_scene', group)
-        # assign_perm('gallery.delete_scene', group)
+        assign_perm('gallery.view_scene', group, scene)
+        assign_perm('gallery.change_scene', group, scene)
+        # assign_perm('gallery.add_scene', group, scene)
+        # assign_perm('gallery.delete_scene', group, scene)
 
         # 添加该展厅的object权限到对应exhibition里
-        # assign_perm('gallery.view_scene', exhibition_group)
-        assign_perm('gallery.change_scene', exhibition_group)
+        assign_perm('gallery.view_scene', exhibition_group, scene)
+        assign_perm('gallery.change_scene', exhibition_group, scene)
+        # assign_perm('gallery.add_scene', exhibition_group, scene)
+        assign_perm('gallery.delete_scene', exhibition_group, scene)
 
         group.save()
 
-        scene = Scene.objects.create(name=name, group=group, exhibition=exhibition)
         scene.save()
 
         return JsonResponse({
@@ -605,18 +626,22 @@ class APIGetArtistList(APIView):
     @staticmethod
     def my_get(request):
         artist_list = []
-        for user in User.objects.all():
-            # 判断方式:用户不在任何组里即为artist
-            # 以后再改 Artist全部丢到一个组里,现在就先这样判
-            if not len(user.groups.all()) and not user.is_superuser and user.is_active and not user.username == 'AnonymousUser' and not user.has_perm('gallery.change_scene'):
-                artist_list.append({
-                    'username': user.username,
-                    'id': user.pk,
-                })
+        artist_group = Group.objects.get_or_create(name='artist_group')[0]
+        for user in artist_group.user_set.all():
+            artist_list.append({
+                'username': user.username,
+                'id': user.pk,
+            })
         return JsonResponse({
             'artist_list': artist_list,
         })
 
+
+def gen_random_name(data):
+    sha1 = hashlib.sha1()
+    sha1.update(str(random.random()).encode())
+    random_string = sha1.hexdigest()
+    return '_'.join([data, random_string])
 
 class APIExhibitionAdd(APIView):
     class MyForm(Form):
@@ -624,11 +649,20 @@ class APIExhibitionAdd(APIView):
 
     @staticmethod
     def my_post(request, cleaned_data):
+        # 只有superuser才能新建exhibition
+        if not request.user.is_superuser:
+            raise NoPermission
         exhibition_name = cleaned_data['name']
         exhibition = Exhibition.objects.create(name=exhibition_name)
-        # todo group_name add random string
-        group = Group.objects.create(name=exhibition_name)
+
+        group = Group.objects.create(name=gen_random_name(exhibition_name))
         exhibition.group = group
+
+        # 分配操作该exhibition的object权限到组里
+        assign_perm('gallery.view_exhibition', group, exhibition)
+        assign_perm('gallery.change_exhibition', group, exhibition)
+
+        group.save()
         exhibition.save()
         return get_success_response()
 
@@ -643,12 +677,17 @@ class APIExhibitionInfo(APIView):
         return {
             'exhibition': get_exhibition_information(request, exhibition)
         }
-
+    
     @staticmethod
+    @permission_required_or_403(
+        'gallery.change_exhibition',
+        (Exhibition, 'pk', 'exhibition_id'),
+        accept_global_perms=True
+    )
     def my_post(request, cleaned_data, exhibition_id):
         exhibition = Exhibition.objects.get(pk=exhibition_id)
         name = cleaned_data['name']
-        exhibition_name = name
+        exhibition.name = name
         exhibition.save()
         return get_success_response()
 
@@ -670,9 +709,7 @@ class APISignupExhibitionList(APIView):
         exhibition_list = []
         for exhibition in Exhibition.objects.all():
             exhibition_list.append(get_exhibition_information(exhibition))
-        return JsonResponse({
-            'exhibition_list': exhibition_list,
-        })
+        return JsonResponse(exhibition_list, safe=False)
 
 
 # 进行权限检查的exhibition list 版本
@@ -682,14 +719,22 @@ class APIExhibitionList(APIView):
     def my_get(request):
         exhibition_list = []
         for exhibition in Exhibition.objects.all():
-            exhibition_list.append(get_exhibition_information(exhibition))
-        return JsonResponse({
-            'exhibition_list': exhibition_list,
-        })
-
+            if check_perm('gallery.change_exhibition', request, exhibition):
+                exhibition_list.append(get_exhibition_information(exhibition))
+        return JsonResponse(exhibition_list, safe=False)
 
 def get_exhibition_information(exhibition):
     return {
         'id': exhibition.pk,
         'name': exhibition.name,
     }
+
+
+# check object permission and global permission
+def check_perm(perm_string, request, obj):
+    if request.user.is_superuser:
+        return True
+    if request.user.has_perm(perm_string) or request.user.has_perm(perm_string, obj):
+        return True
+    else:
+        return False

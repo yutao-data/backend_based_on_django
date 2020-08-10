@@ -6,7 +6,7 @@
             <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
                 <thead>
                     <tr>
-                        <td class="mdl-data-table__cell--non-numeric">
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                                 <strong>Add New Scene</strong>
                             </div>
@@ -15,32 +15,20 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="mdl-data-table__cell--non-numeric">
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                                 <input v-model="new_scene_name" type="text" name="new_scene_name" class="mdl-textfield__input">
                                 <label for="new_scene_name" class="mdl-textfield__label">New Scene Name</label>
                             </div>
                         </td>
                     </tr>
-                    <tr>
-                        <td class="mdl-data-table__cell--non-numeric">
-                            Belong to Exhibition:
-                        </td>
-                        <td class="mdl-data-table__cell--non-numeric">
-                            <select v-model="exhibition_id">
-                                <option v-for="exhibition in exhibition_list" v-bind:value="exhibition.id">
-                                    [[ exhibition.name ]]
-                                </option>
-                            </select>
-                        </td>
-                    </tr>
                     <tr v-show="new_scene_error_message_show">
-                        <td class="mdl-data-table__cell--non-numeric">
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
                             [[ new_scene_error_message ]]
                         </td>
                     </tr>
                     <tr>
-                        <td>
+                        <td colspan="100%">
                             <button v-on:click="new_scene_onclick" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
                                 Add
                             </button>
@@ -91,6 +79,15 @@
         </div>
     </div>
     <script>
+	    var url = window.location.href //获取当前url
+	    var dz_url = url.split('#')[0] //获取#/之前的字符串
+	    var cs = dz_url.split('?')[1]  //获取?之后的参数字符串
+	    var cs_arr = cs.split('&') //参数字符串分割为数组
+	    var cs={}
+	    for(var i=0;i<cs_arr.length;i++){//遍历数组，拿到json对象
+		cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
+	    }
+
             var all_scene_management_app = new Vue({
                 delimiters: ['[[', ']]'],
                 el: '#all_scene_management_div',
@@ -100,9 +97,6 @@
                     new_scene_show: false,
                     new_scene_error_message_show: false,
                     new_scene_error_message: '',
-                    exhibition_id: null,
-                    exhibition_list: [],
-                    exhibition_text: '',
                 },
                 methods: {
                     // 显示 add new scene 的表单
@@ -117,16 +111,10 @@
                             this.new_scene_error_message_show = true
                             return
                         }
-                        // 检查有无选中 exhibition
-                        if (this.exhibition_id == null) {
-                            this.new_scene_error_message = 'Please select an exhibition!'
-                            this.new_scene_error_message_show = true
-                            return
-                        }
                         progress_bar_app.show = true
                         axios.post('{% url "gallery:api:add_new_scene" %}', {
                             name: this.new_scene_name,
-                            exhibition_id: this.exhibition_id,
+                            exhibition_id: cs['exhibition_id'],
 
                         })
                         .then(function (response) {
@@ -148,9 +136,9 @@
                     },
                     refresh_scene_list: function () {
                         progress_bar_app.show = true
-                        axios.get('/gallery/api/scenelist')
+                        axios.get('/gallery/api/exhibition/'+cs['exhibition_id']+'/scenelist/')
                         .then(function (response) {
-                            all_scene_management_app.scene_list = response.data['scene_list']
+                            all_scene_management_app.scene_list = response.data
                         })
                         .catch(function (error) {
                             errorDialog(error)
@@ -179,10 +167,6 @@
                 },
                 created: function () {
                     this.refresh_scene_list()
-                    axios.get('{% url "gallery:api:signup_exhibition_list" %}')
-                    .then(function (response) {
-                        all_scene_management_app.exhibition_list = response.data['exhibition_list']
-                    })
                 },
             })
         </script>

@@ -13,3 +13,4 @@ class AuthorAdmin(GuardedModelAdmin):
 
 admin.site.register(models.Item, AuthorAdmin)
 admin.site.register(models.Scene, AuthorAdmin)
+admin.site.register(models.Exhibition, AuthorAdmin)

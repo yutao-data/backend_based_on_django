@@ -33,26 +33,11 @@
             </div>
         </div>
 
-        <!-- All Scene 场景管理卡片 -->
-        <div v-if="all_scene_management_show" class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-            <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
-                <div class="mdl-card__title mdl-card--expand mdl-color--light-blue-700">
-                    <h2 class="mdl-card__title-text">All Scene Management</h2>
-                </div>
-                <div class="mdl-card__supporting-text mdl-color-text--grey-600">
-                    You can manage all scene here
-                </div>
-                <div class="mdl-card__actions mdl-card--border">
-                    <a href="{% url 'gallery:dashboard:all_scene_management' %}" class="mdl-button mdl-js-button mdl-js-ripple-effect">All Scene</a>
-                </div>
-            </div>
-        </div>
-
         <!-- 用户注册审批卡片 -->
         <div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
             <div class="demo-options mdl-card mdl-color--deep-purple-500 mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--3-col-tablet mdl-cell--12-col-desktop">
                 <div class="mdl-card__supporting-text mdl-color-text--blue-grey-50">
-                    <h3>UserManagement</h3>
+                    <h3>User Management</h3>
                     <p v-show="user_management_text_show">[[ user_management_text ]]</p>
                     <ul class="mdl-list">
                         <li v-for="user in user_list" v-show="!user.user_status" class="mdl-list__item">
@@ -64,7 +49,7 @@
                     </ul>
                 </div>
                 <div class="mdl-card__actions mdl-card--border">
-                    <a href="{% url 'gallery:dashboard:user_management' %}" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--blue-grey-50">Go to checkout</a>
+                    <a href="{% url 'gallery:dashboard:user_management' %}" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-color-text--blue-grey-50">User Management</a>
                     <div class="mdl-layout-spacer"></div>
                 </div>
             </div>
@@ -81,7 +66,6 @@
             user_list: [],
             user_management_text: '',
             user_management_text_show: true,
-            all_exhibition_management_show: true,
         },
         created: function () {
             progress_bar_app.show = true
@@ -91,10 +75,10 @@
             })
             axios.get('{% url "gallery:api:user_management_user_list" %}')
             .then(function (response) {
-                dashboard_app.user_list = response.data['user_list']
+                dashboard_app.user_list = response.data
                 var has_user = false
                 for (const user of dashboard_app.user_list) {
-                    if (!user.is_active) {
+                    if (!user.user_status) {
                         has_user = true
                     }
                 }
@@ -117,11 +101,11 @@
                 return this.user_type === 'teacher';
             },
             // 对 stuff 和 super user 显示 all scene management 入口
-            all_scene_management_show: function () {
+            all_exhibition_management_show: function () {
                 return this.user_type === 'stuff' || this.user_type === 'superuser';
             },
             my_scene_management_url: function () {
-                return '{% url "gallery:dashboard:scene_management" %}'+ '?pk=' + '{{ my_scene_management_pk }}'
+                return '{% url "gallery:dashboard:all_scene_management" %}'+ '?pk=' + '{{ my_scene_management_pk }}'
             },
             exhibition_management_url: function () {
 		    return '{% url "gallery:dashboard:all_exhibition_management" %}'
