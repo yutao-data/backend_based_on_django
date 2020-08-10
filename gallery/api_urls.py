@@ -46,7 +46,7 @@ urlpatterns = [
     path('exhibition/<int:exhibition_id>/info/', api_views.APIExhibitionInfo.as_view(), name='exhibition_info'),
 
     # 获取场景列表
-    path('scenelist/', api_views.APIGetSceneList.as_view(), name='get_scene_list'),
+    path('exhibition/<int:exhibition_id>/scenelist/', api_views.APIGetSceneList.as_view(), name='get_scene_list'),
 
     # 添加新场景
     path('sceneadd/', api_views.APIAddNewScene.as_view(), name='add_new_scene'),

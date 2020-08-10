@@ -315,22 +315,17 @@ class APIGetSignupSceneList(APIView):
 class APIGetSceneList(APIView):
 
     @staticmethod
-    def my_get(request):
+    def my_get(request, exhibition_id):
         user_type = get_user_type(request)
         scene_list = []
         # 拒绝普通用户
         if user_type == 'artist':
             raise NoPermission
-        if user_type == 'teacher':
-            for scene in Scene.objects.all():
-                if request.user.has_perm('gallery.change_scene', scene):
-                    scene_list.append(get_scene_information(scene))
-        if user_type == 'stuff' or user_type == 'superuser':
-            for scene in Scene.objects.all():
+        exhibition = Exhibition.objects.get(pk=exhibition_id)
+        for scene in Scene.objects.filter(exhibition=exhibition):
+            if check_perm('gallery.change_scene', request, scene):
                 scene_list.append(get_scene_information(scene))
-        return JsonResponse({
-            'scene_list': scene_list
-        })
+        return JsonResponse(scene_list, safe=False)
 
 
 def get_scene_information(scene):
@@ -723,6 +718,8 @@ def get_exhibition_information(exhibition):
 
 # check object permission and global permission
 def check_perm(perm_string, request, obj):
+    if request.user.is_superuser:
+        return True
     if request.user.has_perm(perm_string) or request.user.has_perm(perm_string, obj):
         return True
     else:

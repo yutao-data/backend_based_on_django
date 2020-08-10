@@ -73,6 +73,9 @@
                             <button v-on:click="delete_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
                                 Delete
                             </button>
+                            <button v-on:click="modify_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+				Scene
+			    </button>
                         </td>
                     </tr>
                 </tbody>
@@ -140,9 +143,9 @@
                             progress_bar_app.show = false
                         })
                     },
-		save_onclick: function (exhibition) {
-		    progress_bar_app.show = true
-		    axios.post('/gallery/api/exhibition/'+exhibition.id+'/info/', {
+		    save_onclick: function (exhibition) {
+			progress_bar_app.show = true
+			axios.post('/gallery/api/exhibition/'+exhibition.id+'/info/', {
 			    name: exhibition.name
 			})
 			.then(function (response) {
@@ -154,7 +157,10 @@
 			.finally(function () {
 			    progress_bar_app.show = false
 			})
-		    }
+		    },
+		    modify_onclick: function (exhibition) {
+			window.location = '{% url "gallery:dashboard:all_scene_management" %}'+'?exhibition_id='+exhibition.id
+		    },
                 },
                 created: function () {
                     progress_bar_app.show = true
