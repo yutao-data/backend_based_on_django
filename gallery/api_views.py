@@ -196,7 +196,9 @@ class APISignupView(APIView):
             stuff_group = Group.objects.get_or_create(name='stuff_group')[0]
             stuff_group.user_set.add(user)
             # 策展管理员stuff拥有所属exhibition下所有scene的object权限
-            group = Exhibition.objects.get(pk=exhibition_id)
+            exhibition_id = cleaned_data['exhibition_id']
+            exhibition = Exhibition.objects.get(pk=exhibition_id)
+            group = exhibition.group
             group.user_set.add(user)
         elif user_type == 'superuser':
             # 添加超级用户到超级用户组
@@ -624,7 +626,9 @@ class APIGetArtistList(APIView):
 
 
 def gen_random_name(data):
-    random_string = hashlib.sha1().update(str(random.random()).encode()).hexdigest()
+    sha1 = hashlib.sha1()
+    sha1.update(str(random.random()).encode())
+    random_string = sha1.hexdigest()
     return '_'.join([data, random_string])
 
 class APIExhibitionAdd(APIView):
