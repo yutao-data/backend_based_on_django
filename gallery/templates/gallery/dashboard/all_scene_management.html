@@ -167,10 +167,6 @@
                 },
                 created: function () {
                     this.refresh_scene_list()
-                    axios.get('{% url "gallery:api:get_exhibition_list" %}')
-                    .then(function (response) {
-                        all_scene_management_app.exhibition_list = response.data
-                    })
                 },
             })
         </script>

@@ -246,8 +246,9 @@ class APIUserManagementUserListView(APIView):
                 'username': user.username,
                 'id': user.id,
                 'user_status': user.is_active,
+                'user_type': get_user_type(request),
             })
-        return JsonResponse({'user_list': user_list})
+        return JsonResponse(user_list, safe=False)
 
 
 class APIDeleteUserView(APIView):
