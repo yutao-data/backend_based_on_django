@@ -25,7 +25,8 @@ from .error import (
     NoPermission,
 )
 from .models import Scene, Item, Exhibition
-from guardian.shortcuts import assign_perm
+from guardian.shortcuts import assign_perm, get_perms
+from guardian.decorators import permission_required, permission_required_or_403
 from django.contrib.auth.decorators import login_required
 
 MAX_CHAR_LENGTH = 32
@@ -200,6 +201,7 @@ class APISignupView(APIView):
             exhibition = Exhibition.objects.get(pk=exhibition_id)
             group = exhibition.group
             group.user_set.add(user)
+
         elif user_type == 'superuser':
             # 添加超级用户到超级用户组
             superuser_group = Group.objects.get_or_create(name='superuser_group')[0]
@@ -662,8 +664,9 @@ class APIExhibitionInfo(APIView):
         return {
             'exhibition': get_exhibition_information(request, exhibition)
         }
-
+    
     @staticmethod
+    @permission_required_or_403('gallery.change_exhibition',(Exhibition, 'pk', 'exhibition_id')  ,accept_global_perms=True)
     def my_post(request, cleaned_data, exhibition_id):
         exhibition = Exhibition.objects.get(pk=exhibition_id)
         name = cleaned_data['name']
@@ -701,7 +704,8 @@ class APIExhibitionList(APIView):
     def my_get(request):
         exhibition_list = []
         for exhibition in Exhibition.objects.all():
-            exhibition_list.append(get_exhibition_information(exhibition))
+            if check_perm('gallery.change_exhibition', request, exhibition):
+                exhibition_list.append(get_exhibition_information(exhibition))
         return JsonResponse({
             'exhibition_list': exhibition_list,
         })
@@ -712,3 +716,11 @@ def get_exhibition_information(exhibition):
         'id': exhibition.pk,
         'name': exhibition.name,
     }
+
+
+# check object permission and global permission
+def check_perm(perm_string, request, obj):
+    if request.user.has_perm(perm_string) or request.user.has_perm(perm_string, obj):
+        return True
+    else:
+        return False
