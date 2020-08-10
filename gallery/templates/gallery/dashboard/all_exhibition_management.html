@@ -92,7 +92,6 @@
                     new_exhibition_show: false,
                     new_exhibition_error_message_show: false,
                     new_exhibition_error_message: '',
-                    artist_list: [],
                     author_id: null,
                 },
                 methods: {
@@ -165,16 +164,6 @@
                 created: function () {
                     progress_bar_app.show = true
                     this.refresh_exhibition_list()
-                    axios.get('{% url "gallery:api:get_artist_list" %}')
-                    .then(function (response) {
-                        all_exhibition_management_app.artist_list = response.data['artist_list']
-                    })
-                    .catch(function (error) {
-                        errorDialog(error)
-                    })
-                    .finally(function () {
-                        progress_bar_app.show = false
-                    })
                 },
             })
         </script>
