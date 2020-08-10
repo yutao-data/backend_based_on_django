@@ -55,14 +55,21 @@
                     <tr>
                         <th class="mdl-data-table__cell--non-numeric">ID</th>
                         <th class="mdl-data-table__cell--non-numeric">Exhibition Name</th>
-                        <th class="mdl-data-table__cell--non-numeric">Action</th>
+                        <th class="mdl-data-table__cell--non-numeric" colspan="2">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="exhibition in exhibition_list">
                         <td>[[ exhibition.id ]]</td>
-                        <td>[[ exhibition.name ]]</td>
+			<td>
+			    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+				<input v-model="exhibition.name" type="text" class="mdl-textfield__input">
+			    </div>
+			</td>
                         <td>
+                            <button v-on:click="save_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+				Save
+			    </button>
                             <button v-on:click="delete_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
                                 Delete
                             </button>
@@ -133,6 +140,21 @@
                             progress_bar_app.show = false
                         })
                     },
+		    save_onclick: function (exhibition) {
+			progress_bar_app.show = true
+			axios.post('/gallery/api/exhibition/'+exhibition.id+'/info/', {
+			    name: exhibition.name
+			})
+			.then(function (response) {
+			    showSnackbar('Saved')
+			})
+			.catch(function (error) {
+			    errorDialog(error)
+			})
+			.finally(function () {
+			    progress_bar_app.show = false
+			})
+		    }
                 },
                 created: function () {
                     progress_bar_app.show = true

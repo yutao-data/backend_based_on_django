@@ -667,7 +667,7 @@ class APIExhibitionInfo(APIView):
     def my_post(request, cleaned_data, exhibition_id):
         exhibition = Exhibition.objects.get(pk=exhibition_id)
         name = cleaned_data['name']
-        exhibition_name = name
+        exhibition.name = name
         exhibition.save()
         return get_success_response()
 

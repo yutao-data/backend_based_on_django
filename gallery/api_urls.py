@@ -41,6 +41,9 @@ urlpatterns = [
 
     # Exhibition Delete
     path('exhibition/<int:exhibition_id>/', api_views.APIExhibitionDelete.as_view(), name='delete_exhibition'),
+    
+    # Exhibition Info
+    path('exhibition/<int:exhibition_id>/info/', api_views.APIExhibitionInfo.as_view(), name='exhibition_info'),
 
     # 获取场景列表
     path('scenelist/', api_views.APIGetSceneList.as_view(), name='get_scene_list'),
