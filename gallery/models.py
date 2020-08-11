@@ -42,4 +42,9 @@ class Item(models.Model):
     scl_z = models.FloatField(default=1.0)
 
 
-
+# tool
+class Tool(models.Model):
+    def __str__(self):
+        return str(self.name)
+    name = models.CharField(max_length=NAME_MAX_CHAR)
+    scene = models.ForeignKey(Scene, on_delete=models.CASCADE, blank=True, null=True)

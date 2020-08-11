@@ -40,6 +40,10 @@ class AuthenticateError(Error):
     def __init__(self, message='User Authenticate Failed', status=401):
         super().__init__(message, status)
 
+# 404
+class NotFoundError(Error):
+    def __init__(self, message='404 Not Found', status=404):
+        super().__init__(message, status)
 
 # 瞎jb测试用代码
 if __name__ == '__main__':

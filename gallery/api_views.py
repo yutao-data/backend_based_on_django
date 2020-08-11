@@ -23,8 +23,9 @@ from .error import (
     AuthenticateError,
     APIFormNotDefine,
     NoPermission,
+    NotFoundError,
 )
-from .models import Scene, Item, Exhibition
+from .models import Scene, Item, Exhibition, Tool
 from guardian.shortcuts import assign_perm, get_perms
 from guardian.decorators import permission_required, permission_required_or_403
 from django.contrib.auth.decorators import login_required
@@ -74,7 +75,7 @@ class APIView(View):
         # 捕获未定义的错误
         except Exception as e:
             # 输出错误类型和错误信息到控制台
-            print('%s: %s' % (str(type(e)), str(e)))
+            print('Unexcepted Error: %s: %s' % (str(type(e)), str(e)))
             return JsonResponse({
                 'error_type': 'NotDefine Error: ' + str(type(e)),
                 'error_message': str(e),
@@ -246,7 +247,7 @@ class APIUserManagementUserListView(APIView):
                 'username': user.username,
                 'id': user.id,
                 'user_status': user.is_active,
-                'user_type': get_user_type(request.user),
+                'user_type': get_user_type(user),
             })
         return JsonResponse(user_list, safe=False)
 
@@ -453,10 +454,29 @@ class APISceneFile(View):
             }
         })
 
+    def get(self, request, *args, **kwargs):
+        try: 
+            return self.my_get(request, *args, **kwargs)
+        except Error as e:
+            return JsonResponse({
+                'error_type': str(e.__class__.__name__),  # 使用类名作为错误类型
+                'error_message': str(e)  # 调用e的__str__()方法，获取错误详细解释
+            }, status=e.status)
+        # 捕获未定义的错误
+        except Exception as e:
+            # 输出错误类型和错误信息到控制台
+            print('%s: %s' % (str(type(e)), str(e)))
+            return JsonResponse({
+                'error_type': 'NotDefine Error: ' + str(type(e)),
+                'error_message': str(e),
+            }, status=500)
+
     @staticmethod
-    def get(request, scene_id):
+    def my_get(request, scene_id):
         scene = Scene.objects.get(pk=scene_id)
         f_p = os.path.join(MEDIA_ROOT, scene.file.name)
+        if not os.path.exists(f_p):
+            raise NotFoundError
         f = open(f_p, 'rb')
         return FileResponse(f)
 
@@ -479,11 +499,8 @@ class APIGetItemList(APIView):
         item_list = []
         scene = Scene.objects.get(pk=scene_id)
         for item in Item.objects.filter(scene=scene):
-            if request.user.has_perm('gallery.change_item', item):
-                item_list.append(get_item_information(item))
-        return JsonResponse({
-            'item_list': item_list,
-        })
+            item_list.append(get_item_information(item))
+        return JsonResponse(item_list, safe=False)
 
 
 class APIItemInformation(APIView):
@@ -738,3 +755,18 @@ def check_perm(perm_string, request, obj):
         return True
     else:
         return False
+
+
+# get tool list
+class APIGetToolList(APIView):
+
+    @staticmethod
+    def my_get(request, scene_id):
+        scene = Scene.objects.get(pk=scene_id)
+        tool_list = []
+        for tool in Tool.objects.filter(scene=scene):
+            tool_list.append({
+                'name': tool.name,
+            })
+        return JsonResponse(tool_list, safe=False)
+

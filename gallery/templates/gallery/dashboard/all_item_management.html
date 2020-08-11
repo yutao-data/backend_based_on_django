@@ -117,7 +117,7 @@
                         progress_bar_app.show = true
                         axios.get('/gallery/api/scene/'+cs['scene_id']+'/itemlist/')
                         .then(function (response) {
-                            all_item_management_app.item_list = response.data['item_list']
+                            all_item_management_app.item_list = response.data
                         })
                         .catch(function (error) {
                             errorDialog(error)

@@ -66,6 +66,9 @@ urlpatterns = [
     # 获取该场景下所有item
     path('scene/<int:scene_id>/itemlist/', api_views.APIGetItemList.as_view(), name='get_item_list'),
 
+    # get item list base on scene
+    path('scene/<int:scene_id>/toollist/', api_views.APIGetToolList.as_view(), name='get_tool_list'),
+
     # 往该场景下添加itme
     path('scene/<int:scene_id>/itemadd/', api_views.APIAddItem.as_view(), name='add_item'),
 
