@@ -133,11 +133,9 @@
                     },
                     upload_onclick: function () {
                         let formData = new FormData();
-                        let data = JSON.stringify({
-                            name: this.file.name
-                        })
+                        let filename = this.file.name
                         formData.append('file', this.file)
-                        formData.append('data', data)
+                        formData.append('filename', filename)
                         let config = {
                             headers: {'Content-Type': 'multipart/form-data'}
                         }
@@ -177,7 +175,7 @@
                     })
                     axios.get('{% url "gallery:api:get_artist_list" %}')
                     .then(function (response) {
-                        item_management_app.artist_list = response.data['artist_list']
+                        item_management_app.artist_list = response.data
                     })
                     .catch(function (error) {
                         errorDialog(error)

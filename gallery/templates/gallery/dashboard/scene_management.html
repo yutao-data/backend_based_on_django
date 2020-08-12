@@ -172,11 +172,9 @@
                 },
                 upload_onclick: function (event) {
                     let formData = new FormData();
-                    let data = JSON.stringify({
-                        name: this.file.name
-                    })
+                    let filename = this.file.name
                     formData.append('file', this.file)
-                    formData.append('data', data)
+                    formData.append('filename', filename)
                     let config = {
                         headers: {'Content-Type': 'multipart/form-data'}
                     }

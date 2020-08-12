@@ -2,9 +2,10 @@ import random
 import hashlib
 import json
 import os.path
+import copy
 from backend_based_on_django.settings import MEDIA_ROOT
 from django.views import View
-from django.http import JsonResponse, FileResponse
+from django.http import JsonResponse, FileResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.forms import (
@@ -13,6 +14,7 @@ from django.forms import (
     IntegerField,
     NullBooleanField,
     FileField,
+    FloatField,
 )
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
@@ -85,6 +87,8 @@ class APIView(View):
         try:
             # 使用json解码
             data = json.loads(requests.body)
+            # debug: raw data
+            print(data)
             if not self.use_form:
                 return self.my_post(requests, data, *args, **kwargs)
             # 表单未定义
@@ -95,6 +99,8 @@ class APIView(View):
             if not form.is_valid():
                 raise FormValidError
             cleaned_data = form.clean()
+            # debug: cleaned_data
+            print(cleaned_data)
             # 调用真实的my_post函数处理请求
             return self.my_post(requests, cleaned_data, *args, **kwargs)
 
@@ -442,8 +448,10 @@ class APISceneFile(View):
     @staticmethod
     def post(request, scene_id):
         file = request.FILES.get('file')
-        data = request.POST.get('data')
+        print("file len: ", str(len(file)))
+        filename = request.POST.get('filename')
         scene = Scene.objects.get(pk=scene_id)
+        file.name = filename
         scene.file = file
         scene.save()
         return JsonResponse({
@@ -580,10 +588,26 @@ def get_item_information(item):
 class APIAddItem(APIView):
     class MyForm(Form):
         name = CharField(label='name')
-        author_id = IntegerField(label='author_id')
+        author = CharField(label='author', required=False)
+        author_id = IntegerField(label='author_id', required=False)
+        pos_x = FloatField(label='pos_x', required=False)
+        pos_y = FloatField(label='pos_y', required=False)
+        pos_z = FloatField(label='pos_z', required=False)
+        rot_x = FloatField(label='rot_x', required=False)
+        rot_y = FloatField(label='rot_y', required=False)
+        rot_z = FloatField(label='rot_z', required=False)
+        rot_w = FloatField(label='rot_w', required=False)
+        scl_x = FloatField(label='scl_x', required=False)
+        scl_y = FloatField(label='scl_y', required=False)
+        scl_z = FloatField(label='scl_z', required=False)
+        desctiption = CharField(label='description', required=False)
 
     @staticmethod
     def my_post(request, cleaned_data, scene_id):
+        # check author and author_id is missing
+        if cleaned_data.get('author') is None and cleaned_data.get('author_id') is None:
+            raise FormValidError
+
         scene = Scene.objects.get(pk=scene_id)
         group = scene.group
         user = User.objects.get(pk=cleaned_data['author_id'])
@@ -592,6 +616,27 @@ class APIAddItem(APIView):
             scene=scene,
             author=user
         )
+        item.save()
+        if cleaned_data.get('pos_x') is not None:
+            pos_x = cleaned_data['pos_x']
+        if cleaned_data.get('pos_y') is not None:
+            pos_y = cleaned_data['pos_y']
+        if cleaned_data.get('pos_z') is not None:
+            pos_z = cleaned_data['pos_z']
+        if cleaned_data.get('rot_x') is not None:
+            rot_x = cleaned_data['rot_x']
+        if cleaned_data.get('rot_y') is not None:
+            rot_y = cleaned_data['rot_y']
+        if cleaned_data.get('rot_z') is not None:
+            rot_z = cleaned_data['rot_z']
+        if cleaned_data.get('row_w') is not None:
+            row_w = cleaned_data['rot_w']
+        if cleaned_data.get('scl_x') is not None:
+            scl_x = cleaned_data['scl_x']
+        if cleaned_data.get('scl_y') is not None:
+            scl_y = cleaned_data['scl_y']
+        if cleaned_data.get('scl_z') is not None:
+            scl_z = cleaned_data['scl_z']
         # 分配物体的object权限到组里
         assign_perm('gallery.view_item', group, item)
         assign_perm('gallery.change_item', group, item)
@@ -601,7 +646,8 @@ class APIAddItem(APIView):
         assign_perm('gallery.change_item', user, item)
         assign_perm('gallery.delete_item', user, item)
         item.save()
-        return get_success_response()
+        return HttpResponse(item.pk) 
+
 
 
 class APIDeleteItem(APIView):
@@ -629,8 +675,9 @@ class APIItemFile(View):
     def post(request, item_id):
         # todo: 代码复用
         file = request.FILES.get('file')
-        data = request.POST.get('data')
+        filename = request.POST.get('filename')
         item = Item.objects.get(pk=item_id)
+        file.name = filename
         item.file = file
         item.save()
         return JsonResponse({
@@ -649,9 +696,7 @@ class APIGetArtistList(APIView):
                 'username': user.username,
                 'id': user.pk,
             })
-        return JsonResponse({
-            'artist_list': artist_list,
-        })
+        return JsonResponse(artist_list, safe=False)
 
 
 def gen_random_name(data):

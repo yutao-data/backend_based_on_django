@@ -40,6 +40,7 @@ class Item(models.Model):
     scl_x = models.FloatField(default=1.0)
     scl_y = models.FloatField(default=1.0)
     scl_z = models.FloatField(default=1.0)
+    description = models.CharField(max_length=256, default='')
 
 
 # tool
