@@ -1,5 +1,12 @@
 # 虚拟布展系统后端
 
+# 依赖
+- python3
+- django `pip install django`
+- guardian `pip install django-guardian`
+- pymysql `pip install pymysql`
+- mysql，具体设置在setting.py中
+
 # 权限
 ## 用户类型
 - 普通用户User（展品上传者）
