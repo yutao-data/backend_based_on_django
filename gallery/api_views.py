@@ -229,15 +229,15 @@ class APIUserManagementView(APIView):
 
     @staticmethod
     def my_post(request, cleaned_data):
+        # 检查权限
+        user_type = get_user_type(user)
+        if user_type != 'superuser':
+            raise NoPermission
         # 设置用户状态
         user = User.objects.get(pk=cleaned_data['id'])
         user.is_active = cleaned_data['user_status']
         user.save()
         return get_success_response()
-
-
-# 获取等待注册审核的用户信息
-class APIUserManagementUserListView(APIView):
 
     @staticmethod
     def my_get(request):
@@ -527,30 +527,32 @@ class APIItemInformation(APIView):
         if data.get('name') is not None:
             item.name = data['name']
         # 网页端用 user_id 来选择author
-        if data.get('item.author_id') is not None:
-            item.author = User.objects.get(pk=data['item.author_id'])
-        if data.get('item.author') is not None:
-            item.author = User.objects.get(username=data['item.author'])
-        if data.get('item.pos_x') is not None:
-            item.pos_x = data['item.pos_x']
-        if data.get('item.pos_y') is not None:
-            item.pos_y = data['item.pos_y']
-        if data.get('item.pos_z') is not None:
-            item.pos_z = data['item.pos_z']
-        if data.get('item.rot_x') is not None:
-            item.rot_x = data['item.rot_x']
-        if data.get('item.rot_y') is not None:
-            item.rot_y = data['item.rot_y']
-        if data.get('item.rot_z') is not None:
-            item.rot_z = data['item.rot_z']
-        if data.get('item.row_w') is not None:
-            item.row_w = data['item.rot_w']
-        if data.get('item.scl_x') is not None:
-            item.scl_x = data['item.scl_x']
-        if data.get('item.scl_y') is not None:
-            item.scl_y = data['item.scl_y']
-        if data.get('item.scl_z') is not None:
-            item.scl_z = data['item.scl_z']
+        if data.get('author_id') is not None:
+            item.author = User.objects.get(pk=data['author_id'])
+        if data.get('author') is not None:
+            item.author = User.objects.get(username=data['author'])
+        if data.get('pos_x') is not None:
+            item.pos_x = data['pos_x']
+        if data.get('pos_y') is not None:
+            item.pos_y = data['pos_y']
+        if data.get('pos_z') is not None:
+            item.pos_z = data['pos_z']
+        if data.get('rot_x') is not None:
+            item.rot_x = data['rot_x']
+        if data.get('rot_y') is not None:
+            item.rot_y = data['rot_y']
+        if data.get('rot_z') is not None:
+            item.rot_z = data['rot_z']
+        if data.get('row_w') is not None:
+            item.row_w = data['rot_w']
+        if data.get('scl_x') is not None:
+            item.scl_x = data['scl_x']
+        if data.get('scl_y') is not None:
+            item.scl_y = data['scl_y']
+        if data.get('scl_z') is not None:
+            item.scl_z = data['scl_z']
+        if data.get('description') is not None:
+            item.description = data['description']
         item.save()
         return get_success_response()
 
@@ -569,6 +571,7 @@ def get_item_information(item):
         'scl_x': item.scl_x,
         'scl_y': item.scl_y,
         'scl_z': item.scl_z,
+        'description': item.description,
     }
     # 解决可能没有author的bug
     author = None
@@ -590,6 +593,8 @@ class APIAddItem(APIView):
         name = CharField(label='name')
         author = CharField(label='author', required=False)
         author_id = IntegerField(label='author_id', required=False)
+        teacher = CharField(label='teacher', required=False)
+        teacher_id = IntegerField(label='teacher_id', required=False)
         pos_x = FloatField(label='pos_x', required=False)
         pos_y = FloatField(label='pos_y', required=False)
         pos_z = FloatField(label='pos_z', required=False)
@@ -600,13 +605,16 @@ class APIAddItem(APIView):
         scl_x = FloatField(label='scl_x', required=False)
         scl_y = FloatField(label='scl_y', required=False)
         scl_z = FloatField(label='scl_z', required=False)
-        desctiption = CharField(label='description', required=False)
+        description = CharField(label='description', required=False)
 
     @staticmethod
     def my_post(request, cleaned_data, scene_id):
         # check author and author_id is missing
         if cleaned_data.get('author') is None and cleaned_data.get('author_id') is None:
-            raise FormValidError
+            raise FormValidError(message='no author post')
+        # check teacher and teacher_id is missing
+        if cleaned_data.get('teacher') is None and cleaned_data.get('teacher_id') is None:
+            raise FormValidError(message='no teacher post')
 
         scene = Scene.objects.get(pk=scene_id)
         group = scene.group
@@ -697,6 +705,20 @@ class APIGetArtistList(APIView):
                 'id': user.pk,
             })
         return JsonResponse(artist_list, safe=False)
+
+
+class APIGetTeacherList(APIView):
+
+    @staticmethod
+    def my_get(request):
+        teacher_list = []
+        teacher_group = Group.objects.get_or_create(name='teacher_group')[0]
+        for user in teacher_group.user_set.all():
+            teacher_list.append({
+                'username': user.username,
+                'id': user.pk,
+            })
+        return JsonResponse(teacher_list, safe=False)
 
 
 def gen_random_name(data):

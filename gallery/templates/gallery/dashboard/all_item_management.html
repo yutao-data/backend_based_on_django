@@ -23,7 +23,19 @@
                                 <option v-for="artist in artist_list" v-bind:value="artist.id">
                                     [[ artist.username ]]
                                 </option>
-                        </select>
+			    </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            <span>Teacher</span>
+                        </td>
+                        <td>
+                            <select v-model="author_id">
+                                <option v-for="teacher in teacher_list" v-bind:value="teacher.id">
+                                    [[ teacher.username ]]
+                                </option>
+			    </select>
                         </td>
                     </tr>
                     <tr>
@@ -110,7 +122,9 @@
                     new_item_error_message_show: false,
                     new_item_error_message: '',
                     artist_list: [],
+		    teacher_list: [],
                     author_id: null,
+		    teacher_id: null,
                 },
                 methods: {
                     refresh_item_list: function () {
@@ -136,6 +150,7 @@
                         axios.post('/gallery/api/scene/'+cs['scene_id']+'/itemadd/', {
                             name: this.new_item_name,
                             author_id: this.author_id,
+			    teacher_id: this.teacher_id,
                         })
                         .then(function (response) {
                             showSnackbar('Add Item Success')
@@ -173,6 +188,16 @@
                     axios.get('{% url "gallery:api:get_artist_list" %}')
                     .then(function (response) {
                         all_item_management_app.artist_list = response.data
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+                    .finally(function () {
+                        progress_bar_app.show = false
+                    })
+                    axios.get('{% url "gallery:api:get_teacher_list" %}')
+                    .then(function (response) {
+                        all_item_management_app.teacher_list = response.data
                     })
                     .catch(function (error) {
                         errorDialog(error)

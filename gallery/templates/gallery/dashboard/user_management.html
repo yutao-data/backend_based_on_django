@@ -81,7 +81,7 @@
                         })
                     },
                     refresh_user_list: function () {
-                        axios.get('{% url "gallery:api:user_management_user_list" %}')
+                        axios.get('{% url "gallery:api:user_management" %}')
                         .then(function (response) {
                             console.log(response)
                             user_management_app.user_list = response.data

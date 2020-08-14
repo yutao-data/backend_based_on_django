@@ -16,14 +16,14 @@ urlpatterns = [
     # 获取用户类型为artist的列表，用于设置item的author
     path('account/artist_list/', api_views.APIGetArtistList.as_view(), name='get_artist_list'),
 
+    # 获取用户类型为teacher的列表，用于设置item的teacher
+    path('account/teacher_list/', api_views.APIGetTeacherList.as_view(), name='get_teacher_list'),
+
     # 更改用户是否激活的属性
     path('account/signup_management/', api_views.APIUserManagementView.as_view(), name='user_management'),
 
     # 删除用户
     path('account/delete_user/', api_views.APIDeleteUserView.as_view(), name='delete_user'),
-
-    # 获取课操作的用户列表
-    path('account/user_management_user_list/', api_views.APIUserManagementUserListView.as_view(), name='user_management_user_list'),
 
     # 获取一个组列表，teacher类型用户注册时需要选择一个组
     path('account/scenelist', api_views.APIGetSignupSceneList.as_view(), name='signup_scene_list'),

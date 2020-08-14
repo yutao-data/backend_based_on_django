@@ -27,7 +27,8 @@ class Item(models.Model):
     def __str__(self):
         return str(self.name)
     name = models.CharField(max_length=NAME_MAX_CHAR)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    author = models.ForeignKey(User, related_name='user', on_delete=models.CASCADE, blank=True, null=True)
+    teacher = models.ForeignKey(User, related_name='teacher', on_delete=models.CASCADE, blank=True, null=True)
     scene = models.ForeignKey(Scene, on_delete=models.CASCADE, blank=True, null=True)
     file = models.FileField(blank=True, null=True)
     pos_x = models.FloatField(default=0.0)
