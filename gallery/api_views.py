@@ -305,6 +305,7 @@ def get_user_type(user):
         raise Error("User type not define", status=500)
     return user_type
 
+
 # 用于注册的scenelist
 class APIGetSignupSceneList(APIView):
 
@@ -356,6 +357,7 @@ def get_scene_information(scene):
         'id': scene.pk,
         'name': scene.name,
         'file': scene.file.name,
+        'exhibition': scene.exhibition.name,
     }
 
 
