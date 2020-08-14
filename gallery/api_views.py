@@ -229,12 +229,12 @@ class APIUserManagementView(APIView):
 
     @staticmethod
     def my_post(request, cleaned_data):
+        user = User.objects.get(pk=cleaned_data['id'])
         # 检查权限
-        user_type = get_user_type(user)
+        user_type = get_user_type(request.user)
         if user_type != 'superuser':
             raise NoPermission
         # 设置用户状态
-        user = User.objects.get(pk=cleaned_data['id'])
         user.is_active = cleaned_data['user_status']
         user.save()
         return get_success_response()
