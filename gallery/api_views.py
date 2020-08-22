@@ -264,6 +264,10 @@ class APIDeleteUserView(APIView):
 
     @staticmethod
     def my_post(request, cleaned_data):
+        # 检查权限
+        user_type = get_user_type(request.user)
+        if user_type != 'superuser':
+            raise NoPermission
         user = User.objects.get(pk=cleaned_data['id'])
         user.delete()
         return get_success_response()
@@ -319,7 +323,7 @@ class APIGetSignupSceneList(APIView):
         return JsonResponse(scene_list, safe=False)
 
 
-# 不限定exhibition，获取所有scene
+# 不限定exhibition，获取所有具有修改权限的scene
 class APIGetAllSceneList(APIView):
 
     @staticmethod
@@ -368,10 +372,17 @@ class APIAddNewScene(APIView):
 
     @staticmethod
     def my_post(request, cleaned_data):
+        user_type = get_user_type(request.user)
+        if not user_type in ['stuff', 'superuser']:
+            raise NoPermission
         name = cleaned_data['name']
         exhibition_id = cleaned_data['exhibition_id']
 
         exhibition = Exhibition.objects.get(pk=exhibition_id)
+        # 检查stuff是否具有此exhibition的权限
+        if user_type == 'stuff':
+            if not check_perm('gallery.change_exhibition', request, exhibition):
+                raise NoPermission(message="You do not have the permission to change this exhibition")
         exhibition_group = exhibition.group
 
         # 检查 name 是否已经存在
@@ -384,16 +395,16 @@ class APIAddNewScene(APIView):
         scene = Scene.objects.create(name=name, group=group, exhibition=exhibition)
 
         # 分配这个展厅的object权限到组里
-        assign_perm('gallery.view_scene', group, scene)
+        # assign_perm('gallery.view_scene', group, scene)
         assign_perm('gallery.change_scene', group, scene)
         # assign_perm('gallery.add_scene', group, scene)
         # assign_perm('gallery.delete_scene', group, scene)
 
         # 添加该展厅的object权限到对应exhibition里
-        assign_perm('gallery.view_scene', exhibition_group, scene)
+        # assign_perm('gallery.view_scene', exhibition_group, scene)
         assign_perm('gallery.change_scene', exhibition_group, scene)
         # assign_perm('gallery.add_scene', exhibition_group, scene)
-        assign_perm('gallery.delete_scene', exhibition_group, scene)
+        # assign_perm('gallery.delete_scene', exhibition_group, scene)
 
         group.save()
 
@@ -434,6 +445,11 @@ class APISceneInformation(APIView):
         name = CharField(label='name', required=False)
 
     @staticmethod
+    @permission_required_or_403(
+        'gallery.change_scene',
+        (Scene, 'pk', 'scene_id'),
+        accept_global_perms=True
+    )
     def my_post(request, cleaned_data, scene_id):
         scene = Scene.objects.get(pk=scene_id)
         if cleaned_data.get('name') is not None:
