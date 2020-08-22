@@ -20,14 +20,9 @@
 			<td class="mdl-data-table__cell--non-numeric">[[ user.user_type ]]</td>
                         <td class="mdl-data-table__cell--non-numeric">
                             <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                                <input v-model="user.user_status" type="checkbox" class="mdl-checkbox__input">
-                                <span class="mdl-checkbox__label">Checkbox</span>
+                                <input v-model="user.user_status" v-on:click="save_onclick(user)" type="checkbox" class="mdl-checkbox__input">
+                                <span class="mdl-checkbox__label">Active</span>
                             </label>
-                        </td>
-                        <td class="mdl-data-table__cell--non-numeric">
-                            <button v-on:click="save_onclick(user)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
-                                Save
-                            </button>
                         </td>
                         <td class="mdl-data-table__cell--non-numeric">
                             <button v-on:click="delete_onclick(user)" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
@@ -51,7 +46,8 @@
                         progress_bar_app.show = true
                         axios.post('{% url "gallery:api:user_management" %}', {
                             id: user.id,
-                            user_status: user.user_status,
+			    // 取反user_status才能改变状态
+                            user_status: !user.user_status,
                         })
                         .then(function (response) {
                             console.log(response)
