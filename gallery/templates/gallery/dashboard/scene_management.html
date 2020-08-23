@@ -36,7 +36,7 @@
                                 Modify
                             </button>
                         </td>
-                        <td v-show="download_button_show">
+                        <td v-show="real_download_button_show">
                             <button v-on:click="download_onclick"
                                     class="mdl-button mdl-button-js mdl-button--colored mdl-button--raised">
                                 Download
@@ -140,7 +140,10 @@
             computed: {
                 all_item_management_url: function () {
                     return '{% url "gallery:dashboard:all_item_management" %}' + '?scene_id=' + cs['scene_id']
-                }
+                },
+		real_download_button_show: function () {
+		    return (this.file || this.scene.file) && this.download_button_show
+		},
             },
             methods: {
                 save_onclick: function () {
