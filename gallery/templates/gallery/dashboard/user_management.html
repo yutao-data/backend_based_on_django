@@ -3,30 +3,30 @@
 {% block content %}
     <div class="mdl-grid demo-content">
         <div class="mdl-cell mdl-cell--12-col mdl-grid">
-            <table id="user_management_div" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+            <table id="signup_request_management_div" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
                 <thead>
                     <tr>
                         <th class="mdl-data-table__cell--non-numeric">ID</th>
                         <th class="mdl-data-table__cell--non-numeric">Username</th>
                         <th class="mdl-data-table__cell--non-numeric">Type</th>
-                        <th class="mdl-data-table__cell--non-numeric">Accept</th>
+                        <th class="mdl-data-table__cell--non-numeric">Exhibition</th>
                         <th colspan="2" class="mdl-data-table__cell--non-numeric">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="user in user_list" v-bind:key="user.id">
-                        <td>[[ user.id ]]</td>
-                        <td class="mdl-data-table__cell--non-numeric">[[ user.username ]]</td>
-			<td class="mdl-data-table__cell--non-numeric">[[ user.user_type ]]</td>
+                    <tr v-for="signup_request in signup_request_list" v-bind:key="signup_request.id">
+                        <td>[[ signup_request.id ]]</td>
+                        <td class="mdl-data-table__cell--non-numeric">[[ signup_request.username ]]</td>
+			<td class="mdl-data-table__cell--non-numeric">[[ signup_request.user_type ]]</td>
+                        <td class="mdl-data-table__cell--non-numeric">[[ signup_request.exhibition ]]</td>
                         <td class="mdl-data-table__cell--non-numeric">
-                            <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
-                                <input v-model="user.user_status" v-on:click="save_onclick(user)" type="checkbox" class="mdl-checkbox__input">
-                                <span class="mdl-checkbox__label">Active</span>
-                            </label>
+                            <button v-on:click="accept_onclick(signup_request)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+                                Accept
+                            </button>
                         </td>
                         <td class="mdl-data-table__cell--non-numeric">
-                            <button v-on:click="delete_onclick(user)" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
-                                Delete
+                            <button v-on:click="reject_onclick(signup_request)" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                                Reject
                             </button>
                         </td>
                     </tr>
@@ -34,58 +34,46 @@
             </table>
         </div>
         <script>
-            var user_management_app = new Vue({
+            var signup_request_management_app = new Vue({
                 delimiters: ['[[', ']]'],
-                el: '#user_management_div',
+                el: '#signup_request_management_div',
                 data: {
-                    user_list: [],
+                    signup_request_list: [],
                 },
                 methods: {
-                    save_onclick: function (user) {
+                    post_action: function (signup_request, accept) {
                         // 交互效果
                         progress_bar_app.show = true
-                        axios.post('{% url "gallery:api:user_management" %}', {
-                            id: user.id,
-			    // 取反user_status才能改变状态
-                            user_status: !user.user_status,
-                        })
-                        .then(function (response) {
-                            console.log(response)
-                            showSnackbar('Action Success')
-                        })
-                        .catch(function (error) {
-                            errorDialog(error)
-                        })
-                        .finally(function () {
-                            progress_bar_app.show = false
-                        })
+                        axios.post('/gallery/api/signuprequest/'+signup_request.id+'/', {
+                            accept: accept,
+			})
+			    .then(function (response) {
+				console.log(response)
+				showSnackbar('Action Success')
+			    })
+			    .catch(function (error) {
+				errorDialog(error)
+			    })
+			    .finally(function () {
+				progress_bar_app.show = false
+				signup_request_management_app.refresh_signup_request_list()
+			    })
                     },
-                    delete_onclick: function (user) {
-                        progress_bar_app.show = true
-                        axios.post('{% url "gallery:api:delete_user" %}', {
-                            id: user.id,
-                        })
-                        .then(function (response) {
-                            user_management_app.refresh_user_list()
-                            showSnackbar('Deleted')
-                        })
-                        .catch(function (error) {
-                            errorDialog(error)
-                        })
-                        .finally(function () {
-                            progress_bar_app.show = false
-                        })
+		    accept_onclick: function (signup_request) {
+			this.post_action(signup_request, true)
+		    },
+                    reject_onclick: function (signup_request) {
+			this.post_action(signup_request, false)
                     },
-                    refresh_user_list: function () {
-                        axios.get('{% url "gallery:api:user_management" %}')
+                    refresh_signup_request_list: function () {
+                        axios.get('{% url "gallery:api:all_signup_request_list" %}')
                         .then(function (response) {
-                            console.log(response)
-                            user_management_app.user_list = response.data
+                            signup_request_management_app.signup_request_list = response.data
                         })
                     }
                 },
                 created: function () {
-                    this.refresh_user_list()
+                    this.refresh_signup_request_list()
                 },
             })
         </script>

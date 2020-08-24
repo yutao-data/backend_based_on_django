@@ -2,116 +2,122 @@
 
 
 {% block content %}
-    <div class="mdl-grid">
-        <div id="signup_table" class="mdl-cell mdl-grid" style="width: max-content; margin: auto;">
+    <div id="signup_table" class="mdl-grid">
+        <div class="mdl-cell mdl-grid" style="width: max-content; margin: auto;">
+        <table v-show="new_permission_show" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+        <tbody>
+            <tr>
+            <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <strong>Add New Permission</strong>
+                </div>
+            </td>
+            </tr>
+            <tr>
+            <td class="mdl-data-table__cell--non-numeric">
+                User type:
+            </td>
+            <td>
+                <select v-model="new_user_type">
+                <option v-for="user_type in user_type_list" v-bind:value="user_type.user_type">
+                [[ user_type.user_type ]]
+                </option>
+                </select>
+            </td>
+            </tr>
+            <tr>
+            <td class="mdl-data-table__cell--non-numeric">
+                Exhibition:
+            </td>
+            <td>
+                <select v-model="new_exhibition_id">
+                <option v-for="exhibition in exhibition_list" v-bind:value="exhibition.id">
+                [[ exhibition.name ]]
+                </option>
+                </select>
+            </td>
+            </tr>
+            <tr>
+            <td colspan="2">
+                <button v-on:click="new_exhibition_onclick" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                Add
+                </button>
+            </td>
+            </tr>
+        </tbody>
+        </table>
+    </div>
+        <div class="mdl-cell mdl-grid" style="width: max-content; margin: auto;">
             <table v-show="signup_form_seen" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
                 <tbody>
-                <tr>
-                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <strong>Sign Up</strong>
-                        </div>
-                    </td>
-                </tr>
+            <tr>
+            <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <strong>Sign Up</strong>
+                </div>
+            </td>
+            </tr>
 
-                <tr>
-                    <td class="mdl-data-table__cell--non-numeric">
-                        Sign up as:
-                    </td>
-                    <td>
-                        <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="select-user_type-artist">
-                            <input class="mdl-radio__button" id="select-user_type-artist" v-model="user_type"
-                                   type="radio" value="artist">
-                            <span class="mdl-radio__label">Artist</span>
-                        </label>
-                        <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="select-user_type-teacher">
-                            <input class="mdl-radio__button" id="select-user_type-teacher" v-model="user_type"
-                                   type="radio" value="teacher">
-                            <span class="mdl-radio__label">Teacher</span>
-                        </label>
-                        <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="select-user_type-stuff">
-                            <input class="mdl-radio__button" id="select-user_type-stuff" v-model="user_type"
-                                   type="radio" value="stuff">
-                            <span class="mdl-radio__label">Stuff</span>
-                        </label>
-                        <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="select-user_type-admin">
-                            <input class="mdl-radio__button" id="select-user_type-admin" v-model="user_type"
-                                   type="radio" value="superuser">
-                            <span class="mdl-radio__label">Admin</span>
-                        </label>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                        Describe: [[ user_type_text ]]
-                    </td>
-                </tr>
-                <tr v-show="scene_show">
-                    <td class="mdl-data-table__cell--non-numeric">
-                        Belong to scene:
-                    </td>
-                    <td>
-                        <select v-model="scene_id">
-                            <option v-for="scene in scene_list" v-bind:value="scene.id">
-                                [[ scene.name ]] - [[ scene.exhibition ]]
-                            </option>
-                        </select>
-                    </td>
-                </tr>
-                <tr v-show="exhibition_show">
-                    <td class="mdl-data-table__cell--non-numeric">
-                        Belong to exhibition:
-                    </td>
-                    <td>
-                        <select v-model="exhibition_id">
-                            <option v-for="exhibition in exhibition_list" v-bind:value="exhibition.id">
-                                [[ exhibition.name ]]
-                            </option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <input v-model="username" type="text" name="username" class="mdl-textfield__input">
-                            <label for="username" class="mdl-textfield__label">Username</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <input v-model="password" type="password" name="password" class="mdl-textfield__input">
-                            <label for="password" class="mdl-textfield__label">Password</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <input v-model="re_password" type="password" name="re_password" v-on:keyup.enter="signup_button_onclick"
-                                   class="mdl-textfield__input">
-                            <label for="re_password" class="mdl-textfield__label">Type Your Password Again</label>
-                        </div>
-                    </td>
-                </tr>
-                <tr v-show="error_hint_show">
-                    <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                        [[ error_hint_text ]]
-                    </td>
-                </tr>
-                <tr>
-                    <td class="mdl-data-table__cell--non-numeric">
-                        <a href="{% url 'gallery:index' %}">Lost password?</a>
-                    </td>
-                    <td>
-                        <button
-                                v-on:click="signup_button_onclick"
-                                class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
-                            Submit
-                        </button>
-                    </td>
-                </tr>
+            <tr>
+            <td>
+                <button v-on:click="show_new_permission" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+                Add Permission
+                </button>
+            </td>
+            <td>
+                <ul class="mdl-list">
+                <li v-for="permission in permission_list" class="mdl-list__item">
+                    <span class="mdl-list__item-primary-content">
+                    <i class="material-icons mdl-list__item-icon">person</i>
+                    [[ permission.user_type ]] - [[ permission.exhibition_id ]]
+                    </span>
+                </li>
+                </ul>
+            </td>
+            </tr>
+
+            <tr>
+            <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input v-model="username" type="text" name="username" class="mdl-textfield__input">
+                <label for="username" class="mdl-textfield__label">Username</label>
+                </div>
+            </td>
+            </tr>
+            <tr>
+            <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input v-model="password" type="password" name="password" class="mdl-textfield__input">
+                <label for="password" class="mdl-textfield__label">Password</label>
+                </div>
+            </td>
+            </tr>
+            <tr>
+            <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                <input v-model="re_password" type="password" name="re_password" v-on:keyup.enter="signup_button_onclick"
+                       class="mdl-textfield__input">
+                <label for="re_password" class="mdl-textfield__label">Type Your Password Again</label>
+                </div>
+            </td>
+            </tr>
+            <tr v-show="error_hint_show">
+            <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                [[ error_hint_text ]]
+            </td>
+            </tr>
+            <tr>
+            <td class="mdl-data-table__cell--non-numeric">
+                <a href="{% url 'gallery:index' %}">Lost password?</a>
+            </td>
+            <td>
+                <button
+                    v-on:click="signup_button_onclick"
+                    class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+                Submit
+                </button>
+            </td>
+            </tr>
                 </tbody>
             </table>
         </div>
@@ -127,51 +133,36 @@
                 error_hint_show: false,
                 error_hint_text: '',
                 username: '',
+
                 password: '',
                 re_password: '',
                 signup_form_seen: true,
-                user_type: '', // 用户类型，用于api提交
-                user_type_dict: { // 描述文本在这里
-                    'artist': 'Can upload models',
-                    'teacher': 'Can modify the scene and all items in it',
-                    'stuff': 'Can control all scene',
-                    'superuser': 'Site administrator',
-                },
-                scene_text: '',
-                scene_list: [],
-                scene_id: null,
-                exhibition_text: '',
-                exhibition_list: [],
-                exhibition_id: null,
+        user_type_list: [
+            {'user_type': 'artist', 'desc': 'Can upload models'},
+            {'user_type': 'stuff', 'desc': 'Can modify the scene and all items in it'},
+            {'user_type': 'manager', 'desc': 'Can control all scene'},
+            {'user_type': 'superuser', 'desc': 'Site administrator'},
+        ],
+        new_permission_show: false,
+        new_exhibition_id: null,
+        new_user_type: '',
+        exhibition_list: [],
+        permission_list: [],
             },
             methods: {
                 signup_button_onclick: function () {
 
             // 检查密码匹配
             if (!this.check_password_match()) {
-                return
-            }
-            // 检查有无选中 teacher 对应的 scene
-            if (this.user_type === 'teacher' && this.scene_id == null) {
-                this.error_hint_text = 'Please select a scene!'
-                this.error_hint_show = true
-                return
-            }
-            // 检查有无选中 stuff 对应的 exhibition
-            if (this.user_type === 'stuff' && this.exhibition_id == null) {
-                this.error_hint_text = 'Please select an exhibition!'
-                this.error_hint_show = true
-                return
+            return
             }
             // 显示进度条
             progress_bar_app.show = true
             // 提交注册申请
             axios.post('{% url "gallery:api:signup" %}', {
-                'username': this.username,
-                'password': this.password,
-                'user_type': this.user_type,
-                'scene_id': this.scene_id,
-                'exhibition_id': this.exhibition_id,
+            'username': this.username,
+            'password': this.password,
+            'permission_list': this.permission_list,
             })
             .then(function (response) {
                 // 隐藏表单，显示信息
@@ -181,16 +172,15 @@
                 showDialog('Success', 'Signup application submitted. ' +
                 'Please wait for administrators to confirm. ' +
                 'Thank you')
-
-                        })
-                        .catch(function (error) {
-                            errorDialog(error)
-                        })
-                        .finally(function (error) {
-                            // 隐藏进度条
-                            progress_bar_app.show = false
-                        })
-                },
+            })
+            .catch(function (error) {
+                errorDialog(error)
+            })
+            .finally(function (error) {
+                // 隐藏进度条
+                progress_bar_app.show = false
+            })
+            },
                 check_password_match: function () {
                     // 如果密码为空则不进行检查
                     if (!this.password || !this.re_password) {
@@ -207,21 +197,26 @@
                     this.error_hint_show = false
                     return true
                 },
-                scene_onclick: function (scene_selected) {
-                    this.scene_id = scene_selected.id
-                    this.scene_text = scene_selected.name
+        show_new_permission: function() {
+            this.new_permission_show = true
+        },
+        new_exhibition_onclick: function() {
+            // 检查选择
+            if (!this.new_user_type) {
+            return
+            } else {
+            if (this.new_user_type != 'superuser') {
+                if (this.new_exhibition_id === null) {
+                return
                 }
-            },
-            computed: {
-                user_type_text: function () {
-                    return this.user_type_dict[this.user_type]
-                },
-                scene_show: function () {
-                    return this.user_type === 'teacher'
-                },
-                exhibition_show: function () {
-                    return this.user_type === 'stuff'
-                },
+            }
+            }
+            this.permission_list.push({
+            user_type: this.new_user_type,
+            exhibition_id: this.new_exhibition_id,
+            })
+            this.new_permission_show = false
+        },
             },
             watch: {
                 password: function () {
@@ -233,9 +228,9 @@
             },
             created: function () {
                 progress_bar_app.show = true
-                axios.get('{% url "gallery:api:signup_scene_list" %}')
+                axios.get('{% url "gallery:api:get_exhibition_list" %}')
                     .then(function (response) {
-                        signup_app.scene_list = response.data
+                        signup_app.exhibition_list = response.data
                     })
                     .catch(function (error) {
                         errorDialog(error)
@@ -243,7 +238,7 @@
                     .finally(function () {
                         progress_bar_app.show = false
                     })
-		        axios.get('{% url "gallery:api:signup_exhibition_list" %}')
+                axios.get('{% url "gallery:api:get_exhibition_list" %}')
                     .then(function (response) {
                         signup_app.exhibition_list = response.data
                     })

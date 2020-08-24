@@ -92,4 +92,12 @@ class AllExhibitionManagement(View):
         return render(request, 'gallery/dashboard/all_exhibition_management.html', view_dict)
 
 
+class ExhibitionManagement(View):
+
+    @staticmethod
+    def get(request):
+        view_dict = {
+            'title': 'Exhibition Management',
+        }
+        return render(request, 'gallery/dashboard/exhibition_management.html', view_dict)
 

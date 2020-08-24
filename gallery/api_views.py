@@ -15,6 +15,8 @@ from django.forms import (
     NullBooleanField,
     FileField,
     FloatField,
+    MultipleChoiceField,
+    JSONField,
 )
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
@@ -26,8 +28,15 @@ from .error import (
     APIFormNotDefine,
     NoPermission,
     NotFoundError,
+    NoScene,
 )
-from .models import Scene, Item, Exhibition, Tool
+from .models import (
+    Scene, 
+    Item, 
+    Exhibition, 
+    Tool,
+    SignupRequest,
+)
 from guardian.shortcuts import assign_perm, get_perms
 from guardian.decorators import permission_required, permission_required_or_403
 from django.contrib.auth.decorators import login_required
@@ -40,6 +49,144 @@ def get_success_response(message='Success'):
     return JsonResponse({
         'message': message
     }, status=200)
+
+def gen_random_name(data):
+    sha1 = hashlib.sha1()
+    sha1.update(str(random.random()).encode())
+    random_string = sha1.hexdigest()
+    return '_'.join([data, random_string])
+
+# check object permission and global permission
+def check_perm(perm_string, request, obj):
+    if request.user.is_superuser:
+        return True
+    if request.user.has_perm(perm_string) or request.user.has_perm(perm_string, obj):
+        return True
+    else:
+        return False
+
+def get_signup_request_information(signup_request):
+    exhibition_name = None
+    if signup_request.exhibition:
+        exhibition_name = signup_request.exhibition.name
+    return {
+        'id': signup_request.pk,
+        'username': signup_request.user.username,
+        'user_type': signup_request.user_type,
+        'exhibition': exhibition_name,
+    }
+
+def get_exhibition_information(exhibition):
+    scene_name = ''
+    scene_id = None
+    if exhibition.scene:
+        scene_name = exhibition.scene.name
+        scene_id = exhibition.scene.pk
+    return {
+        'id': exhibition.pk,
+        'name': exhibition.name,
+        'scene': scene_name,
+        'scene_id': scene_id,
+    }
+
+def get_exhibition_users_list(exhibition):
+    user_list = []
+    for user in exhibition.users.user_set.all():
+        user_information = get_user_information(user)
+        user_information['user_type'] = get_user_type(user, exhibition)
+        user_list.append(user_information)
+    return user_list
+
+def get_scene_information(scene):
+    author_name = ''
+    author_id = None
+    if scene.author:
+        author_name = scene.author.username
+        author_id = scene.author.pk
+    return {
+        'id': scene.pk,
+        'name': scene.name,
+        'author': author_name,
+        'author_id': author_id,
+        'file': scene.file.name,
+    }
+
+def get_item_information(item):
+    result_dict = {
+        'id': item.pk,
+        'name': item.name,
+        'pos_x': item.pos_x,
+        'pos_y': item.pos_y,
+        'pos_z': item.pos_z,
+        'rot_x': item.rot_x,
+        'rot_y': item.rot_y,
+        'rot_z': item.rot_z,
+        'rot_w': item.rot_w,
+        'scl_x': item.scl_x,
+        'scl_y': item.scl_y,
+        'scl_z': item.scl_z,
+        'description': item.description,
+    }
+    # 解决可能没有author的bug
+    author = None
+    author_id = None
+    if item.author:
+        author = item.author.username
+        author_id = item.author.pk
+    if author is not None:
+        result_dict['author'] = author
+    if author_id is not None:
+        result_dict['author_id'] = author_id
+    if item.file is not None:
+        result_dict['file'] = item.file.name
+    return result_dict
+
+
+# 获取用户详细信息
+def get_user_information(user):
+    return {
+        'id': user.pk,
+        'username': user.username,
+        'is_active': user.is_active,
+        'is_superuser': user.is_superuser,
+    }
+
+# 获取或创建manager_group，并分配权限
+def get_manager_group():
+    manager_group, created = Group.objects.get_or_create(name="manager_group")
+    # 初次创建：配置权限
+    if created:
+        assign_perm('gallery.add_scene', manager_group)
+    return manager_group
+
+# 获取用户类型
+# 未登录 '' 空字符串
+# 用户不在该组内 '' 空字符串
+def get_user_type(user, exhibition):
+    user_type = ''
+
+    # 如果传入exhibition是None，则只检查是否为superuser
+    if exhibition is None:
+        if user.is_superuser:
+            return 'superuser'
+        else:
+            return ''
+
+    if user in exhibition.admins.user_set.all():
+        user_type = 'admin'
+    elif user in exhibition.managers.user_set.all():
+        user_type = 'manager'
+    elif user in exhibition.stuffs.user_set.all():
+        user_type = 'stuff'
+    elif user in exhibition.artists.user_set.all():
+        user_type = 'artist'
+    else:
+        user_type = ''
+
+    if user.is_superuser:
+        user_type = 'superuser'
+
+    return user_type
 
 
 # 自定义的API View类，减少代码量
@@ -84,11 +231,11 @@ class APIView(View):
             }, status=500)
 
     def post(self, requests, *args, **kwargs):
+        data = None
+        cleaned_data = None
         try:
             # 使用json解码
             data = json.loads(requests.body)
-            # debug: raw data
-            print(data)
             if not self.use_form:
                 return self.my_post(requests, data, *args, **kwargs)
             # 表单未定义
@@ -100,12 +247,11 @@ class APIView(View):
                 raise FormValidError
             cleaned_data = form.clean()
             # debug: cleaned_data
-            print(cleaned_data)
+            print('cleaned_data: ', str(cleaned_data))
             # 调用真实的my_post函数处理请求
             return self.my_post(requests, cleaned_data, *args, **kwargs)
 
         # 统一的错误处理，减少代码重复
-        # To do: 细化错误处理
         except Error as e:
             print('Catch Error %s: %s' % (str(type(e)), str(e)))
             return JsonResponse({
@@ -116,6 +262,9 @@ class APIView(View):
         except Exception as e:
             # 输出错误类型和错误信息到控制台
             print('Unexcepted Error %s: %s' % (str(type(e)), str(e)))
+            print('request.body: ', str(requests.body))
+            print('json data: ', str(data))
+            print('cleaned_data: ', str(cleaned_data))
             return JsonResponse({
                 'error_type': 'NotDefine Error: ' + str(type(e)),
                 'error_message': str(e),
@@ -128,13 +277,10 @@ class APILoginView(APIView):
         username = CharField(label='username')
         password = CharField(label='password')
 
-
     @staticmethod
     def my_get(request):
         if request.user.is_authenticated:
-            return JsonResponse({
-                'user_type': get_user_type(request.user),
-            })
+            return get_success_response()
         else:
             raise AuthenticateError
 
@@ -145,12 +291,10 @@ class APILoginView(APIView):
             password=cleaned_data['password'],
         )
         if user is None:
-            raise AuthenticateError()
+            raise AuthenticateError
         logout(request)
         login(request, user)
-        return JsonResponse({
-            'user_type': get_user_type(request.user),
-        })
+        return get_success_response()
 
 
 class APILogoutView(APIView):
@@ -163,18 +307,27 @@ class APILogoutView(APIView):
 
 
 class APISignupView(APIView):
+
     class MyForm(Form):
         username = CharField(label='username')
         password = CharField(label='password')
-        user_type = CharField(label='user_type')
-        scene_id = IntegerField(label='scene_id', required=False)
-        exhibition_id = IntegerField(label='exhibition_id', required=False)
+        # 可选值：用户申请的权限列表
+        # 格式：[
+        #    {"user_type": "artist", "exhibition_id": 123},
+        #    {"user_type": "manager", "exhibition_id": 113},
+        #    {"user_type": "admin", "exhibition_id": 111},
+        #    {"user_type": "superuser"}
+        #]
+        permission_list = JSONField(label='permission_list', required=False)
 
     @staticmethod
     def my_post(request, cleaned_data):
+
         # 检查用户名是否被占用
         if len(User.objects.filter(username=cleaned_data['username'])) > 0:
             raise Error(message='Username has been taken', status=403)
+
+
         user = User.objects.create_user(
             username=cleaned_data['username'],
             password=cleaned_data['password'],
@@ -182,208 +335,189 @@ class APISignupView(APIView):
         # 设置用户可活动状态为False等待审核
         user.is_active = False
 
-        # 设置用户权限
-        # 用户类型有四种: artist/teacher/stuff/superuser
-        # 分别对应展品上传者/布展老师/展览管理员/站点管理员（超级用户user.is_superuser=true）
-        user_type = cleaned_data['user_type']
-        if user_type == 'artist':
-            # 普通用户
-            artist_group = Group.objects.get_or_create(name='artist_group')[0]
-            artist_group.user_set.add(user)
-        elif user_type == 'teacher':
-            # 添加老师到teacher_group组
-            teacher_group = Group.objects.get_or_create(name='teacher_group')[0]
-            teacher_group.user_set.add(user)
-            # 老师teacher属于scene.group组，该组拥有scene内所有item的object权限，和对应scene的object权限
-            scene_id = cleaned_data['scene_id']
-            scene = Scene.objects.get(pk=scene_id)
-            group = scene.group
-            group.user_set.add(user)
-        elif user_type == 'stuff':
-            # 添加stuff到stuff_group组
-            stuff_group = Group.objects.get_or_create(name='stuff_group')[0]
-            stuff_group.user_set.add(user)
-            # 策展管理员stuff拥有所属exhibition下所有scene的object权限
-            exhibition_id = cleaned_data['exhibition_id']
-            exhibition = Exhibition.objects.get(pk=exhibition_id)
-            group = exhibition.group
-            group.user_set.add(user)
-
-        elif user_type == 'superuser':
-            # 添加超级用户到超级用户组
-            superuser_group = Group.objects.get_or_create(name='superuser_group')[0]
-            superuser_group.user_set.add(user)
-            user.is_superuser = True
-        else:
-            # 用户提交了未定义的类型，引发一个错误
-            raise FormValidError(message="Unknown user type, can not signup")
-
         user.save()
+    
+        
+        if cleaned_data['permission_list']:
+            permission_list = cleaned_data['permission_list']
+            for permission in permission_list:
+
+                # 用户类型有: artist/stuff/manager/admin/superuser
+                # 分别对应展品上传者/策展团队成员/展览负责人/展览负责人（可添加其他用户作为展览负责人）/站点管理员（超级用户user.is_superuser=true）
+
+                user_type = permission['user_type']
+                if not user_type in ['artist', 'stuff', 'manager', 'admin', 'superuser']:
+                    raise FormValidError("Not allow user_type " + user_type)
+                
+                exhibition = None
+                # superuser类型的用户注册不需要exhibition_id
+                if user_type and not user_type == 'superuser':
+                    exhibition_id = permission['exhibition_id']
+                    exhibition = Exhibition.objects.get(pk=exhibition_id)
+
+                # manager_group 用来储存所有具有manager或admin权限的用户
+                # 用于添加scene时，不提供exhibition_id的权限检查
+                if user_type in ['manager', 'admin']:
+                    manager_group = get_manager_group()
+                    manager_group.user_set.add(user)
+
+                # 创建用户注册请求
+                signup_request = SignupRequest.objects.create(
+                    user = user,
+                    user_type = user_type,
+                    exhibition = exhibition,
+                )
+                signup_request.save()
+        else:
+            # 创建不带任何exhibition的用户注册请求
+            signup_request = SignupRequest.objects.create(
+                user = user,
+                user_type = '',
+                exhibition = None,
+            )
+            signup_request.save()
+
+
         return get_success_response()
 
 
-class APIUserManagementView(APIView):
-    class MyForm(Form):
-        id = IntegerField(label='id')
-        user_status = NullBooleanField(label='user_status')
+class APIAllSignupRequestListView(APIView):
 
     @staticmethod
-    def my_post(request, cleaned_data):
-        user = User.objects.get(pk=cleaned_data['id'])
-        # 检查权限
-        user_type = get_user_type(request.user)
-        if user_type != 'superuser':
-            raise NoPermission
-        # 设置用户状态
-        user.is_active = cleaned_data['user_status']
-        user.save()
+    def my_get(request):
+        signup_request_list = []
+        for signup_request in SignupRequest.objects.all():
+            signup_request_list.append(get_signup_request_information(signup_request))
+        return JsonResponse(signup_request_list, safe=False)
+
+
+class APISignupRequestListView(APIView):
+
+    @staticmethod
+    def my_get(request, exhibition_id):
+        signup_request_list = []
+        exhibition = Exhibition.objects.get(pk=exhibition_id)
+        for signup_request in SignupRequest.objects.filter(exhibition=exhibition):
+            signup_request_list.append(get_signup_request_information(signup_request))
+        return JsonResponse(signup_request_list, safe=False)
+
+
+class APISignupRequestView(APIView):
+
+    class MyForm(Form):
+        accept = NullBooleanField(label='accept')
+
+    @staticmethod
+    def my_post(request, cleaned_data, signuprequest_id):
+        accept = cleaned_data['accept']
+        signup_request = SignupRequest.objects.get(pk=signuprequest_id)
+        user = signup_request.user
+        if accept:
+            # 如果这个注册请求有指定exhibition，则配置相应权限
+            if signup_request.exhibition:
+                exhibition = signup_request.exhibition
+                user_type = signup_request.user_type
+                if user_type == 'artist':
+                    exhibition.artists.user_set.add(user)
+                elif user_type == 'stuff':
+                    exhibition.stuffs.user_set.add(user)
+                elif user_type == 'manager':
+                    exhibition.managers.user_set.add(user)
+                elif user_type == 'admin':
+                    exhibition.admins.user_set.add(user)
+                else:
+                    raise Error("Not support user_type "+user_type, 500)
+                # 将用户加入对应exhibition的users组，方便以后查询
+                exhibition.users.user_set.add(user)
+            if signup_request.user_type == 'superuser':
+                user.is_superuser = True
+            # 只要同意了任意注册请求即激活用户
+            user.is_active = True
+            user.save()
+        # 不管是否同意注册请求，处理完之后都删掉该请求
+        signup_request.delete()
+        # 检查该用户是否未被激活并已被拒绝掉所有请求
+        print(user.is_active)
+        print(SignupRequest.objects.filter(user=user))
+        if not user.is_active and not SignupRequest.objects.filter(user=user):
+            user.delete()
+
         return get_success_response()
+
+
+class APIUserDeleteView(APIView):
+    class MyForm(Form):
+        id = IntegerField(label='id')
+
+    @staticmethod
+    def my_del(request, user_id):
+        user = User.objects.get(pk=user_id)
+        user.delete()
+        return get_success_response()
+
+
+class APIAllUserList(APIView):
 
     @staticmethod
     def my_get(request):
         user_list = []
         for user in User.objects.all():
-            # 跳过管理员
-            if user.is_superuser:
-                continue
-            # 跳过匿名帐号
-            if user.username == 'AnonymousUser':
-                continue
-            user_list.append({
-                'username': user.username,
-                'id': user.id,
-                'user_status': user.is_active,
-                'user_type': get_user_type(user),
-            })
+            user_list.append(get_user_information(user))
         return JsonResponse(user_list, safe=False)
 
 
-class APIDeleteUserView(APIView):
-    class MyForm(Form):
-        id = IntegerField(label='id')
+# 查询用户的全局信息
+# 和APIExhibitionUserView的区别在于
+# 本GET方法返回的user_type字段仅有'superuser'和空字符串两种可能值
+# APIExhibitionUserView返回artist/stuff/manage/teacher或空字符串
+class APIUserView(APIView):
 
     @staticmethod
-    def my_post(request, cleaned_data):
-        # 检查权限
-        user_type = get_user_type(request.user)
-        if user_type != 'superuser':
-            raise NoPermission
-        user = User.objects.get(pk=cleaned_data['id'])
-        user.delete()
-        return get_success_response()
-
-
-class APIGetUserType(APIView):
-
-    @staticmethod
-    def my_get(request):
-        user_type_describe = ''
-        user_type = get_user_type(request.user)
+    def my_get(request, user_id):
+        user = User.objects.get(pk=user_id)
+        user_information = get_user_information(user)
+        user_information['user_type'] = get_user_type(user, None)
         return JsonResponse({
-            'user_type': user_type,
+            'user': user_information,
         })
 
 
-# 获取用户类型
-def get_user_type(user):
-    user_type = ''
-    # 游客
-    if not user.is_authenticated:
-        user_type = 'anonymous'
-    if user.is_superuser:
-        user_type = 'superuser'
-    for group in user.groups.all():
-        group_name = group.name
-        if group_name == 'artist_group':
-            user_type = 'artist'
-            break
-        elif group_name == 'teacher_group':
-            user_type = 'teacher'
-            break
-        elif group_name == 'stuff_group':
-            user_type = 'stuff'
-            break
-        elif group_name == 'superuser_group':
-            user_type = 'superuser'
-    if not user_type:
-        raise Error("User type not define", status=500)
-    return user_type
+# 获取限定exhibition内的用户信息
+class APIExhibitionUserView(APIView):
+    
+    @staticmethod
+    def my_get(request, exhibition_id, user_id):
+        user = User.objects.get(pk=user_id)
+        exhibition = Exhibition.objects.get(pk=exhibition_id)
+        user_information = get_user_information(user)
+        user_information['user_type'] = get_user_type(user, exhibition)
+        return JsonResponse({
+            'user': user_information,
+        })
 
 
-# 用于注册的scenelist
-class APIGetSignupSceneList(APIView):
+# 获取所有scene
+class APISceneList(APIView):
 
     @staticmethod
     def my_get(request):
-        user_type = get_user_type(request.user)
         scene_list = []
         for scene in Scene.objects.all():
             scene_list.append(get_scene_information(scene))
-
         return JsonResponse(scene_list, safe=False)
 
 
-# 不限定exhibition，获取所有具有修改权限的scene
-class APIGetAllSceneList(APIView):
-
-    @staticmethod
-    def my_get(request):
-        user_type = get_user_type(request.user)
-        scene_list = []
-        # 拒绝普通用户
-        if user_type == 'artist':
-            raise NoPermission
-        for scene in Scene.objects.all():
-            if check_perm('gallery.change_scene', request, scene):
-                scene_list.append(scene)
-        return JsonResponse(scene_list, safe=False)
-
-
-# 进行权限检查的scene list版本
-class APIGetSceneList(APIView):
-
-    @staticmethod
-    def my_get(request, exhibition_id):
-        user_type = get_user_type(request.user)
-        scene_list = []
-        # 拒绝普通用户
-        if user_type == 'artist':
-            raise NoPermission
-        exhibition = Exhibition.objects.get(pk=exhibition_id)
-        for scene in Scene.objects.filter(exhibition=exhibition):
-            if check_perm('gallery.change_scene', request, scene):
-                scene_list.append(get_scene_information(scene))
-        return JsonResponse(scene_list, safe=False)
-
-
-def get_scene_information(scene):
-    return {
-        'id': scene.pk,
-        'name': scene.name,
-        'file': scene.file.name,
-        'exhibition': scene.exhibition.name,
-    }
-
-
-class APIAddNewScene(APIView):
+class APISceneAdd(APIView):
     class MyForm(Form):
         name = CharField(label='name')
-        exhibition_id = IntegerField(label='exhibition_id')
+        author_id = IntegerField(label='author_id', required=False)
+        author = CharField(label='author', required=False)
 
     @staticmethod
     def my_post(request, cleaned_data):
-        user_type = get_user_type(request.user)
-        if not user_type in ['stuff', 'superuser']:
+        if not request.user.has_perm('gallery.add_scene'):
             raise NoPermission
         name = cleaned_data['name']
-        exhibition_id = cleaned_data['exhibition_id']
-
-        exhibition = Exhibition.objects.get(pk=exhibition_id)
-        # 检查stuff是否具有此exhibition的权限
-        if user_type == 'stuff':
-            if not check_perm('gallery.change_exhibition', request, exhibition):
-                raise NoPermission(message="You do not have the permission to change this exhibition")
-        exhibition_group = exhibition.group
 
         # 检查 name 是否已经存在
         if len(Scene.objects.filter(name=name)) > 0:
@@ -391,30 +525,24 @@ class APIAddNewScene(APIView):
         if len(Group.objects.filter(name=name)) > 0:
             raise Error(message='Scene permission group name has been taken.', status=403)
 
-        group = Group.objects.create(name=gen_random_name(name))
-        scene = Scene.objects.create(name=name, group=group, exhibition=exhibition)
+        author = None
+        # 如果传入了author
+        if cleaned_data['author']:
+            author = User.objects.get(username=cleaned_data['author'])
 
-        # 分配这个展厅的object权限到组里
-        # assign_perm('gallery.view_scene', group, scene)
-        assign_perm('gallery.change_scene', group, scene)
-        # assign_perm('gallery.add_scene', group, scene)
-        # assign_perm('gallery.delete_scene', group, scene)
+        # 如果有传入author_id
+        if not cleaned_data['author_id'] is None:
+            author = User.objects.get(pk=cleaned_data['author_id'])
 
-        # 添加该展厅的object权限到对应exhibition里
-        # assign_perm('gallery.view_scene', exhibition_group, scene)
-        assign_perm('gallery.change_scene', exhibition_group, scene)
-        # assign_perm('gallery.add_scene', exhibition_group, scene)
-        # assign_perm('gallery.delete_scene', exhibition_group, scene)
-
-        group.save()
+        scene = Scene.objects.create(
+            name=name,
+            author=author,
+        )
 
         scene.save()
 
         return JsonResponse({
-            "scene": {
-                "name": scene.name,
-                "id": scene.pk,
-            }
+            "scene": get_scene_information(scene)
         })
 
 
@@ -424,25 +552,14 @@ class APISceneInformation(APIView):
     @staticmethod
     def my_get(request, scene_id):
         scene = Scene.objects.get(pk=scene_id)
-        group = scene.group
-        users = group.user_set.all()
-        user_list = []
-        for user in users:
-            user_list.append({
-                "username": user.username,
-            })
         return JsonResponse({
-            'scene': {
-                'name': scene.name,
-                'id': scene.pk,
-                'file': scene.file.name,
-            },
-            'user_list': user_list,
+            'scene': get_scene_information(scene)
         })
 
     class MyForm(Form):
-        id = IntegerField(label='id')
         name = CharField(label='name', required=False)
+        author_id = IntegerField(label='author_id', required=False)
+        author = CharField(label='author', required=False)
 
     @staticmethod
     @permission_required_or_403(
@@ -452,11 +569,18 @@ class APISceneInformation(APIView):
     )
     def my_post(request, cleaned_data, scene_id):
         scene = Scene.objects.get(pk=scene_id)
-        if cleaned_data.get('name') is not None:
-            name = cleaned_data['name']
-            scene.name = name
+
+        if cleaned_data['name']:
+            scene.name = cleaned_data['name']
+        if cleaned_data['author']:
+            author = User.objects.get(username=cleaned_data['author'])
+            scene.author = author
+        if not cleaned_data['author_id'] is None:
+            author = User.objects.get(pk=cleaned_data['author_id'])
+            scene.author = author
 
         scene.save()
+
         return get_success_response()
 
 
@@ -512,8 +636,6 @@ class APISceneDelete(APIView):
     @staticmethod
     def my_del(request, scene_id):
         scene = Scene.objects.get(pk=scene_id)
-        group = scene.group
-        group.delete()
         scene.delete()
         return get_success_response()
 
@@ -521,9 +643,12 @@ class APISceneDelete(APIView):
 class APIGetItemList(APIView):
 
     @staticmethod
-    def my_get(request, scene_id):
+    def my_get(request, exhibition_id):
+        exhibition = Exhibition.objects.get(pk=exhibition_id)
+        if not exhibition.scene:
+            raise NoScene
         item_list = []
-        scene = Scene.objects.get(pk=scene_id)
+        scene = exhibition.scene
         for item in Item.objects.filter(scene=scene):
             item_list.append(get_item_information(item))
         return JsonResponse(item_list, safe=False)
@@ -533,7 +658,7 @@ class APIItemInformation(APIView):
     use_form = False
 
     @staticmethod
-    def my_get(request, item_id):
+    def my_get(request, exhibition_id, item_id):
         item = Item.objects.get(pk=item_id)
         return JsonResponse({
             'item': get_item_information(item),
@@ -574,45 +699,14 @@ class APIItemInformation(APIView):
         item.save()
         return get_success_response()
 
-# todo args include user and check perms
-def get_item_information(item):
-    result_dict = {
-        'id': item.pk,
-        'name': item.name,
-        'pos_x': item.pos_x,
-        'pos_y': item.pos_y,
-        'pos_z': item.pos_z,
-        'rot_x': item.rot_x,
-        'rot_y': item.rot_y,
-        'rot_z': item.rot_z,
-        'rot_w': item.rot_w,
-        'scl_x': item.scl_x,
-        'scl_y': item.scl_y,
-        'scl_z': item.scl_z,
-        'description': item.description,
-    }
-    # 解决可能没有author的bug
-    author = None
-    author_id = None
-    if item.author:
-        author = item.author.username
-        author_id = item.author.pk
-    if author is not None:
-        result_dict['author'] = author
-    if author_id is not None:
-        result_dict['author_id'] = author_id
-    if item.file is not None:
-        result_dict['file'] = item.file.name
-    return result_dict
 
-
-class APIAddItem(APIView):
+class APIItemAdd(APIView):
     class MyForm(Form):
         name = CharField(label='name')
         author = CharField(label='author', required=False)
         author_id = IntegerField(label='author_id', required=False)
-        teacher = CharField(label='teacher', required=False)
-        teacher_id = IntegerField(label='teacher_id', required=False)
+        stuff = CharField(label='stuff', required=False)
+        stuff_id = IntegerField(label='stuff_id', required=False)
         pos_x = FloatField(label='pos_x', required=False)
         pos_y = FloatField(label='pos_y', required=False)
         pos_z = FloatField(label='pos_z', required=False)
@@ -626,63 +720,58 @@ class APIAddItem(APIView):
         description = CharField(label='description', required=False)
 
     @staticmethod
-    def my_post(request, cleaned_data, scene_id):
+    def my_post(request, cleaned_data, exhibition_id):
         # check author and author_id is missing
-        if cleaned_data.get('author') is None and cleaned_data.get('author_id') is None:
+        if not cleaned_data['author'] and cleaned_data.get('author_id') is None:
             raise FormValidError(message='no author post')
-        # check teacher and teacher_id is missing
-        if cleaned_data.get('teacher') is None and cleaned_data.get('teacher_id') is None:
-            raise FormValidError(message='no teacher post')
 
-        scene = Scene.objects.get(pk=scene_id)
-        group = scene.group
-        user = User.objects.get(pk=cleaned_data['author_id'])
+        exhibition = Exhibition.objects.get(pk=exhibition_id)
+        if not exhibition.scene:
+            raise NoScene
+
+        scene = exhibition.scene
+        user = None
+        if cleaned_data['author']:
+            user = User.objects.get(username=cleaned_data['author'])
+        if cleaned_data['author_id']:
+            user = User.objects.get(pk=cleaned_data['author_id'])
         item = Item.objects.create(
             name=cleaned_data['name'],
             scene=scene,
             author=user
         )
-        item.save()
         if cleaned_data.get('pos_x') is not None:
-            pos_x = cleaned_data['pos_x']
+            item.pos_x = cleaned_data['pos_x']
         if cleaned_data.get('pos_y') is not None:
-            pos_y = cleaned_data['pos_y']
+            item.pos_y = cleaned_data['pos_y']
         if cleaned_data.get('pos_z') is not None:
-            pos_z = cleaned_data['pos_z']
+            item.pos_z = cleaned_data['pos_z']
         if cleaned_data.get('rot_x') is not None:
-            rot_x = cleaned_data['rot_x']
+            item.rot_x = cleaned_data['rot_x']
         if cleaned_data.get('rot_y') is not None:
-            rot_y = cleaned_data['rot_y']
+            item.rot_y = cleaned_data['rot_y']
         if cleaned_data.get('rot_z') is not None:
-            rot_z = cleaned_data['rot_z']
+            item.rot_z = cleaned_data['rot_z']
         if cleaned_data.get('row_w') is not None:
-            row_w = cleaned_data['rot_w']
+            item.row_w = cleaned_data['rot_w']
         if cleaned_data.get('scl_x') is not None:
-            scl_x = cleaned_data['scl_x']
+            item.scl_x = cleaned_data['scl_x']
         if cleaned_data.get('scl_y') is not None:
-            scl_y = cleaned_data['scl_y']
+            item.scl_y = cleaned_data['scl_y']
         if cleaned_data.get('scl_z') is not None:
-            scl_z = cleaned_data['scl_z']
-        # 分配物体的object权限到组里
-        assign_perm('gallery.view_item', group, item)
-        assign_perm('gallery.change_item', group, item)
-        assign_perm('gallery.delete_item', group, item)
-        # 分配物体的object权限给用户
-        assign_perm('gallery.view_item', user, item)
-        assign_perm('gallery.change_item', user, item)
-        assign_perm('gallery.delete_item', user, item)
+            item.scl_z = cleaned_data['scl_z']
+        if cleaned_data.get('description') is not None:
+            item.description = cleaned_data['description']
         item.save()
+        # 前端要求只返回一个item id
         return HttpResponse(item.pk) 
-
 
 
 class APIDeleteItem(APIView):
     
     @staticmethod
-    def my_del(request, item_id):
+    def my_del(request, exhibition_id, item_id):
         item = Item.objects.get(pk=item_id)
-        # 删除权限
-        # todo
         item.delete()
         return get_success_response()
 
@@ -691,7 +780,7 @@ class APIDeleteItem(APIView):
 class APIItemFile(View):
 
     @staticmethod
-    def get(request, item_id):
+    def get(request, exhibition_id, item_id):
         item = Item.objects.get(pk=item_id)
         f_p = os.path.join(MEDIA_ROOT, item.file.name)
         f = open(f_p, 'rb')
@@ -711,85 +800,86 @@ class APIItemFile(View):
         })
 
 
-class APIGetArtistList(APIView):
-
-    @staticmethod
-    def my_get(request):
-        artist_list = []
-        artist_group = Group.objects.get_or_create(name='artist_group')[0]
-        for user in artist_group.user_set.all():
-            artist_list.append({
-                'username': user.username,
-                'id': user.pk,
-            })
-        return JsonResponse(artist_list, safe=False)
-
-
-class APIGetTeacherList(APIView):
-
-    @staticmethod
-    def my_get(request):
-        teacher_list = []
-        teacher_group = Group.objects.get_or_create(name='teacher_group')[0]
-        for user in teacher_group.user_set.all():
-            teacher_list.append({
-                'username': user.username,
-                'id': user.pk,
-            })
-        return JsonResponse(teacher_list, safe=False)
-
-
-def gen_random_name(data):
-    sha1 = hashlib.sha1()
-    sha1.update(str(random.random()).encode())
-    random_string = sha1.hexdigest()
-    return '_'.join([data, random_string])
-
 class APIExhibitionAdd(APIView):
     class MyForm(Form):
         name = CharField(label='name')
+        scene_id = IntegerField(label='scene_id', required=False)
 
     @staticmethod
     def my_post(request, cleaned_data):
-        # 只有superuser才能新建exhibition
-        if not request.user.is_superuser:
-            raise NoPermission
         exhibition_name = cleaned_data['name']
         exhibition = Exhibition.objects.create(name=exhibition_name)
 
-        group = Group.objects.create(name=gen_random_name(exhibition_name))
-        exhibition.group = group
+        users = Group.objects.create(name=gen_random_name(exhibition_name+'_users'))
+        artists = Group.objects.create(name=gen_random_name(exhibition_name+'_artists'))
+        stuffs = Group.objects.create(name=gen_random_name(exhibition_name+'_stuffs'))
+        managers = Group.objects.create(name=gen_random_name(exhibition_name+'_managers'))
+        admins = Group.objects.create(name=gen_random_name(exhibition_name+'_admins'))
+
+        # users 组包含exhibition内所有用户，方便查询
+        # users 组不包含任何权限
 
         # 分配操作该exhibition的object权限到组里
-        assign_perm('gallery.view_exhibition', group, exhibition)
-        assign_perm('gallery.change_exhibition', group, exhibition)
+        # artists组可以修改item
+        # 但如果用户类型为artists需要额外检查item.author == request.user
+        assign_perm('gallery.item_exhibition', artists, exhibition)
+        # stuff组可以修改item和tool
+        assign_perm('gallery.item_exhibition', stuffs, exhibition)
+        assign_perm('gallery.tool_exhibition', stuffs, exhibition)
+        # managers组可以修改item tool scene exhibition
+        assign_perm('gallery.item_exhibition', managers, exhibition)
+        assign_perm('gallery.tool_exhibition', managers, exhibition)
+        assign_perm('gallery.scene_exhibition', managers, exhibition)
+        assign_perm('gallery.change_exhibition', managers, exhibition)
+        # admins组可以修改item tool scene exhibition
+        # 相比managers多了一个可以添加其他用户作为管理员的权限
+        assign_perm('gallery.item_exhibition', admins, exhibition)
+        assign_perm('gallery.tool_exhibition', admins, exhibition)
+        assign_perm('gallery.scene_exhibition', admins, exhibition)
+        assign_perm('gallery.change_exhibition', admins, exhibition)
+        assign_perm('gallery.admin_exhibition', admins, exhibition)
 
-        group.save()
+        exhibition.users = users
+        exhibition.artists = artists
+        exhibition.stuffs = stuffs
+        exhibition.managers = managers
+        exhibition.admins = admins
+
+        users.save()
+        artists.save()
+        managers.save()
+        admins.save()
+        
+        # 可选：设置exhibition的scene
+        if cleaned_data.get('scene_id') is not None:
+            scene = Scene.objects.get(pk=cleaned_data['scene_id'])
+            exhibition.scene = scene
+
         exhibition.save()
-        return get_success_response()
+        return JsonResponse(get_exhibition_information(exhibition))
 
 
 class APIExhibitionInfo(APIView):
     class MyForm(Form):
-        name = CharField(label='name')
+        name = CharField(label='name', required=False)
+        scene_id = IntegerField(label='scene_id', required=False)
 
     @staticmethod
     def my_get(request, exhibition_id):
         exhibition = Exhibition.objects.get(pk=exhibition_id)
-        return {
-            'exhibition': get_exhibition_information(request, exhibition)
-        }
+        return JsonResponse({
+            'exhibition': get_exhibition_information(exhibition),
+            'user_list': get_exhibition_users_list(exhibition),
+        })
     
     @staticmethod
-    @permission_required_or_403(
-        'gallery.change_exhibition',
-        (Exhibition, 'pk', 'exhibition_id'),
-        accept_global_perms=True
-    )
     def my_post(request, cleaned_data, exhibition_id):
         exhibition = Exhibition.objects.get(pk=exhibition_id)
-        name = cleaned_data['name']
-        exhibition.name = name
+        if not cleaned_data.get('name') is None:
+            exhibition.name = cleaned_data['name']
+        if not cleaned_data.get('scene_id') is None:
+            scene = Scene.objects.get(pk=cleaned_data['scene_id'])
+            exhibition.scene = scene
         exhibition.save()
         return get_success_response()
 
@@ -799,12 +889,16 @@ class APIExhibitionDelete(APIView):
     @staticmethod
     def my_del(request, exhibition_id):
         exhibition = Exhibition.objects.get(pk=exhibition_id)
+        exhibition.users.delete()
+        exhibition.artists.delete()
+        exhibition.stuffs.delete()
+        exhibition.managers.delete()
+        exhibition.admins.delete()
         exhibition.delete()
         return get_success_response()
 
 
-# 不不进行权限检查的exhibition 版本
-class APISignupExhibitionList(APIView):
+class APIExhibitionList(APIView):
 
     @staticmethod
     def my_get(request):
@@ -814,40 +908,15 @@ class APISignupExhibitionList(APIView):
         return JsonResponse(exhibition_list, safe=False)
 
 
-# 进行权限检查的exhibition list 版本
-class APIExhibitionList(APIView):
-
-    @staticmethod
-    def my_get(request):
-        exhibition_list = []
-        for exhibition in Exhibition.objects.all():
-            if check_perm('gallery.change_exhibition', request, exhibition):
-                exhibition_list.append(get_exhibition_information(exhibition))
-        return JsonResponse(exhibition_list, safe=False)
-
-def get_exhibition_information(exhibition):
-    return {
-        'id': exhibition.pk,
-        'name': exhibition.name,
-    }
-
-
-# check object permission and global permission
-def check_perm(perm_string, request, obj):
-    if request.user.is_superuser:
-        return True
-    if request.user.has_perm(perm_string) or request.user.has_perm(perm_string, obj):
-        return True
-    else:
-        return False
-
-
 # get tool list
 class APIGetToolList(APIView):
 
     @staticmethod
-    def my_get(request, scene_id):
-        scene = Scene.objects.get(pk=scene_id)
+    def my_get(request, exhibition_id):
+        exhibition = Exhibition.objects.get(pk=exhibition_id)
+        if not exhibition.scene:
+            raise NoScene
+        scene = exhibition.scene
         tool_list = []
         for tool in Tool.objects.filter(scene=scene):
             tool_list.append({

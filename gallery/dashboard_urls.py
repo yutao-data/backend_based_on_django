@@ -11,4 +11,5 @@ urlpatterns = [
     path('all_item_management', dashboard_views.AllItemManagementView.as_view(), name='all_item_management'),
     path('item_management', dashboard_views.ItemManagementView.as_view(), name='item_management'),
     path('all_exhibition_management/', dashboard_views.AllExhibitionManagement.as_view(), name='all_exhibition_management'),
+    path('exhibition_management/', dashboard_views.ExhibitionManagement.as_view(), name='exhibition_management'),
 ]

@@ -61,17 +61,10 @@
                 <tbody>
                     <tr v-for="exhibition in exhibition_list">
                         <td>[[ exhibition.id ]]</td>
-			<td>
-			    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-				<input v-model="exhibition.name" type="text" class="mdl-textfield__input">
-			    </div>
-			</td>
+			<td class="mdl-data-table__cell--non-numeric">[[ exhibition.name ]]</td>
                         <td>
-                            <button v-on:click="save_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
-				Save
-			    </button>
                             <button v-on:click="modify_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
-				Scene
+				Modify
 			    </button>
                             <button v-on:click="delete_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
                                 Delete
@@ -142,23 +135,8 @@
                             progress_bar_app.show = false
                         })
                     },
-		    save_onclick: function (exhibition) {
-			progress_bar_app.show = true
-			axios.post('/gallery/api/exhibition/'+exhibition.id+'/info/', {
-			    name: exhibition.name
-			})
-			.then(function (response) {
-			    showSnackbar('Saved')
-			})
-			.catch(function (error) {
-			    errorDialog(error)
-			})
-			.finally(function () {
-			    progress_bar_app.show = false
-			})
-		    },
 		    modify_onclick: function (exhibition) {
-			window.location = '{% url "gallery:dashboard:all_scene_management" %}'+'?exhibition_id='+exhibition.id
+			window.location = '{% url "gallery:dashboard:exhibition_management" %}'+'?exhibition_id='+exhibition.id
 		    },
                 },
                 created: function () {

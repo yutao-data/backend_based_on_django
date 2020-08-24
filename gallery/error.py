@@ -11,6 +11,10 @@ class Error(Exception):
     def __str__(self):
         return self.message
 
+class NoScene(Error):
+    def __init__(self, message='No scene set', status=501):
+        super().__init__(message, status)
+
 
 class NoPermission(Error):
     def __init__(self, message='No Permission', status=403):
@@ -37,7 +41,7 @@ class FormValidError(Error):
 
 # 用户认证失败
 class AuthenticateError(Error):
-    def __init__(self, message='User Authenticate Failed', status=401):
+    def __init__(self, message='Wrong username or password, or still waiting for agreement', status=401):
         super().__init__(message, status)
 
 # 404

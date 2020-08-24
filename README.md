@@ -1,43 +1,61 @@
 # 虚拟布展系统后端
 
-# 依赖
-- python3
-- django `pip install django`
-- guardian `pip install django-guardian`
-- pymysql `pip install pymysql`
-- mysql，具体设置在setting.py中
+## configure
 
-# 权限
-## 用户类型
-- 普通用户User（展品上传者）
-    - 可以上传展品  
-    - 可以修改自己展品的信息  
-    - 不能修改别人展品的信息  
-    - 所有展品外链一个普通用户
-- 策展团队成员(某个/多个展厅的管理员)
-    - 能更改展厅内所有物品
-    - 只能更改范围内的展厅
-- 展览负责人（能更改所属exhibition下所有展厅的信息）
-- 超级管理员
+## runserver
 
-## 实现
-- 上传展品
-    1. 给用户添加object权限
-    2. 给对应scene.group添加object权限
-- 查询展品
-    1. 检查用户是否有展品的object权限，无关展品属于哪个展厅
-- 创建展厅
-    1. 添加一个group = Group
-- 更改展品作者
-    1. 删除源用户的object权限
-    2. 设置新用户的object权限
-- 删除展品
-    1. 删除展品作者的object权限
-    2. 删除对应scene.group的object权限
-- 结构
-    - 所用用户属于对应类型的组，如`artist_group`/`teacher_group`/`stuff_group`/`superuser_group`
-    - 普通用户artist不属于任何组，他们只有自己展品的object权限
-    - 老师teacher属于scene.group组，该组拥有scene内所有item的object权限，和对应scene的object权限
-    - 策展管理员stuff属于特定策展组`exhibition_group`，该组拥有策展内所有scene的object权限
-    - 站点管理员`superuser`，`is_superuser`属性为`True`，可以登陆`django.contrib.admin`面板控制整个网站
+## 数据库结构
 
+- 没有全局用户组，用户类型是相对于Exhibition的
+
+- 策展 Exhibition
+    - 自定权限: `modify_item` `modify_tool` `modify_scene` `modify_exhibition`
+    - scene 字段指向一个Scene，表示该策展使用该Scene
+    - users 包含所有属于该Exhibition的用户，便于查询
+    - aritsts 用户组拥有`modify_item`权限
+    - stuffs 用户组拥有`modify_item` `modify_tool`权限
+    - managers 用户组拥有`modify_item` `modify_tool` `modify_scene` `modify_exhibition`权限
+    - 在用户组内即拥有策展的相应权限
+
+- 展厅 Scene
+    - 用于被Exhibition选择
+    - author 展厅作者
+
+- 展品 Item
+    - author 展品作者
+
+## 权限检查策略
+- 展品增删改
+    1. 检查exhibition的`item_exhibition`object权限
+    2. 对于修改操作，检查是否属于artists组，如果是，检查该展品的作者是不是当前用户
+- 道具删改查
+    1. 检查exhibition的`tool_exhibition`object权限
+- 展厅增删改
+    1. 检查exhibition的`scene_exhibition`object权限
+    2. 对于修改操作，检查是否属于manager组，如果是，检查该展厅的作者是不是当前用户
+- 展览增删改
+    1. 检查exhibition的`change_exhibition`object权限
+
+## 实现细节
+- 注册
+    1. 用户注册提供用户名等基本信息
+    2. 用户属于哪个展览为可选
+    3. 用户类型artist/stuff/manager/superuser为可选
+        - artist: 将用户添加到exhibition的users和artists组
+        - stuffs: 将用户添加到exhibition的users和stuffs组
+        - manager: 将用户添加到exhibition的users和managers组
+        - superuser: 用户`is_superuser`属性设为True
+- 添加展品 POST `/gallery/api/exhibition/1/scene/2/itemadd/`
+    1. 如果用户在exhibition内的类型为artist，设置item的作者为当前用户
+    2. 否则设置item作者为制定用户
+- 修改展品 POST `/gallery/api/exhibition/1/item/3/info/`
+- 删除展品 DELETE `/gallery/api/exhibition/1/item/3/`
+- 增加展厅 POST `/gallery/api/exhibition/1/sceneadd/`
+    1. 如果用户在exhibition内的类型为manager，设置scene的作者为当前用户
+    2. 否则设置scene作者为当前用户
+- 修改展厅 POST `/gallery/api/exhibition/1/scene/3/info/`
+- 删除展厅 DELETE `/gallery/api/exhibition/1/scene/3/`
+- 添加展览 POST `/gallery/api/exhibitionadd/`
+    1. 选择展厅
+- 修改展览 POST `/gallery/api/exhibition/1/info/`
+- 删除展览 DELETE `/gallery/api/exhibition/1/`

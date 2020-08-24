@@ -11,27 +11,26 @@ urlpatterns = [
     path('logout/', api_views.APILogoutView.as_view(), name='logout'),
 
     # 提交注册信息
-    path('account/signup/', api_views.APISignupView.as_view(), name='signup'),
+    path('signup/', api_views.APISignupView.as_view(), name='signup'),
 
-    # 获取用户类型为artist的列表，用于设置item的author
-    path('account/artist_list/', api_views.APIGetArtistList.as_view(), name='get_artist_list'),
+    # 获取所有注册申请
+    path('signuprequestlist/', api_views.APIAllSignupRequestListView.as_view(), name='all_signup_request_list'),
 
-    # 获取用户类型为teacher的列表，用于设置item的teacher
-    path('account/teacher_list/', api_views.APIGetTeacherList.as_view(), name='get_teacher_list'),
+    # 获取特定exhibition下的注册申请，并根据权限过滤
+    path('exhibition/<int:exhibition_id>/signuprequestlist/', api_views.APISignupRequestListView.as_view(), name='signup_request_list'),
 
-    # 更改用户是否激活的属性
-    path('account/signup_management/', api_views.APIUserManagementView.as_view(), name='user_management'),
+    # 处理注册申请
+    path('signuprequest/<int:signuprequest_id>/', api_views.APISignupRequestView.as_view(), name='signup_request'),
 
-    # 删除用户
-    path('account/delete_user/', api_views.APIDeleteUserView.as_view(), name='delete_user'),
+    # 所有用户列表
+    path('userlist/', api_views.APIAllUserList.as_view(), name='all_user_list'),
 
-    # 获取一个组列表，teacher类型用户注册时需要选择一个组
-    path('account/scenelist', api_views.APIGetSignupSceneList.as_view(), name='signup_scene_list'),
+    # 删除用户(superuser)
+    path('user/<int:user_id>/', api_views.APIUserDeleteView.as_view(), name='delete_user'),
 
-    path('account/exhibitionlist', api_views.APISignupExhibitionList.as_view(), name='signup_exhibition_list'),
-
-    # 获取当前已经登陆的用户的类型，返回artist/teacher/stuff/superuser
-    path('account/user_type/', api_views.APIGetUserType.as_view(), name='get_user_type'),
+    # 获取特定用户的用户信息
+    # 因为不指定exhibition，所以user_type字段只有superuser或空字符串
+    path('user/<int:user_id>/info/', api_views.APIUserView.as_view(), name='user_information'),
     
     # Exhibition list
     path('exhibitionlist/', api_views.APIExhibitionList.as_view(), name='get_exhibition_list'),
@@ -39,20 +38,21 @@ urlpatterns = [
     # Exhibition Add
     path('exhibitionadd/', api_views.APIExhibitionAdd.as_view(), name='exhibition_add'),
 
+    # 对scene item tool的操作都带exhibition_id的原因是
+    # 用户在不同exhibition里有不同的user_type
+    # 所以要指定exhibition用来检查权限
+
     # Exhibition Delete
     path('exhibition/<int:exhibition_id>/', api_views.APIExhibitionDelete.as_view(), name='delete_exhibition'),
     
     # Exhibition Info
     path('exhibition/<int:exhibition_id>/info/', api_views.APIExhibitionInfo.as_view(), name='exhibition_info'),
 
-    # 获取场景列表
-    path('exhibition/<int:exhibition_id>/scenelist/', api_views.APIGetSceneList.as_view(), name='get_scene_list'),
-
-    # 不指定exhibition的scenelist
-    path('scenelist/', api_views.APIGetAllSceneList.as_view(), name='get_all_scene_list'),
+    # 获取scenelist
+    path('scenelist/', api_views.APISceneList.as_view(), name='get_scene_list'),
 
     # 添加新场景
-    path('sceneadd/', api_views.APIAddNewScene.as_view(), name='add_new_scene'),
+    path('sceneadd/', api_views.APISceneAdd.as_view(), name='add_new_scene'),
 
     # 删除场景
     path('scene/<int:scene_id>/', api_views.APISceneDelete.as_view(), name='delete_scene'),
@@ -63,21 +63,21 @@ urlpatterns = [
     # 下载/上传场景模型文件
     path('scene/<int:scene_id>/file/', api_views.APISceneFile.as_view(), name='upload_scene'),
 
-    # 获取该场景下所有item
-    path('scene/<int:scene_id>/itemlist/', api_views.APIGetItemList.as_view(), name='get_item_list'),
+    # 获取该展览下所有item
+    path('exhibition/<int:exhibition_id>/itemlist/', api_views.APIGetItemList.as_view(), name='get_item_list'),
 
     # get item list base on scene
-    path('scene/<int:scene_id>/toollist/', api_views.APIGetToolList.as_view(), name='get_tool_list'),
+    path('exhibition/<int:exhibitioin_id>/toollist/', api_views.APIGetToolList.as_view(), name='get_tool_list'),
 
-    # 往该场景下添加itme
-    path('scene/<int:scene_id>/itemadd/', api_views.APIAddItem.as_view(), name='add_item'),
+    # 往该展览下添加itme
+    path('exhibition/<int:exhibition_id>/itemadd/', api_views.APIItemAdd.as_view(), name='add_item'),
 
     # 删除该item
-    path('item/<int:item_id>/', api_views.APIDeleteItem.as_view(), name='item_delete'),
+    path('exhibition/<int:exhibition_id>/item/<int:item_id>/', api_views.APIDeleteItem.as_view(), name='item_delete'),
 
     # 获取/修改该item信息
-    path('item/<int:item_id>/info/', api_views.APIItemInformation.as_view(), name='item_information'),
+    path('exhibition/<int:exhibition_id>/item/<int:item_id>/info/', api_views.APIItemInformation.as_view(), name='item_information'),
 
     # 下载/上传item模型文件
-    path('item/<int:item_id>/file/', api_views.APIItemFile.as_view(), name='item_file'),
+    path('exhibition/<int:exhibition_id>/item/<int:item_id>/file/', api_views.APIItemFile.as_view(), name='item_file'),
 ]

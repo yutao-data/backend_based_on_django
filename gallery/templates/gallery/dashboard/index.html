@@ -18,7 +18,7 @@
             </div>
         </div>
 
-        <!-- 单个 Scene 场景管理卡片 -->
+        <!-- Scene 场景管理卡片 -->
         <div v-if="scene_management_show" class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
             <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
                 <div class="mdl-card__title mdl-card--expand mdl-color--light-blue-700">
@@ -40,7 +40,7 @@
                     <h3>User Management</h3>
                     <p v-show="user_management_text_show">[[ user_management_text ]]</p>
                     <ul class="mdl-list">
-                        <li v-for="user in user_list" v-show="!user.user_status" class="mdl-list__item">
+                        <li v-for="user in user_list" class="mdl-list__item">
                             <span class="mdl-list__item-primary-content" style="color: #ece6f6">
                                 <i class="material-icons mdl-list__item-icon">person</i>
                                 [[ user.username ]]
@@ -69,20 +69,10 @@
         },
         created: function () {
             progress_bar_app.show = true
-            axios.get('{% url "gallery:api:get_user_type" %}')
-            .then(function (response) {
-                dashboard_app.user_type = response.data['user_type']
-            })
-            axios.get('{% url "gallery:api:user_management" %}')
+            axios.get('{% url "gallery:api:all_signup_request_list" %}')
             .then(function (response) {
                 dashboard_app.user_list = response.data
-                var has_user = false
-                for (const user of dashboard_app.user_list) {
-                    if (!user.user_status) {
-                        has_user = true
-                    }
-                }
-                if (has_user) {
+                if (dashboard_app.user_list) {
                     dashboard_app.user_management_text = 'Here are some user wait to sign up, please check.'
                 } else {
                     dashboard_app.user_management_text = '\nNothing to do here'
@@ -96,16 +86,16 @@
             })
         },
         computed: {
-            // 只对teacher显示属于自己的scene management card
+            // 只对stuff显示属于自己的scene management card
             scene_management_show: function () {
-                return this.user_type === 'teacher';
+                return true;
             },
-            // 对 stuff 和 super user 显示 all scene management 入口
+            // 对 manager 和 super user 显示 all scene management 入口
             all_exhibition_management_show: function () {
-                return this.user_type === 'stuff' || this.user_type === 'superuser';
+		return true
             },
             my_scene_management_url: function () {
-                return '{% url "gallery:dashboard:all_scene_management" %}'+ '?pk=' + '{{ my_scene_management_pk }}'
+                return '{% url "gallery:dashboard:all_scene_management" %}'
             },
             exhibition_management_url: function () {
 		    return '{% url "gallery:dashboard:all_exhibition_management" %}'

@@ -79,44 +79,33 @@
         </div>
     </div>
     <script>
-	    var url = window.location.href //获取当前url
-	    var dz_url = url.split('#')[0] //获取#/之前的字符串
-	    var cs = dz_url.split('?')[1]  //获取?之后的参数字符串
-	    var cs_arr = cs.split('&') //参数字符串分割为数组
-	    var cs={}
-	    for(var i=0;i<cs_arr.length;i++){//遍历数组，拿到json对象
-		cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
-	    }
-
-            var all_scene_management_app = new Vue({
-                delimiters: ['[[', ']]'],
-                el: '#all_scene_management_div',
-                data: {
-                    scene_list: [],
-                    new_scene_name: '',
-                    new_scene_show: false,
-                    new_scene_error_message_show: false,
-                    new_scene_error_message: '',
+        var all_scene_management_app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#all_scene_management_div',
+            data: {
+                scene_list: [],
+                new_scene_name: '',
+                new_scene_show: false,
+                new_scene_error_message_show: false,
+                new_scene_error_message: '',
+            },
+            methods: {
+                // 显示 add new scene 的表单
+                add_scene_onclick: function () {
+                    this.new_scene_show = true
                 },
-                methods: {
-                    // 显示 add new scene 的表单
-                    add_scene_onclick: function () {
-                        this.new_scene_show = true
-                    },
-                    // 新建new scene
-                    new_scene_onclick: function () {
-                        // 先检查是否为空
-                        if (!this.new_scene_name) {
-                            this.new_scene_error_message = 'Please enter scene name!'
-                            this.new_scene_error_message_show = true
-                            return
-                        }
-                        progress_bar_app.show = true
-                        axios.post('{% url "gallery:api:add_new_scene" %}', {
-                            name: this.new_scene_name,
-                            exhibition_id: cs['exhibition_id'],
-
-                        })
+                // 新建new scene
+                new_scene_onclick: function () {
+                    // 先检查是否为空
+                    if (!this.new_scene_name) {
+                        this.new_scene_error_message = 'Please enter scene name!'
+                        this.new_scene_error_message_show = true
+                        return
+                    }
+                    progress_bar_app.show = true
+                    axios.post('{% url "gallery:api:add_new_scene" %}', {
+                        name: this.new_scene_name,
+                    })
                         .then(function (response) {
                             showSnackbar('Create New Scene Success')
                             // 清空原有的表单数据
@@ -133,41 +122,41 @@
                         .finally(function () {
                             progress_bar_app.show = false
                         })
-                    },
-                    refresh_scene_list: function () {
-                        progress_bar_app.show = true
-                        axios.get('/gallery/api/exhibition/'+cs['exhibition_id']+'/scenelist/')
-                        .then(function (response) {
-                            all_scene_management_app.scene_list = response.data
-                        })
-                        .catch(function (error) {
-                            errorDialog(error)
-                        })
-                        .finally(function () {
-                            progress_bar_app.show = false
-                        })
-                    },
-                    // 点击了 modify 按钮
-                    modify_onclick: function (scene) {
-                        window.location = '{% url "gallery:dashboard:scene_management" %}' + '?scene_id=' + scene.id
-                    },
-                    delete_onclick: function (scene) {
-                        progress_bar_app.show = true
-                        axios.delete('/gallery/api/scene/' + scene.id + '/')
-                        .then(function (response) {
-                            all_scene_management_app.refresh_scene_list()
-                        })
-                        .catch(function (error) {
-                            errorDialog(error)
-                        })
-                        .finally(function () {
-                            progress_bar_app.show = false
-                        })
-                    },
                 },
-                created: function () {
-                    this.refresh_scene_list()
+                refresh_scene_list: function () {
+                    progress_bar_app.show = true
+                    axios.get('{% url "gallery:api:get_scene_list" %}')
+                    .then(function (response) {
+                        all_scene_management_app.scene_list = response.data
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+                    .finally(function () {
+                        progress_bar_app.show = false
+                    })
                 },
-            })
-        </script>
+                // 点击了 modify 按钮
+                modify_onclick: function (scene) {
+                    window.location = '{% url "gallery:dashboard:scene_management" %}' + '?scene_id=' + scene.id
+                },
+                delete_onclick: function (scene) {
+                    progress_bar_app.show = true
+                    axios.delete('/gallery/api/scene/' + scene.id + '/')
+                    .then(function (response) {
+                        all_scene_management_app.refresh_scene_list()
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+                    .finally(function () {
+                        progress_bar_app.show = false
+                    })
+                },
+            },
+            created: function () {
+                this.refresh_scene_list()
+            },
+        })
+    </script>
 {% endblock %}

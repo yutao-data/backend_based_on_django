@@ -20,22 +20,10 @@
                         </td>
                         <td>
                             <select v-model="author_id">
-                                <option v-for="artist in artist_list" v-bind:value="artist.id">
-                                    [[ artist.username ]]
+                                <option v-for="user in user_list" v-bind:value="user.id">
+                                    [[ user.username ]]
                                 </option>
-			    </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="mdl-data-table__cell--non-numeric">
-                            <span>Teacher</span>
-                        </td>
-                        <td>
-                            <select v-model="author_id">
-                                <option v-for="teacher in teacher_list" v-bind:value="teacher.id">
-                                    [[ teacher.username ]]
-                                </option>
-			    </select>
+                            </select>
                         </td>
                     </tr>
                     <tr>
@@ -121,24 +109,24 @@
                     new_item_show: false,
                     new_item_error_message_show: false,
                     new_item_error_message: '',
-                    artist_list: [],
-		    teacher_list: [],
+                    user_list: [],
+            stuff_list: [],
                     author_id: null,
-		    teacher_id: null,
+            stuff_id: null,
                 },
                 methods: {
                     refresh_item_list: function () {
                         progress_bar_app.show = true
-                        axios.get('/gallery/api/scene/'+cs['scene_id']+'/itemlist/')
-                        .then(function (response) {
-                            all_item_management_app.item_list = response.data
-                        })
-                        .catch(function (error) {
-                            errorDialog(error)
-                        })
-                        .finally(function () {
-                            progress_bar_app.show = false
-                        })
+                        axios.get('/gallery/api/exhibition/'+cs['exhibition_id']+'/itemlist/')
+                            .then(function (response) {
+                                all_item_management_app.item_list = response.data
+                            })
+                            .catch(function (error) {
+                                errorDialog(error)
+                            })
+                            .finally(function () {
+                                progress_bar_app.show = false
+                            })
                     },
                     // 点击了 modify 按钮
                     modify_onclick: function (item) {
@@ -147,22 +135,21 @@
                     },
                     new_item_onclick: function () {
                         progress_bar_app.show = true
-                        axios.post('/gallery/api/scene/'+cs['scene_id']+'/itemadd/', {
+                        axios.post('/gallery/api/exhibition/'+cs['exhibition_id']+'/itemadd/', {
                             name: this.new_item_name,
                             author_id: this.author_id,
-			    teacher_id: this.teacher_id,
                         })
-                        .then(function (response) {
-                            showSnackbar('Add Item Success')
-                        })
-                        .catch(function (error) {
-                            errorDialog(error)
-                        })
-                        .finally(function () {
-                            all_item_management_app.refresh_item_list()
-                            all_item_management_app.new_item_show = false
-                            progress_bar_app.show = false
-                        })
+                            .then(function (response) {
+                                showSnackbar('Add Item Success')
+                            })
+                            .catch(function (error) {
+                                errorDialog(error)
+                            })
+                            .finally(function () {
+                                all_item_management_app.refresh_item_list()
+                                all_item_management_app.new_item_show = false
+                                progress_bar_app.show = false
+                            })
                     },
                     add_item_onclick: function () {
                         this.new_item_show = true
@@ -170,41 +157,28 @@
                     delete_onclick: function (item) {
                         progress_bar_app.show = true
                         axios.delete('/gallery/api/item/' + item.id + '/')
-                        .then(function (response) {
-                            showSnackbar('Deleted')
-                            all_item_management_app.refresh_item_list()
-                        })
-                        .catch(function (error) {
-                            errorDialog(error)
-                        })
-                        .finally(function () {
-                            progress_bar_app.show = false
-                        })
+                            .then(function (response) {
+                                showSnackbar('Deleted')
+                                all_item_management_app.refresh_item_list()
+                            })
+                            .catch(function (error) {
+                                errorDialog(error)
+                            })
+                            .finally(function () {
+                                progress_bar_app.show = false
+                            })
                     },
                 },
                 created: function () {
                     progress_bar_app.show = true
+                    axios.get('{% url "gallery:api:all_user_list" %}')
+                        .then(function (response) {
+                            all_item_management_app.user_list = response.data
+                        })
+                        .catch(function (error) {
+                            console.log(error)
+                        })
                     this.refresh_item_list()
-                    axios.get('{% url "gallery:api:get_artist_list" %}')
-                    .then(function (response) {
-                        all_item_management_app.artist_list = response.data
-                    })
-                    .catch(function (error) {
-                        errorDialog(error)
-                    })
-                    .finally(function () {
-                        progress_bar_app.show = false
-                    })
-                    axios.get('{% url "gallery:api:get_teacher_list" %}')
-                    .then(function (response) {
-                        all_item_management_app.teacher_list = response.data
-                    })
-                    .catch(function (error) {
-                        errorDialog(error)
-                    })
-                    .finally(function () {
-                        progress_bar_app.show = false
-                    })
                 },
             })
         </script>
