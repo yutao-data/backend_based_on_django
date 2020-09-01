@@ -163,23 +163,23 @@
                 },
                 created: function () {
                     progress_bar_app.show = true
-                    axios.get('/gallery/api/item/'+cs['item_id']+'/info/')
-                    .then(function (response) {
-                        item_management_app.item = response.data['item']
-                    })
-                    .catch(function (error) {
-                        errorDialog(error)
-                    })
-                    .finally(function () {
-                        progress_bar_app.show = false
-                    })
-                    axios.get('{% url "gallery:api:get_artist_list" %}')
-                    .then(function (response) {
-                        item_management_app.artist_list = response.data
-                    })
-                    .catch(function (error) {
-                        errorDialog(error)
-                    })
+                    axios.get('/gallery/api/exhibition/'+cs['exhibition_id']+'/item/'+cs['item_id']+'/info/')
+                        .then(function (response) {
+                            item_management_app.item = response.data['item']
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                    axios.get('{% url "gallery:api:all_user_list" %}')
+                        .then(function (response) {
+                            item_management_app.artist_list = response.data
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
                 },
             })
         </script>
