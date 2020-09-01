@@ -66,8 +66,6 @@ urlpatterns = [
     # 获取该展览下所有item
     path('exhibition/<int:exhibition_id>/itemlist/', api_views.APIGetItemList.as_view(), name='get_item_list'),
 
-    # get item list base on scene
-    path('exhibition/<int:exhibitioin_id>/toollist/', api_views.APIGetToolList.as_view(), name='get_tool_list'),
 
     # 往该展览下添加itme
     path('exhibition/<int:exhibition_id>/itemadd/', api_views.APIItemAdd.as_view(), name='add_item'),
@@ -80,4 +78,16 @@ urlpatterns = [
 
     # 下载/上传item模型文件
     path('exhibition/<int:exhibition_id>/item/<int:item_id>/file/', api_views.APIItemFile.as_view(), name='item_file'),
+
+    # get item list base on scene
+    path('exhibition/<int:exhibitioin_id>/toollist/', api_views.APIGetToolList.as_view(), name='get_tool_list'),
+
+    # add new tool
+    path('exhibition/<int:exhibition_id>/tooladd/', api_views.APIToolAdd.as_view(), name='add_tool'),
+
+    # get / change tool information
+    path('exhibition/<int:exhibition_id>/tool/<int:tool_id>/info/', api_views.APIToolInfo.as_view(), name='tool_information'),
+
+    # delete tool
+    path('exhibition/<int:exhibition_id>/tool/<int:tool_id>/', api_views.APIToolDelete.as_view(), name='delete_tool'),
 ]

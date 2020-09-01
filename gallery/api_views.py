@@ -141,6 +141,11 @@ def get_item_information(item):
         result_dict['file'] = item.file.name
     return result_dict
 
+def get_tool_information(tool):
+    return {
+        'name': tool.name,
+        'angle': tool.angle,
+    }
 
 # 获取用户详细信息
 def get_user_information(user):
@@ -919,8 +924,63 @@ class APIGetToolList(APIView):
         scene = exhibition.scene
         tool_list = []
         for tool in Tool.objects.filter(scene=scene):
-            tool_list.append({
-                'name': tool.name,
-            })
+            tool_list.append(get_tool_information(tool))
         return JsonResponse(tool_list, safe=False)
 
+
+# add tool
+class APIToolAdd(APIView):
+
+    class MyForm(Form):
+        name = CharField(label='name')
+        angle = FloatField(label='angle', required=False)
+
+    @staticmethod
+    def my_post(request, cleaned_data, exhibition_id):
+        exhibition = exhibition.objects.get(pk=exhibition_id)
+        if not exhibition.scene:
+            raise NoScene
+        scene = exhibition.scene
+
+        tool = Tool.objects.create(
+            name=cleaned_data['name'],
+            scene=scene,
+            angle=cleaned_data['angle'],
+        )
+
+        tool.save()
+
+        return JsonResponse(get_tool_information(tool))
+
+
+class APIToolInfo(APIView):
+    
+    class MyForm(Form):
+        name = CharField(label='name', required=False)
+        angle = FloatField(label='angle', required=False)
+
+    @staticmethod
+    def my_post(request, cleaned_data, exhibition_id, tool_id):
+        tool = Tool.objects.get(pk=tool_id)
+        if cleaned_data['name']:
+            tool.name = cleaned_data['name']
+        if not cleaned_data['angle'] is None:
+            tool.angle = cleaned_data['angle']
+        return get_success_response()
+
+    @staticmethod
+    def my_get(request, exhibition_id, tool_id):
+        tool = Tool.objects.get(pk=tool_id)
+        return JsonResponse({
+            'tool': get_tool_information(tool)
+        })
+
+class APIToolDelete(APIView):
+
+    @staticmethod
+    def my_del(request, exhibition_id, tool_id):
+        tool = Tool.objects.get(pk=tool_id)
+        tool.delete()
+        return get_success_response()
+
+    

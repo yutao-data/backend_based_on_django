@@ -63,6 +63,7 @@ class Tool(models.Model):
         return str(self.name)
     name = models.CharField(max_length=NAME_MAX_CHAR)
     scene = models.ForeignKey(Scene, on_delete=models.CASCADE, blank=True, null=True)
+    angle = models.FloatField(default=0.0)
 
 
 # 用户注册请求登记表
