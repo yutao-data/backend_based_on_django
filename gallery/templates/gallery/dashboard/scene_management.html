@@ -56,21 +56,6 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="mdl-data-table__cell--non-numeric">
-                            Manager List
-                        </td>
-                        <td colspan="100%">
-                            <ul class="mdl-list">
-                                <li v-for="user in user_list" class="mdl-list__item">
-                                    <span class="mdl-list__item-primary-content">
-                                        <i class="material-icons mdl-list__item-icon">person</i>
-                                        [[ user.username ]]
-                                    </span>
-                                </li>
-                            </ul>
-                        </td>
-                    </tr>
-                    <tr>
                         <td colspan="100%" class="mdl-data-table__cell--non-numeric">
                             <button v-on:click="save_onclick" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
                                 Save
@@ -114,7 +99,6 @@
                     name: '......',
                     file: '',
                 },
-                user_list: [],
                 modify_button_show: true,
                 upload_button_show: false,
                 download_button_show: true,
@@ -181,9 +165,6 @@
                     let config = {
                         headers: {'Content-Type': 'multipart/form-data'}
                     }
-                    // 手写 url
-                    // django 的费拉模板功能
-                    // 有个锤子用
                     progress_bar_app.show = true
                     axios.post('/gallery/api/scene/' + cs['scene_id'] + "/file/", formData, config)
                     .then(function (response) {
