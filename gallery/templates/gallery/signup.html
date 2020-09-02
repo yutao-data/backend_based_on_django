@@ -4,120 +4,119 @@
 {% block content %}
     <div id="signup_table" class="mdl-grid">
         <div class="mdl-cell mdl-grid" style="width: max-content; margin: auto;">
-        <table v-show="new_permission_show" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
-        <tbody>
-            <tr>
-            <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                <strong>Add New Permission</strong>
-                </div>
-            </td>
-            </tr>
-            <tr>
-            <td class="mdl-data-table__cell--non-numeric">
-                User type:
-            </td>
-            <td>
-                <select v-model="new_user_type">
-                <option v-for="user_type in user_type_list" v-bind:value="user_type.user_type">
-                [[ user_type.user_type ]]
-                </option>
-                </select>
-            </td>
-            </tr>
-            <tr>
-            <td class="mdl-data-table__cell--non-numeric">
-                Exhibition:
-            </td>
-            <td>
-                <select v-model="new_exhibition_id">
-                <option v-for="exhibition in exhibition_list" v-bind:value="exhibition.id">
-                [[ exhibition.name ]]
-                </option>
-                </select>
-            </td>
-            </tr>
-            <tr>
-            <td colspan="2">
-                <button v-on:click="new_exhibition_onclick" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
-                Add
-                </button>
-            </td>
-            </tr>
-        </tbody>
-        </table>
-    </div>
+            <table v-show="new_permission_show" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                <tbody>
+                    <tr>
+                        <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <strong>Add New Permission</strong>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            User type:
+                        </td>
+                        <td>
+                            <select v-model="new_user_type">
+                            <option v-for="user_type in user_type_list" v-bind:value="user_type.user_type">
+                            [[ user_type.user_type ]]
+                            </option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            Exhibition:
+                        </td>
+                        <td>
+                            <select v-model="new_exhibition_id">
+                            <option v-for="exhibition in exhibition_list" v-bind:value="exhibition.id">
+                            [[ exhibition.name ]]
+                            </option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <button v-on:click="new_exhibition_onclick" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
+                            Add
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <div class="mdl-cell mdl-grid" style="width: max-content; margin: auto;">
             <table v-show="signup_form_seen" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
                 <tbody>
-            <tr>
-            <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                <strong>Sign Up</strong>
-                </div>
-            </td>
-            </tr>
+                    <tr>
+                        <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <strong>Sign Up</strong>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button v-on:click="show_new_permission" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+                            Add Permission
+                            </button>
+                        </td>
+                        <td>
+                            <ul class="mdl-list">
+                            <li v-for="permission in permission_list" class="mdl-list__item">
+                                <span class="mdl-list__item-primary-content">
+                                <i class="material-icons mdl-list__item-icon">person</i>
+                                [[ permission.user_type ]] - [[ permission.exhibition_id ]]
+                                </span>
+                            </li>
+                            </ul>
+                        </td>
+                    </tr>
 
-            <tr>
-            <td>
-                <button v-on:click="show_new_permission" class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
-                Add Permission
-                </button>
-            </td>
-            <td>
-                <ul class="mdl-list">
-                <li v-for="permission in permission_list" class="mdl-list__item">
-                    <span class="mdl-list__item-primary-content">
-                    <i class="material-icons mdl-list__item-icon">person</i>
-                    [[ permission.user_type ]] - [[ permission.exhibition_id ]]
-                    </span>
-                </li>
-                </ul>
-            </td>
-            </tr>
-
-            <tr>
-            <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                <input v-model="username" type="text" name="username" class="mdl-textfield__input">
-                <label for="username" class="mdl-textfield__label">Username</label>
-                </div>
-            </td>
-            </tr>
-            <tr>
-            <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                <input v-model="password" type="password" name="password" class="mdl-textfield__input">
-                <label for="password" class="mdl-textfield__label">Password</label>
-                </div>
-            </td>
-            </tr>
-            <tr>
-            <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                <input v-model="re_password" type="password" name="re_password" v-on:keyup.enter="signup_button_onclick"
-                       class="mdl-textfield__input">
-                <label for="re_password" class="mdl-textfield__label">Type Your Password Again</label>
-                </div>
-            </td>
-            </tr>
-            <tr v-show="error_hint_show">
-            <td colspan="2" class="mdl-data-table__cell--non-numeric">
-                [[ error_hint_text ]]
-            </td>
-            </tr>
-            <tr>
-            <td class="mdl-data-table__cell--non-numeric">
-                <a href="{% url 'gallery:index' %}">Lost password?</a>
-            </td>
-            <td>
-                <button
-                    v-on:click="signup_button_onclick"
-                    class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
-                Submit
-                </button>
-            </td>
-            </tr>
+                    <tr>
+                        <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input v-model="username" type="text" name="username" class="mdl-textfield__input">
+                            <label for="username" class="mdl-textfield__label">Username</label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input v-model="password" type="password" name="password" class="mdl-textfield__input">
+                            <label for="password" class="mdl-textfield__label">Password</label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                            <input v-model="re_password" type="password" name="re_password" v-on:keyup.enter="signup_button_onclick"
+                                   class="mdl-textfield__input">
+                            <label for="re_password" class="mdl-textfield__label">Type Your Password Again</label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-show="error_hint_show">
+                        <td colspan="2" class="mdl-data-table__cell--non-numeric">
+                            [[ error_hint_text ]]
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            <a href="{% url 'gallery:index' %}">Lost password?</a>
+                        </td>
+                        <td>
+                            <button
+                                v-on:click="signup_button_onclick"
+                                class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent">
+                                Submit
+                            </button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>

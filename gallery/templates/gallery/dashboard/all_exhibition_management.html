@@ -61,11 +61,11 @@
                 <tbody>
                     <tr v-for="exhibition in exhibition_list">
                         <td>[[ exhibition.id ]]</td>
-			<td class="mdl-data-table__cell--non-numeric">[[ exhibition.name ]]</td>
+                        <td class="mdl-data-table__cell--non-numeric">[[ exhibition.name ]]</td>
                         <td>
                             <button v-on:click="modify_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
-				Modify
-			    </button>
+                                Modify
+                            </button>
                             <button v-on:click="delete_onclick(exhibition)" class="mdl-button mdl-js-button mdl-button--accent mdl-button--raised">
                                 Delete
                             </button>
@@ -76,21 +76,21 @@
         </div>
     </div>
     <script>
-            var all_exhibition_management_app = new Vue({
-                delimiters: ['[[', ']]'],
-                el: '#all_exhibition_management_div',
-                data: {
-                    exhibition_list: [],
-                    new_exhibition_name: '',
-                    new_exhibition_show: false,
-                    new_exhibition_error_message_show: false,
-                    new_exhibition_error_message: '',
-                    author_id: null,
-                },
-                methods: {
-                    refresh_exhibition_list: function () {
-                        progress_bar_app.show = true
-                        axios.get('/gallery/api/exhibitionlist/')
+        var all_exhibition_management_app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#all_exhibition_management_div',
+            data: {
+                exhibition_list: [],
+                new_exhibition_name: '',
+                new_exhibition_show: false,
+                new_exhibition_error_message_show: false,
+                new_exhibition_error_message: '',
+                author_id: null,
+            },
+            methods: {
+                refresh_exhibition_list: function () {
+                    progress_bar_app.show = true
+                    axios.get('/gallery/api/exhibitionlist/')
                         .then(function (response) {
                             all_exhibition_management_app.exhibition_list = response.data
                         })
@@ -100,12 +100,12 @@
                         .finally(function () {
                             progress_bar_app.show = false
                         })
-                    },
-                    new_exhibition_onclick: function () {
-                        progress_bar_app.show = true
-                        axios.post('/gallery/api/exhibitionadd/', {
-                            name: this.new_exhibition_name,
-                        })
+                },
+                new_exhibition_onclick: function () {
+                    progress_bar_app.show = true
+                    axios.post('/gallery/api/exhibitionadd/', {
+                        name: this.new_exhibition_name,
+                    })
                         .then(function (response) {
                             showSnackbar('Add Exhibition Success')
                         })
@@ -117,13 +117,13 @@
                             all_exhibition_management_app.new_exhibition_show = false
                             progress_bar_app.show = false
                         })
-                    },
-                    add_exhibition_onclick: function () {
-                        this.new_exhibition_show = true
-                    },
-                    delete_onclick: function (exhibition) {
-                        progress_bar_app.show = true
-                        axios.delete('/gallery/api/exhibition/' + exhibition.id + '/')
+                },
+                add_exhibition_onclick: function () {
+                    this.new_exhibition_show = true
+                },
+                delete_onclick: function (exhibition) {
+                    progress_bar_app.show = true
+                    axios.delete('/gallery/api/exhibition/' + exhibition.id + '/')
                         .then(function (response) {
                             showSnackbar('Deleted')
                             all_exhibition_management_app.refresh_exhibition_list()
@@ -134,15 +134,15 @@
                         .finally(function () {
                             progress_bar_app.show = false
                         })
-                    },
-		    modify_onclick: function (exhibition) {
-			window.location = '{% url "gallery:dashboard:exhibition_management" %}'+'?exhibition_id='+exhibition.id
-		    },
                 },
-                created: function () {
-                    progress_bar_app.show = true
-                    this.refresh_exhibition_list()
-                },
-            })
-        </script>
+        modify_onclick: function (exhibition) {
+            window.location = '{% url "gallery:dashboard:exhibition_management" %}'+'?exhibition_id='+exhibition.id
+        },
+            },
+            created: function () {
+                progress_bar_app.show = true
+                this.refresh_exhibition_list()
+            },
+        })
+    </script>
 {% endblock %}

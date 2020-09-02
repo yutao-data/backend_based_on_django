@@ -92,94 +92,94 @@
         </div>
     </div>
     <script>
-            var url = window.location.href //获取当前url
-            var dz_url = url.split('#')[0] //获取#/之前的字符串
-            var cs = dz_url.split('?')[1] //获取?之后的参数字符串
-            var cs_arr = cs.split('&') //参数字符串分割为数组
-            var cs={}
-            for(var i=0;i<cs_arr.length;i++){//遍历数组，拿到json对象
+        var url = window.location.href //获取当前url
+        var dz_url = url.split('#')[0] //获取#/之前的字符串
+        var cs = dz_url.split('?')[1] //获取?之后的参数字符串
+        var cs_arr = cs.split('&') //参数字符串分割为数组
+        var cs={}
+        for(var i=0;i<cs_arr.length;i++){//遍历数组，拿到json对象
             cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
         }
-            var all_item_management_app = new Vue({
-                delimiters: ['[[', ']]'],
-                el: '#all_item_management_div',
-                data: {
-                    item_list: [],
-                    new_item_name: '',
-                    new_item_show: false,
-                    new_item_error_message_show: false,
-                    new_item_error_message: '',
-                    user_list: [],
-            stuff_list: [],
-                    author_id: null,
-            stuff_id: null,
-                },
-                methods: {
-                    refresh_item_list: function () {
-                        progress_bar_app.show = true
-                        axios.get('/gallery/api/exhibition/'+cs['exhibition_id']+'/itemlist/')
-                            .then(function (response) {
-                                all_item_management_app.item_list = response.data
-                            })
-                            .catch(function (error) {
-                                errorDialog(error)
-                            })
-                            .finally(function () {
-                                progress_bar_app.show = false
-                            })
-                    },
-                    // 点击了 modify 按钮
-                    modify_onclick: function (item) {
-                        progress_bar_app.show = true
-                        window.location = '{% url "gallery:dashboard:item_management" %}'+'?exhibition_id='+cs['exhibition_id']+'&item_id='+item.id
-                    },
-                    new_item_onclick: function () {
-                        progress_bar_app.show = true
-                        axios.post('/gallery/api/exhibition/'+cs['exhibition_id']+'/itemadd/', {
-                            name: this.new_item_name,
-                            author_id: this.author_id,
-                        })
-                            .then(function (response) {
-                                showSnackbar('Add Item Success')
-                            })
-                            .catch(function (error) {
-                                errorDialog(error)
-                            })
-                            .finally(function () {
-                                all_item_management_app.refresh_item_list()
-                                all_item_management_app.new_item_show = false
-                                progress_bar_app.show = false
-                            })
-                    },
-                    add_item_onclick: function () {
-                        this.new_item_show = true
-                    },
-                    delete_onclick: function (item) {
-                        progress_bar_app.show = true
-                        axios.delete('/gallery/api/item/' + item.id + '/')
-                            .then(function (response) {
-                                showSnackbar('Deleted')
-                                all_item_management_app.refresh_item_list()
-                            })
-                            .catch(function (error) {
-                                errorDialog(error)
-                            })
-                            .finally(function () {
-                                progress_bar_app.show = false
-                            })
-                    },
-                },
-                created: function () {
+        var all_item_management_app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#all_item_management_div',
+            data: {
+                item_list: [],
+                new_item_name: '',
+                new_item_show: false,
+                new_item_error_message_show: false,
+                new_item_error_message: '',
+                user_list: [],
+                stuff_list: [],
+                author_id: null,
+                stuff_id: null,
+            },
+            methods: {
+                refresh_item_list: function () {
                     progress_bar_app.show = true
-                    axios.get('{% url "gallery:api:all_user_list" %}')
+                    axios.get('/gallery/api/exhibition/'+cs['exhibition_id']+'/itemlist/')
                         .then(function (response) {
-                            all_item_management_app.user_list = response.data
+                            all_item_management_app.item_list = response.data
                         })
                         .catch(function (error) {
-                            console.log(error)
+                            errorDialog(error)
                         })
-                    this.refresh_item_list()
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
                 },
-            })
-        </script>
+                // 点击了 modify 按钮
+                modify_onclick: function (item) {
+                    progress_bar_app.show = true
+                    window.location = '{% url "gallery:dashboard:item_management" %}'+'?exhibition_id='+cs['exhibition_id']+'&item_id='+item.id
+                },
+                new_item_onclick: function () {
+                    progress_bar_app.show = true
+                    axios.post('/gallery/api/exhibition/'+cs['exhibition_id']+'/itemadd/', {
+                        name: this.new_item_name,
+                        author_id: this.author_id,
+                    })
+                        .then(function (response) {
+                            showSnackbar('Add Item Success')
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            all_item_management_app.refresh_item_list()
+                            all_item_management_app.new_item_show = false
+                            progress_bar_app.show = false
+                        })
+                },
+                add_item_onclick: function () {
+                    this.new_item_show = true
+                },
+                delete_onclick: function (item) {
+                    progress_bar_app.show = true
+                    axios.delete('/gallery/api/item/' + item.id + '/')
+                        .then(function (response) {
+                            showSnackbar('Deleted')
+                            all_item_management_app.refresh_item_list()
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
+                },
+            },
+            created: function () {
+                progress_bar_app.show = true
+                axios.get('{% url "gallery:api:all_user_list" %}')
+                    .then(function (response) {
+                        all_item_management_app.user_list = response.data
+                    })
+                    .catch(function (error) {
+                        console.log(error)
+                    })
+                this.refresh_item_list()
+            },
+        })
+    </script>
 {% endblock %}

@@ -5,111 +5,111 @@
         <div class="mdl-cell mdl-cell--12-col mdl-grid">
             <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
                 <thead>
-                <tr>
-                    <td colspan="100%" class="mdl-data-table__cell--non-numeric">
-                        <h4>Item Management</h4>
-                    </td>
-                </tr>
+                    <tr>
+                        <td colspan="100%" class="mdl-data-table__cell--non-numeric">
+                            <h4>Item Management</h4>
+                        </td>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr>
-                    <td class="mdl-data-table__cell--non-numeric">ID</td>
-                    <td colspan="100%">[[ item.id ]]</td>
-                </tr>
-                <tr>
-                    <td class="mdl-data-table__cell--non-numeric">Item Name</td>
-                    <td colspan="100%">
-                        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                            <input v-model="item.name" type="text" name="item_name" class="mdl-textfield__input">
-                            <label for="item_name" class="mdl-textfield__label"></label>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="mdl-data-table__cell--non-numeric">Author</td>
-                    <td colspan="100%">
-                        <select v-model="item.author_id">
-                            <option v-for="artist in artist_list" v-bind:value="artist.id">
-                                [[ artist.username ]]
-                            </option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="mdl-data-table__cell--non-numeric">
-                        <span>File</span>
-                    </td>
-                    <td v-show="file_span_show">
-                        <span>[[ item.file ]]</span>
-                    </td>
-                    <td v-show="file_field_show">
-                        <input v-on:change="file_field_onchange($event)" type="file">
-                    </td>
-                    <td v-show="modify_button_show">
-                        <button v-on:click="modify_onclick($event)"
-                                class="mdl-button mdl-button-js mdl-button--accent mdl-button--raised">
-                            Modify
-                        </button>
-                    </td>
-                    <td v-show="download_button_show">
-                        <button v-on:click="download_onclick"
-                                class="mdl-button mdl-button-js mdl-button--colored mdl-button--raised">
-                            Download
-                        </button>
-                    </td>
-                    <td v-show="upload_button_show">
-                        <button v-on:click="upload_onclick"
-                                class="mdl-button mdl-button-js mdl-button--colored mdl-button--raised">
-                            Upload
-                        </button>
-                    </td>
-                    <td v-show="delete_button_show">
-                        <button
-                                class="mdl-button mdl-button-js mdl-button--accent mdl-button--raised">
-                            Delete
-                        </button>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="100%">
-                        <button v-on:click="save_onclick" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
-                            Save
-                        </button>
-                    </td>
-                </tr>
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric">ID</td>
+                        <td colspan="100%">[[ item.id ]]</td>
+                    </tr>
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric">Item Name</td>
+                        <td colspan="100%">
+                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                                <input v-model="item.name" type="text" name="item_name" class="mdl-textfield__input">
+                                <label for="item_name" class="mdl-textfield__label"></label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric">Author</td>
+                        <td colspan="100%">
+                            <select v-model="item.author_id">
+                                <option v-for="artist in artist_list" v-bind:value="artist.id">
+                                    [[ artist.username ]]
+                                </option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric">
+                            <span>File</span>
+                        </td>
+                        <td v-show="file_span_show">
+                            <span>[[ item.file ]]</span>
+                        </td>
+                        <td v-show="file_field_show">
+                            <input v-on:change="file_field_onchange($event)" type="file">
+                        </td>
+                        <td v-show="modify_button_show">
+                            <button v-on:click="modify_onclick($event)"
+                                    class="mdl-button mdl-button-js mdl-button--accent mdl-button--raised">
+                                Modify
+                            </button>
+                        </td>
+                        <td v-show="download_button_show">
+                            <button v-on:click="download_onclick"
+                                    class="mdl-button mdl-button-js mdl-button--colored mdl-button--raised">
+                                Download
+                            </button>
+                        </td>
+                        <td v-show="upload_button_show">
+                            <button v-on:click="upload_onclick"
+                                    class="mdl-button mdl-button-js mdl-button--colored mdl-button--raised">
+                                Upload
+                            </button>
+                        </td>
+                        <td v-show="delete_button_show">
+                            <button
+                                    class="mdl-button mdl-button-js mdl-button--accent mdl-button--raised">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="100%">
+                            <button v-on:click="save_onclick" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
+                                Save
+                            </button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
     <script>
-            var url = window.location.href //获取当前url
-            var dz_url = url.split('#')[0] //获取#/之前的字符串
-            var cs = dz_url.split('?')[1] //获取?之后的参数字符串
-            var cs_arr = cs.split('&') //参数字符串分割为数组
-            var cs={}
-            for(var i=0;i<cs_arr.length;i++){//遍历数组，拿到json对象
-                cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
-            }
-            var item_management_app = new Vue({
-                delimiters: ['[[', ']]'],
-                el: '#item_management_div',
-                data: {
-                    item: {},
-                    artist_list: [],
-                    file_span_show: true,
-                    file_field_show: false,
-                    delete_button_show: false,
-                    download_button_show: true,
-                    upload_button_show: false,
-                    modify_button_show: true,
-                    file: '',
-                },
-                methods: {
-                    save_onclick: function () {
-                        progress_bar_app.show = true
-                        axios.post('/gallery/api/item/'+cs['item_id']+'/info/', {
-                            item: item_management_app.item,
-                        })
+        var url = window.location.href //获取当前url
+        var dz_url = url.split('#')[0] //获取#/之前的字符串
+        var cs = dz_url.split('?')[1] //获取?之后的参数字符串
+        var cs_arr = cs.split('&') //参数字符串分割为数组
+        var cs={}
+        for(var i=0;i<cs_arr.length;i++){//遍历数组，拿到json对象
+            cs[cs_arr[i].split('=')[0]] = cs_arr[i].split('=')[1]
+        }
+        var item_management_app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#item_management_div',
+            data: {
+                item: {},
+                artist_list: [],
+                file_span_show: true,
+                file_field_show: false,
+                delete_button_show: false,
+                download_button_show: true,
+                upload_button_show: false,
+                modify_button_show: true,
+                file: '',
+            },
+            methods: {
+                save_onclick: function () {
+                    progress_bar_app.show = true
+                    axios.post('/gallery/api/item/'+cs['item_id']+'/info/', {
+                        item: item_management_app.item,
+                    })
                         .then(function (response) {
                             showSnackbar("Saved")
                         })
@@ -119,28 +119,28 @@
                         .finally(function () {
                             progress_bar_app.show = false
                         })
-                    },
-                    modify_onclick: function() {
-                        this.modify_button_show = false
-                        this.download_button_show = false
-                        this.file_span_show = false
-                        this.file_field_show = true
-                        this.upload_button_show = true
-                        this.delete_button_show = true
-                    },
-                    download_onclick: function () {
-                        window.location = '/gallery/api/item/' + cs['item_id'] + '/file/'
-                    },
-                    upload_onclick: function () {
-                        let formData = new FormData();
-                        let filename = this.file.name
-                        formData.append('file', this.file)
-                        formData.append('filename', filename)
-                        let config = {
-                            headers: {'Content-Type': 'multipart/form-data'}
-                        }
-                        progress_bar_app.show = true
-                        axios.post('/gallery/api/item/' + cs['item_id'] + "/file/", formData, config)
+                },
+                modify_onclick: function() {
+                    this.modify_button_show = false
+                    this.download_button_show = false
+                    this.file_span_show = false
+                    this.file_field_show = true
+                    this.upload_button_show = true
+                    this.delete_button_show = true
+                },
+                download_onclick: function () {
+                    window.location = '/gallery/api/item/' + cs['item_id'] + '/file/'
+                },
+                upload_onclick: function () {
+                    let formData = new FormData();
+                    let filename = this.file.name
+                    formData.append('file', this.file)
+                    formData.append('filename', filename)
+                    let config = {
+                        headers: {'Content-Type': 'multipart/form-data'}
+                    }
+                    progress_bar_app.show = true
+                    axios.post('/gallery/api/item/' + cs['item_id'] + "/file/", formData, config)
                         .then(function (response) {
                             item_management_app.item = response.data['item']
                             item_management_app.file_field_show = false
@@ -156,31 +156,31 @@
                         .finally(function () {
                             progress_bar_app.show = false
                         })
-                    },
-                    file_field_onchange: function (event) {
-                        this.file = event.target.files[0]
-                    },
                 },
-                created: function () {
-                    progress_bar_app.show = true
-                    axios.get('/gallery/api/exhibition/'+cs['exhibition_id']+'/item/'+cs['item_id']+'/info/')
-                        .then(function (response) {
-                            item_management_app.item = response.data['item']
-                        })
-                        .catch(function (error) {
-                            errorDialog(error)
-                        })
-                        .finally(function () {
-                            progress_bar_app.show = false
-                        })
-                    axios.get('{% url "gallery:api:all_user_list" %}')
-                        .then(function (response) {
-                            item_management_app.artist_list = response.data
-                        })
-                        .catch(function (error) {
-                            errorDialog(error)
-                        })
+                file_field_onchange: function (event) {
+                    this.file = event.target.files[0]
                 },
-            })
-        </script>
+            },
+            created: function () {
+                progress_bar_app.show = true
+                axios.get('/gallery/api/exhibition/'+cs['exhibition_id']+'/item/'+cs['item_id']+'/info/')
+                    .then(function (response) {
+                        item_management_app.item = response.data['item']
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+                    .finally(function () {
+                        progress_bar_app.show = false
+                    })
+                axios.get('{% url "gallery:api:all_user_list" %}')
+                    .then(function (response) {
+                        item_management_app.artist_list = response.data
+                    })
+                    .catch(function (error) {
+                        errorDialog(error)
+                    })
+            },
+        })
+    </script>
 {% endblock %}

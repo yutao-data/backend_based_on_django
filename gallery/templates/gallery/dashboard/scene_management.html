@@ -67,7 +67,7 @@
         </div>
         <!-- Item 列表（仅供查看） -->
         <div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-			<table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+            <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
                 <thead>
                     <tr>
                         <td colspan="100%" class="mdl-data-table__cell--non-numeric">
@@ -130,9 +130,9 @@
                 all_item_management_url: function () {
                     return '{% url "gallery:dashboard:all_item_management" %}' + '?scene_id=' + cs['scene_id']
                 },
-		real_download_button_show: function () {
-		    return (this.file || this.scene.file) && this.download_button_show
-		},
+                real_download_button_show: function () {
+                    return (this.file || this.scene.file) && this.download_button_show
+                },
             },
             methods: {
                 save_onclick: function () {
@@ -141,15 +141,15 @@
                         id: this.scene.id,
                         name: this.scene.name,
                     })
-                    .then(function (response) {
-                        showSnackbar(response.data['message'])
-                    })
-                    .catch(function (error) {
-                        errorDialog(error)
-                    })
-                    .finally(function () {
-                        progress_bar_app.show = false
-                    })
+                        .then(function (response) {
+                            showSnackbar(response.data['message'])
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
                 },
                 modify_onclick: function() {
                     this.modify_button_show = false
@@ -172,27 +172,26 @@
                     }
                     progress_bar_app.show = true
                     axios.post('/gallery/api/scene/' + cs['scene_id'] + "/file/", formData, config)
-                    .then(function (response) {
-                        scene_management_app.scene = response.data['scene']
-                        scene_management_app.file_field_show = false
-                        scene_management_app.upload_button_show = false
-                        scene_management_app.delete_button_show = false
-                        scene_management_app.modify_button_show = true
-                        scene_management_app.download_button_show = true
-                        scene_management_app.file_span_show = true
-                    })
-                    .catch(function (error) {
-                        errorDialog(error)
-                    })
-                    .finally(function () {
-                        progress_bar_app.show = false
-                    })
+                        .then(function (response) {
+                            scene_management_app.scene = response.data['scene']
+                            scene_management_app.file_field_show = false
+                            scene_management_app.upload_button_show = false
+                            scene_management_app.delete_button_show = false
+                            scene_management_app.modify_button_show = true
+                            scene_management_app.download_button_show = true
+                            scene_management_app.file_span_show = true
+                        })
+                        .catch(function (error) {
+                            errorDialog(error)
+                        })
+                        .finally(function () {
+                            progress_bar_app.show = false
+                        })
                 },
                 file_field_onchange: function (event) {
                     this.file = event.target.files[0]
                 }
             },
-
         })
     </script>
 {% endblock %}

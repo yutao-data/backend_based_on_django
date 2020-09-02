@@ -17,7 +17,7 @@
                     <tr v-for="signup_request in signup_request_list" v-bind:key="signup_request.id">
                         <td>[[ signup_request.id ]]</td>
                         <td class="mdl-data-table__cell--non-numeric">[[ signup_request.username ]]</td>
-			<td class="mdl-data-table__cell--non-numeric">[[ signup_request.user_type ]]</td>
+                        <td class="mdl-data-table__cell--non-numeric">[[ signup_request.user_type ]]</td>
                         <td class="mdl-data-table__cell--non-numeric">[[ signup_request.exhibition ]]</td>
                         <td class="mdl-data-table__cell--non-numeric">
                             <button v-on:click="accept_onclick(signup_request)" class="mdl-button mdl-js-button mdl-button--colored mdl-button--raised">
@@ -33,49 +33,50 @@
                 </tbody>
             </table>
         </div>
-        <script>
-            var signup_request_management_app = new Vue({
-                delimiters: ['[[', ']]'],
-                el: '#signup_request_management_div',
-                data: {
-                    signup_request_list: [],
+    </div>
+    <script>
+        var signup_request_management_app = new Vue({
+            delimiters: ['[[', ']]'],
+            el: '#signup_request_management_div',
+            data: {
+                signup_request_list: [],
+            },
+            methods: {
+                post_action: function (signup_request, accept) {
+                    // 交互效果
+                    progress_bar_app.show = true
+                    axios.post('/gallery/api/signuprequest/'+signup_request.id+'/', {
+                        accept: accept,
+                    // todo 
+        })
+                    .then(function (response) {
+                    console.log(response)
+                    showSnackbar('Action Success')
+                    })
+                    .catch(function (error) {
+                    errorDialog(error)
+                    })
+                    .finally(function () {
+                    progress_bar_app.show = false
+                    signup_request_management_app.refresh_signup_request_list()
+                    })
                 },
-                methods: {
-                    post_action: function (signup_request, accept) {
-                        // 交互效果
-                        progress_bar_app.show = true
-                        axios.post('/gallery/api/signuprequest/'+signup_request.id+'/', {
-                            accept: accept,
-			})
-			    .then(function (response) {
-				console.log(response)
-				showSnackbar('Action Success')
-			    })
-			    .catch(function (error) {
-				errorDialog(error)
-			    })
-			    .finally(function () {
-				progress_bar_app.show = false
-				signup_request_management_app.refresh_signup_request_list()
-			    })
-                    },
-		    accept_onclick: function (signup_request) {
-			this.post_action(signup_request, true)
-		    },
-                    reject_onclick: function (signup_request) {
-			this.post_action(signup_request, false)
-                    },
-                    refresh_signup_request_list: function () {
-                        axios.get('{% url "gallery:api:all_signup_request_list" %}')
+                accept_onclick: function (signup_request) {
+                    this.post_action(signup_request, true)
+                },
+                reject_onclick: function (signup_request) {
+                    this.post_action(signup_request, false)
+                },
+                refresh_signup_request_list: function () {
+                    axios.get('{% url "gallery:api:all_signup_request_list" %}')
                         .then(function (response) {
                             signup_request_management_app.signup_request_list = response.data
                         })
-                    }
-                },
-                created: function () {
-                    this.refresh_signup_request_list()
-                },
-            })
-        </script>
-    </div>
+                }
+            },
+            created: function () {
+                this.refresh_signup_request_list()
+            },
+        })
+    </script>
 {% endblock %}
